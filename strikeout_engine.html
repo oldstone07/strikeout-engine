@@ -377,6 +377,9 @@ button:active{transform:translateY(1px)}
 .gt-rec:last-child{background:var(--bg2)}
 .gt-actions{display:flex;gap:8px}
 .gt-row{display:grid;grid-template-columns:26px 96px minmax(110px,0.6fr) minmax(140px,1fr) 60px 52px 70px minmax(152px,auto);gap:10px;align-items:center;padding:9px 16px;border-bottom:1px solid var(--line);font-size:13px}
+/* statwrap is transparent on desktop: its 3 .gt-num children act as direct
+   grid cells (display:contents). On phone it becomes a flex strip — see ≤640px. */
+.gt-statwrap{display:contents}
 .gt-trk{display:flex;align-items:center;justify-content:center}
 .gt-trk input{width:15px;height:15px;cursor:pointer;accent-color:var(--bet);margin:0}
 .gt-trk input:disabled{cursor:default;opacity:.22}
@@ -612,6 +615,68 @@ footer{margin-top:30px;color:var(--muted);font-size:11.5px;text-align:center}
   .trow{grid-template-columns:1fr 1fr;gap:4px 8px;padding:14px 4px}
   .pname{grid-column:1/-1;margin-bottom:4px}
   .trow > span:nth-child(2){grid-column:1/-1;margin-bottom:6px}
+}
+
+/* ============================================================
+   PHONE-ONLY VIEW (≤640px) — Today page + pull controls only.
+   Placed last so it wins cascade order over desktop rules.
+   Pure CSS, gated by width. Desktop (>640px) is untouched.
+   Hides: other-tab nav buttons, right rail, Perf/Hist/Data cards.
+   Reflows the Today picks table (.gt-row) into stacked cards so
+   nothing scrolls sideways. No JS logic changed — same pull chain.
+   ============================================================ */
+@media(max-width:640px){
+  /* one column; kill the 312px right rail entirely */
+  .appgrid{grid-template-columns:1fr;padding:12px 12px 0;gap:0}
+  #rail{display:none !important}
+
+  /* only the Today tab is reachable on phone */
+  .topnav .tnav[data-tab="Perf"],
+  .topnav .tnav[data-tab="Hist"],
+  .topnav .tnav[data-tab="Data"]{display:none !important}
+
+  /* force-hide the non-Today section cards regardless of JS tab state */
+  #perfCard,#histCard,#dataCard{display:none !important}
+
+  /* the Today picks table → stacked cards */
+  .gamestbl{overflow:visible}
+  .gt-row{
+    display:flex;
+    flex-wrap:wrap;
+    align-items:baseline;
+    gap:4px 12px;
+    padding:14px;
+  }
+  /* small track/match cells not needed in card form */
+  .gt-row .gt-match{display:none}
+  .gt-row .gt-trk{order:0}
+  .gt-row .gt-time{flex:0 0 100%;font-size:12px;color:var(--muted);order:1}
+  .gt-row .gt-pitch{flex:1 1 55%;font-size:16px;font-weight:700;white-space:normal;min-width:0;order:2}
+  .gt-row .gt-pickcell{flex:0 0 auto;margin-left:auto;text-align:right;white-space:normal;order:3}
+  /* the three numbers become a labeled strip spanning full width.
+     Overrides the desktop display:contents on .gt-statwrap. */
+  .gt-statwrap{display:flex !important;gap:22px;flex:0 0 100%;order:4;margin-top:4px}
+  .gt-row .gt-num{
+    display:flex;
+    flex-direction:column;
+    font-size:15px;
+    font-weight:600;
+  }
+  .gt-row .gt-num::before{
+    content:attr(data-mlabel);
+    font-size:9.5px;
+    letter-spacing:.08em;
+    text-transform:uppercase;
+    color:var(--muted);
+    margin-bottom:2px;
+    font-weight:600;
+  }
+
+  /* comfortably tappable pull controls */
+  .gt-pullbtns{display:flex;gap:8px;flex-wrap:wrap}
+  .gt-official,.gt-watch1{padding:9px 13px;font-size:13px}
+  .actionbar button{padding:11px 14px;font-size:13.5px}
+  .gt-head{flex-wrap:wrap;gap:8px}
 }
 </style>
 </head>
@@ -1929,9 +1994,11 @@ function renderToday(rows){
         `<span class="gt-time gt-time-stack">${timeCell}</span>`+
         `<span class="gt-match">${matchCell}</span>`+
         `<span class="gt-pitch">${pitchCell}${booksToggle}</span>`+
-        `<span class="gt-num">${lineCell}</span>`+
-        `<span class="gt-num">${modelCell}</span>`+
-        `<span class="gt-num">${edgeCell}</span>`+
+        `<span class="gt-statwrap">`+
+        `<span class="gt-num" data-mlabel="Line">${lineCell}</span>`+
+        `<span class="gt-num" data-mlabel="Model">${modelCell}</span>`+
+        `<span class="gt-num" data-mlabel="Edge">${edgeCell}</span>`+
+        `</span>`+
         `<span class="gt-pickcell">${pickCell}${whyIcon}</span></div>`+
         booksPanel;
     });
