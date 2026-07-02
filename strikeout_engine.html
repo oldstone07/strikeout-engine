@@ -1215,6 +1215,9 @@ const SS = (function(){
       if(!bet||bet.id==null) continue;
       const id=String(bet.id), have=byId.get(id);
       if(!have){ byId.set(id,bet); continue; }
+      // A delete is terminal (bet ids are never re-created), so a tombstone on
+      // EITHER side wins — this is what makes deletions replicate across devices.
+      if(have.deleted || bet.deleted){ byId.set(id, have.deleted?have:bet); continue; }
       const haveGraded=have.result!=null, betGraded=bet.result!=null;
       if(betGraded&&!haveGraded) byId.set(id,bet);
       else if(!betGraded&&haveGraded){ /* keep local graded */ }
@@ -5896,7 +5899,7 @@ function loadMyBets(){ try{ const a=JSON.parse(SS.getItem(MYBETS_K)||"[]"); retu
 function saveMyBets(a){ try{ SS.setItem(MYBETS_K, JSON.stringify(a)); }catch{} }
 // Set of "date|pitcher" for every logged bet — lets the ＄ buttons show an
 // "already tracked" state so a game isn't accidentally double-logged.
-function _loggedBetSet(){ const s=new Set(); for(const b of loadMyBets()){ if(b&&b.date) s.add(b.date+"|"+norm(b.pitcher||"")); } return s; }
+function _loggedBetSet(){ const s=new Set(); for(const b of loadMyBets()){ if(b&&b.date&&!b.deleted) s.add(b.date+"|"+norm(b.pitcher||"")); } return s; }
 function betIsLogged(set,date,pitcher){ return set.has((date||"")+"|"+norm(pitcher||"")); }
 function americanProfit(odds, stake){ const o=Number(odds); if(!o||isNaN(o)) return stake; return o>0 ? stake*o/100 : stake*100/Math.abs(o); }
 
@@ -5904,7 +5907,7 @@ function americanProfit(odds, stake){ const o=Number(odds); if(!o||isNaN(o)) ret
 function gradeMyBets(){
   const bets=loadMyBets(); let changed=false;
   bets.forEach(b=>{
-    if(b.result) return;
+    if(b.result || b.deleted) return;
     const day=loadDay(b.date); if(!day) return;
     const row=(day.rows||[]).find(r=>norm(r.pitcher||"")===norm(b.pitcher||""));
     if(!row || row.actualK==null) return;
@@ -6021,7 +6024,7 @@ function renderMyBetsStyleBreak(bets){
 }
 function renderMyBets(){
   const el=$("myBetsList"); if(!el) return;
-  const bets=gradeMyBets();
+  const bets=gradeMyBets().filter(b=>!b.deleted);   // tombstones stay in storage but never display/count
   const settled=bets.filter(b=>b.result && b.result!=="push");
   const w=settled.filter(b=>b.result==="win").length, l=settled.filter(b=>b.result==="loss").length;
   const staked=settled.reduce((s,b)=>s+Number(b.stake||0),0);
@@ -6056,7 +6059,10 @@ function renderMyBets(){
   }).join("");
   el.querySelectorAll("[data-del]").forEach(btn=>btn.onclick=()=>{
     if(!confirm("Delete this logged bet? (Doesn't affect anything else.)")) return;
-    saveMyBets(loadMyBets().filter(x=>x.id!==btn.dataset.del));
+    // Soft-delete: mark a tombstone (kept in storage/sync) instead of dropping the
+    // row, so the deletion replicates to other devices. Hidden everywhere it's used.
+    const bets=loadMyBets(); const b=bets.find(x=>String(x.id)===String(btn.dataset.del));
+    if(b){ b.deleted=true; b.deletedAt=new Date().toISOString(); saveMyBets(bets); }
     renderMyBets();
   });
 }
