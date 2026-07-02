@@ -84,6 +84,9 @@ header{display:flex;gap:18px;align-items:center;margin-bottom:0;padding:12px 22p
 .rp-customdays input{flex:1;background:var(--bg2);border:1px solid var(--line);color:var(--text);border-radius:4px;padding:6px 9px;font-family:var(--mono);font-size:12px}
 .rp-customdays input:focus{outline:none;border-color:var(--bet)}
 .rp-customdays button{padding:6px 14px;font-size:12px}
+.rp-monthnav{display:flex;align-items:center;gap:8px;margin-top:8px}
+.rp-monthnav button{padding:5px 12px;font-size:13px;line-height:1}
+.rp-monthnav #railMonthLabel{flex:1;text-align:center;font:700 13px/1 var(--mono,ui-monospace,Menlo,monospace);letter-spacing:.02em}
 .railpanel{border:1px solid var(--line);border-radius:4px;padding:15px 16px;background:var(--card)}
 .rp-title{font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--text);font-family:var(--sans);margin-bottom:12px}
 .rp-bar-row{display:flex;justify-content:space-between;align-items:baseline;font-size:11.5px}
@@ -146,7 +149,51 @@ button:active{transform:translateY(1px)}
 .tabbar .tab{flex:0 0 auto;text-align:center}
 .tab-muted{flex:0 0 auto !important;color:var(--faint);font-size:12px;opacity:.8}
 .tab-muted.on{opacity:1}
-.actionbar{margin-top:0;gap:8px;flex-wrap:nowrap}
+.actionbar{margin-top:0;gap:8px;flex-wrap:wrap}
+.set-sec{margin:0 0 22px}
+.set-h{font:600 11px/1 var(--mono,ui-monospace,Menlo,monospace);letter-spacing:.12em;text-transform:uppercase;color:var(--muted);margin:0 0 11px}
+.set-row{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin:0 0 10px}
+/* My Bets */
+.gt-logbet{flex:0 0 auto;font-size:11px;font-weight:700;border:1px solid var(--line2);background:transparent;color:var(--muted);border-radius:4px;padding:3px 7px;cursor:pointer;margin-left:2px}
+.gt-logbet:hover{color:var(--pos);border-color:var(--pos)}
+.gt-logbet.logged{color:var(--pos);border-color:var(--pos);background:color-mix(in srgb,var(--pos) 16%,transparent);font-weight:800}
+.mb-summary{display:grid;grid-template-columns:repeat(5,1fr);gap:12px;margin:0 0 18px}
+.mb-stat{border:1px solid var(--line);border-radius:8px;padding:13px 14px;background:var(--card)}
+.mb-stat .v{font:800 24px/1 var(--mono,ui-monospace,Menlo,monospace);letter-spacing:-.02em}
+.mb-stat .l{font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-top:6px}
+#mbCurve{border:1px solid var(--line);border-radius:8px;background:var(--card);padding:10px;margin:0 0 18px}
+.mb-row{display:grid;grid-template-columns:96px minmax(120px,1.4fr) 90px 60px 60px 110px 80px 30px;gap:10px;align-items:center;padding:9px 12px;border-bottom:1px solid var(--line);font-size:13px;font-family:var(--mono,ui-monospace,Menlo,monospace)}
+.mb-row:first-child{border-top:1px solid var(--line)}
+.mb-c{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.mb-date{color:var(--muted);font-size:12px}
+.mb-win{color:var(--pos);font-weight:700}
+.mb-loss{color:var(--neg);font-weight:700}
+.mb-push{color:var(--muted)}
+.mb-pending{color:var(--accent)}
+.mb-del{background:transparent;border:none;color:var(--muted);cursor:pointer;font-size:15px;line-height:1}
+.mb-del:hover{color:var(--neg)}
+.betmodal{position:fixed;inset:0;z-index:200;background:rgba(0,0,0,.55);display:flex;align-items:center;justify-content:center}
+.betmodal.hidden{display:none}
+.betmodal-card{width:340px;max-width:92vw;background:var(--card2);border:1px solid var(--line2);border-radius:12px;padding:20px;box-shadow:0 16px 50px rgba(0,0,0,.6)}
+.bm-title{font:800 16px/1 var(--mono,ui-monospace,Menlo,monospace);letter-spacing:.04em}
+.bm-pitcher{color:var(--bet);font-weight:700;margin:6px 0 16px}
+.bm-frow{display:flex;align-items:center;gap:10px;margin:0 0 12px}
+.bm-frow label{flex:0 0 70px;font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.bm-frow input{flex:1;background:var(--bg2);border:1px solid var(--line);color:var(--text);border-radius:7px;padding:9px 11px;font-size:14px;font-family:var(--mono,ui-monospace,Menlo,monospace)}
+.bm-side{display:flex;gap:6px;flex:1}
+.bm-side button{flex:1;background:transparent;border:1px solid var(--line);color:var(--muted);border-radius:7px;padding:8px;font-weight:700;cursor:pointer}
+.bm-side button.on{background:var(--bet);color:#03171a;border-color:var(--bet)}
+.bm-styles{display:flex;gap:6px;flex:1;flex-wrap:wrap}
+.bm-stylechip{background:transparent;border:1px solid var(--line);color:var(--muted);border-radius:6px;padding:6px 9px;font-size:11px;font-weight:700;cursor:pointer;opacity:.5}
+.bm-stylechip.on{opacity:1}
+.bm-note{font-size:11.5px;color:var(--muted);margin:-4px 0 12px;line-height:1.4}
+.mb-stylebreak{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin:0 0 18px}
+.mb-sb{border:1px solid var(--line);border-radius:8px;padding:11px 12px;background:var(--card)}
+.mb-sb .h{font-size:10px;letter-spacing:.1em;text-transform:uppercase;font-weight:700}
+.mb-sb .v{font:800 17px/1 var(--mono,ui-monospace,Menlo,monospace);margin-top:6px}
+.mb-sb .s{font-size:11px;color:var(--muted);margin-top:4px}
+.mb-tag{font-size:9px;font-weight:800;padding:2px 5px;border-radius:4px;border:1px solid currentColor;margin-left:6px;vertical-align:middle}
+.bm-actions{display:flex;gap:10px;justify-content:flex-end;margin-top:18px}
 .actionbar button{padding:10px 13px;font-size:13px;white-space:nowrap}
 .actionbar .primary.big{padding:11px 18px;font-size:13.5px}
 @media(max-width:1180px){ .actionbar{flex-wrap:wrap} }
@@ -268,6 +315,9 @@ button:active{transform:translateY(1px)}
   font-size:12px;font-weight:600;padding:6px 12px;border-radius:7px}
 .winchip:hover{color:var(--text)}
 .winchip.on{background:var(--accent);color:#1a130a;border-color:var(--accent)}
+.winchip.has-data{position:relative}
+.winchip.has-data::after{content:"";position:absolute;top:3px;right:3px;width:4px;height:4px;border-radius:50%;background:var(--accent);opacity:.85}
+.winchip.has-data.on::after{background:#1a130a;opacity:.6}
 .rangectl{display:flex;align-items:center;gap:10px;margin:10px 0 4px;flex-wrap:wrap}
 .rangelbl{font-size:12px;color:var(--muted)}
 .stepbtn{background:var(--bg2);color:var(--text);border:1px solid var(--line2);
@@ -298,6 +348,7 @@ button:active{transform:translateY(1px)}
 .bcard{background:var(--bg2);border:1px solid var(--line);border-radius:13px;padding:14px 16px}
 .customrange{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin:8px 0 4px;font-size:13px;color:var(--muted)}
 .customrange input[type=date]{background:var(--bg2);border:1px solid var(--line);border-radius:8px;color:var(--text);padding:5px 8px;font-size:13px}
+.customrange select{background:var(--bg2);border:1px solid var(--line);border-radius:8px;color:var(--text);padding:5px 8px;font-size:13px;font-family:var(--mono,ui-monospace,Menlo,monospace);cursor:pointer}
 .customrange label{display:flex;align-items:center;gap:6px}
 .graphlegend{display:flex;gap:16px;flex-wrap:wrap;font-size:12px;color:var(--text);margin-top:8px}
 .graphlegend i{display:inline-block;width:11px;height:11px;border-radius:3px;vertical-align:middle;margin-right:5px}
@@ -386,6 +437,11 @@ button:active{transform:translateY(1px)}
 .gt-trk input{width:15px;height:15px;cursor:pointer;accent-color:var(--bet);margin:0}
 .gt-trk input:disabled{cursor:default;opacity:.22}
 .gt-row.gt-manual{background:rgba(138,138,138,.07)}
+.gt-live{display:block;margin:3px 0 0;font:700 11px/1.2 var(--mono,ui-monospace,Menlo,monospace);white-space:nowrap}
+.gt-live-k{font-weight:800}
+.gt-live-inn{color:var(--muted);margin-left:5px;font-weight:600;opacity:.85}
+.gt-live-dot{color:var(--watch);margin-right:4px;animation:gtpulse 1.6s ease-in-out infinite}
+@keyframes gtpulse{0%,100%{opacity:.35}50%{opacity:1}}
 .gt-trackcell{display:flex;align-items:center;justify-content:center}
 .gt-trackcell input{width:16px;height:16px;cursor:pointer;accent-color:var(--bet)}
 .gt-trackcell input:disabled{opacity:.25;cursor:default}
@@ -435,7 +491,9 @@ button:active{transform:translateY(1px)}
 .gt-pulled-ok{color:var(--pos);opacity:.85}
 .gt-official-re{background:transparent;border-color:var(--line2);color:var(--muted)}
 .gt-official-re:hover{background:var(--bet);color:var(--bg);border-color:var(--bet)}
-.gt-pitch{font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.gt-pitch{font-weight:600;min-width:0}
+.gt-pname{display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.gt-pitch .gt-books-t{display:block;width:fit-content;margin-top:4px}
 .why-wrap{position:relative;display:inline-block;margin-left:7px}
 .gt-pickcell{display:flex;align-items:center;gap:4px;justify-content:flex-start;white-space:nowrap;min-width:0}
 .gt-pickcell .gt-pick{overflow:hidden;text-overflow:ellipsis;min-width:0}
@@ -446,7 +504,8 @@ button:active{transform:translateY(1px)}
 .why-i:hover{color:var(--bet);border-color:var(--bet)}
 .why-pop{position:absolute;left:0;top:22px;z-index:60;display:none;width:248px;
   background:var(--card2);border:1px solid var(--line2);border-radius:6px;padding:11px 13px;
-  box-shadow:0 8px 26px rgba(0,0,0,.5);white-space:normal;font-family:var(--mono)}
+  box-shadow:0 8px 26px rgba(0,0,0,.5);white-space:normal;font-family:var(--mono);
+  max-height:calc(100vh - 110px);overflow-y:auto}
 .why-pop.open{display:block}
 .why-pop.up{top:auto;bottom:22px}
 .why-sum{font-size:12.5px;font-weight:700;color:var(--text);margin-bottom:9px;line-height:1.35}
@@ -467,6 +526,17 @@ button:active{transform:translateY(1px)}
 .gt-win{background:var(--pos-dim);color:var(--pos)}
 .gt-loss{background:var(--neg-dim);color:var(--neg)}
 .gt-void{background:var(--line);color:var(--muted)}
+.gt-ceil{background:transparent;border:1px solid var(--ceiling);color:var(--ceiling)}
+.gt-multi{background:transparent;border:1px solid var(--text);color:var(--text);box-shadow:0 0 10px rgba(54,197,216,.18)}
+.gt-scs{display:inline-flex;gap:3px;margin-left:6px;vertical-align:middle}
+.gt-sc{font:800 9px/1 var(--mono,ui-monospace,Menlo,monospace);padding:2px 3px;border-radius:3px}
+.gt-sc-combo{color:var(--bet);border:1px solid var(--bet)}
+.gt-sc-conv{color:var(--accent);border:1px solid var(--accent)}
+.gt-sc-ceil{color:var(--ceiling);border:1px solid var(--ceiling)}
+.gt-bet-tri{background:linear-gradient(90deg,var(--bet-dim),var(--accent-dim),var(--ceiling-dim));box-shadow:inset 3px 0 0 var(--bet),inset -3px 0 0 var(--ceiling)}
+.gt-livetier{display:block;margin-top:5px;font:700 10px/1.3 var(--mono,ui-monospace,Menlo,monospace);color:var(--watch);white-space:nowrap}
+.gt-livetier .gt-scs{margin-left:3px}
+.gt-livetier-pass{color:var(--muted);font-weight:600}
 .gt-pullbtn{background:var(--bet);color:#03171a;border:none;border-radius:3px;padding:6px 16px;font-family:var(--mono);font-size:11px;font-weight:700;cursor:pointer}
 .gt-unpulled{opacity:.85}
 .gt-bullpen{opacity:.5}
@@ -583,6 +653,7 @@ button:active{transform:translateY(1px)}
 .dayrecs-inline{display:inline-flex;align-items:center;gap:8px;flex-wrap:wrap;font-weight:400}
 .tiername em{display:block;font-style:normal;font-weight:400;color:var(--muted);font-size:11px;margin-top:2px}
 .tierstat{font-size:12.5px;color:var(--muted)}
+.tierstat-lbl{display:block;font-size:9px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);opacity:.65;margin-top:1px}
 .tierunits{font-family:var(--mono);font-weight:800;font-size:20px;text-align:right}
 .traitgroup{margin:14px 0}
 .traitlabel{font-size:12px;color:var(--accent);font-weight:700;text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px}
@@ -700,6 +771,8 @@ footer{margin-top:30px;color:var(--muted);font-size:11.5px;text-align:center}
     <button class="tnav" data-tab="Perf">▥ Scoreboard</button>
     <button class="tnav" data-tab="Hist">◷ History</button>
     <button class="tnav" data-tab="Data">▦ Data</button>
+    <button class="tnav" data-tab="Bets">＄ My Bets</button>
+    <button class="tnav" data-tab="Settings">⚙ Settings</button>
   </nav>
   <div class="headmeta">
     <div class="hm-cell"><span class="hm-ic">◷</span><div><div class="hm-l">Credits</div><div class="hm-v" id="hmCredits">—</div></div></div>
@@ -726,11 +799,12 @@ footer{margin-top:30px;color:var(--muted);font-size:11.5px;text-align:center}
   <div id="todayCard" class="card hidden">
     <div class="bar actionbar">
       <button class="primary big" id="stageBtn" title="Free — loads today's matchups, probable pitchers, and game times. Saves the current day first, then loads fresh.">Stage Day</button>
+      <button class="ghost" id="syncBtn" title="Pull the latest saved state from the cloud (picks, pulls, bets from your other device) and refresh the screen. No credits.">⟳ Sync now</button>
       <button class="ghost" id="runBtn" title="Pull lines for every game on the loaded day at once (~1 credit per game).">Pull All</button>
+      <button class="ghost" id="undoPullBtn" title="Revert the most recent pull or re-pull — restores the affected pitcher(s) to their state before that pull. One level of undo. Doesn't refund credits.">↩ Undo pull</button>
       <button class="ghost" id="watchBtn" title="Free — fetches live DraftKings/FanDuel strikeout lines from SharpAPI and shows how they compare to your model. No credits, nothing saved. Use this to watch lines move; do an official Pull All for the bet of record.">Intraday watch</button>
       <button class="ghost" id="previewBtn" title="Free — runs the model on tonight's probable starters using MLB stats only. Shows projected K, no lines, no credits, nothing saved.">Preview</button>
       <button class="ghost" id="gradeTodayBtn" title="Fetch final strikeout totals and fill in results inline on the games below.">Results</button>
-      <button class="ghost" id="cleanBtn" title="Remove leftover pitchers from an earlier pull who are no longer today's listed starter.">Clean slate</button>
       <button class="ghost" id="esp32Btn" title="Downloads esp32_picks.json — only today's Combo + Conviction picks with live game status and actual strikeouts, ready for the ESP32 to fetch.">Export ESP32 feed</button>
     </div>
     <div class="metastrip" id="metaStrip">
@@ -799,6 +873,7 @@ footer{margin-top:30px;color:var(--muted);font-size:11.5px;text-align:center}
 
     <div id="betSummary" class="betsummary"></div>
     <div id="freeVsPaid"></div>
+    <div id="flagAgree"></div>
 
     <h3>Weekly hit rate</h3>
     <p class="muted small" style="color:var(--muted)">Each point is one week's hit rate for the window. The flat reference line is break-even (52.4% at -110). Steadier line = more consistent edge; a saw-tooth that dips below break-even is a signal leaning on hot streaks.</p>
@@ -832,6 +907,11 @@ footer{margin-top:30px;color:var(--muted);font-size:11.5px;text-align:center}
       </div>
     </div>
     <p class="muted small" style="color:var(--muted)">Each day's flagged picks and how they did, with that day's Combo and Conviction record. <b>Export backup</b> downloads everything as a file you own. <b>Restore backup</b> merges a backup file in — days in the file overwrite matching days; days not in the file are kept.</p>
+    <div class="customrange" id="backfillRange" style="margin:4px 0 14px">
+      <label>Backfill month <select id="histRangeMonth"></select></label>
+      <button class="ghost small" id="histRangeBtn">Backfill month (paid)</button>
+      <span class="muted small" style="color:var(--muted)">Pulls one full month of real historical lines · 10 credits/game · confirms the month, then dry-runs the cost</span>
+    </div>
     <div id="keyPanel" class="resetpanel hidden">
       <div class="resetmsg">Paste a new Odds API key. It replaces the one saved in this browser.</div>
       <div class="keyrow" style="margin-top:10px">
@@ -888,7 +968,7 @@ footer{margin-top:30px;color:var(--muted);font-size:11.5px;text-align:center}
     <div class="dhead-row" style="display:flex;align-items:center;justify-content:space-between;gap:14px;margin-top:28px;flex-wrap:wrap">
       <h3 style="margin:0">The standard breakdowns</h3>
       <label class="dmetric" style="display:flex;align-items:center;gap:8px;font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted)">Metric
-        <select id="slMetric"><option value="pct">Hit %</option><option value="units">Units ±</option></select>
+        <select id="slMetric"><option value="pct">Hit %</option><option value="units">Units ±</option><option value="roi" selected>ROI %</option></select>
       </label>
     </div>
     <p class="muted small" style="color:var(--muted)">Every graded pick, cut each way. The big number follows the <b>Metric</b> toggle (currently <b id="dataFixedMetric">hit %</b>); the other metric sits in the subline. Cells with fewer than 10 picks are faint — too small to read into. Click a box to build a custom combo above.</p>
@@ -906,6 +986,67 @@ footer{margin-top:30px;color:var(--muted);font-size:11.5px;text-align:center}
     <div id="labTraits"></div><div id="labEmpty" class="hidden"></div>
   </div>
 
+  <div id="settingsCard" class="card hidden">
+    <h3 style="margin-top:0">Settings</h3>
+    <div class="set-sec">
+      <div class="set-h">API keys</div>
+      <div class="set-row">
+        <button class="ghost" id="chgOddsKey">Change Odds API key</button>
+        <span class="muted small" style="color:var(--muted)">Official line pulls — the-odds-api.com.</span>
+      </div>
+      <div class="set-row">
+        <button class="ghost" id="chgSharpKey">Change SharpAPI key</button>
+        <span class="muted small" style="color:var(--muted)">Free live DK/FD lines for Intraday watch — sharpapi.io.</span>
+      </div>
+    </div>
+    <div class="set-sec">
+      <div class="set-h">Data &amp; backups</div>
+      <div class="set-row">
+        <button class="ghost" id="setExportBtn">Export backup</button>
+        <button class="ghost" id="setRestoreBtn">Restore backup</button>
+        <span class="muted small" style="color:var(--muted)">Save or reload your full history as a JSON file you own.</span>
+      </div>
+      <div class="set-row">
+        <span class="muted small" style="color:var(--muted)">Automatic iCloud backups run in the background. Change the folder from the menu bar: <b>Strikeout Engine → Choose Backup Folder…</b></span>
+      </div>
+    </div>
+    <div class="set-sec">
+      <div class="set-h">Maintenance</div>
+      <div class="set-row">
+        <button class="ghost" id="cleanBtn" title="Remove leftover pitchers from an earlier pull who are no longer today's listed starter.">Clean slate</button>
+        <span class="muted small" style="color:var(--muted)">Removes leftover pitchers who are no longer today's listed starter. Rarely needed.</span>
+      </div>
+    </div>
+  </div>
+
+  <div id="myBetsCard" class="card hidden">
+    <h3 style="margin-top:0">My Bets <span class="muted small" style="color:var(--muted);font-weight:400">— your real wagers, auto-graded against strikeout results</span></h3>
+    <div class="mb-summary">
+      <div class="mb-stat"><div class="v" id="mbRecord">0-0</div><div class="l">record</div></div>
+      <div class="mb-stat"><div class="v" id="mbNet">+0.0u</div><div class="l">net units</div></div>
+      <div class="mb-stat"><div class="v" id="mbRoi">+0.0%</div><div class="l">roi</div></div>
+      <div class="mb-stat"><div class="v" id="mbStaked">0.0u</div><div class="l">staked</div></div>
+      <div class="mb-stat"><div class="v" id="mbPending">0</div><div class="l">pending</div></div>
+    </div>
+    <div id="mbStyleBreak" class="mb-stylebreak"></div>
+    <div id="mbCurve"></div>
+    <div id="myBetsList"></div>
+  </div>
+
+  <div id="betModal" class="betmodal hidden">
+    <div class="betmodal-card">
+      <div class="bm-title">Log a bet</div>
+      <div class="bm-pitcher" id="bmPitcher">—</div>
+      <div class="bm-frow" id="bmStylesRow" style="display:none"><label>Track as</label><div class="bm-styles" id="bmStyles"></div></div>
+      <div class="bm-note" id="bmNote" style="display:none"></div>
+      <div class="bm-frow"><label>Side</label><div class="bm-side"><button id="bmOver" data-side="Over">Over</button><button id="bmUnder" data-side="Under">Under</button></div></div>
+      <div class="bm-frow"><label>Line</label><input id="bmLine" type="number" step="0.5" placeholder="5.5"></div>
+      <div class="bm-frow"><label>Odds</label><input id="bmOdds" type="number" step="1" placeholder="-110"></div>
+      <div class="bm-frow"><label>Stake</label><input id="bmStake" type="number" step="0.25" min="0.25" placeholder="1" value="1"></div>
+      <div class="bm-actions"><button class="ghost" id="bmCancel">Cancel</button><button class="primary" id="bmSave">Save bet</button></div>
+    </div>
+  </div>
+
     </div><!-- /.appcontent -->
 
     <aside class="rail" id="rail">
@@ -915,17 +1056,26 @@ footer{margin-top:30px;color:var(--muted);font-size:11.5px;text-align:center}
           <div class="rp-seg" id="perfWin">
             <button class="on" data-win="test">Test</button>
             <button data-win="7">7</button>
-            <button data-win="30">30</button>
+            <button data-win="month">Month</button>
             <button data-win="season">Season</button>
             <button data-win="alltime">All</button>
           </div>
+        </div>
+        <div class="rp-monthnav" id="railMonthNav" style="display:none">
+          <button class="ghost" id="railMonthPrev" title="Previous month">◀</button>
+          <span id="railMonthLabel">—</span>
+          <button class="ghost" id="railMonthNext" title="Next month">▶</button>
         </div>
         <div class="rp-customdays">
           <input type="number" id="perfDays" min="1" max="3650" placeholder="days" />
           <button class="ghost" id="perfDaysGo">Go</button>
         </div>
+        <div class="rp-seg" id="railMetricSeg" style="margin:9px 0 2px">
+          <button class="on" data-rm="units">Units</button>
+          <button data-rm="roi">ROI</button>
+        </div>
         <div class="rp-big" id="railUnits">—</div>
-        <div class="rp-units-l">units · sized by strats cleared</div>
+        <div class="rp-units-l" id="railUnitsLabel">units · sized by strats cleared</div>
         <div class="rp-perf3"><div><div class="rp-p3v" id="railRecord">—</div><div class="rp-p3l">record</div></div><div><div class="rp-p3v" id="railWinrate">—</div><div class="rp-p3l">win rate</div></div><div><div class="rp-p3v" id="railRoi">—</div><div class="rp-p3l">ROI/unit</div></div></div>
       </div>
 
@@ -970,7 +1120,7 @@ footer{margin-top:30px;color:var(--muted);font-size:11.5px;text-align:center}
               <div class="bs-sub" id="bsCompOverS">—</div>
             </div>
             <div class="bs-cell bs-comp">
-              <div class="bs-head">≥0.75K from line only</div>
+              <div class="bs-head">≥1.0K from line only</div>
               <div class="bs-big" id="bsCompDistU">—</div>
               <div class="bs-sub" id="bsCompDistS">—</div>
             </div>
@@ -1005,7 +1155,150 @@ footer{margin-top:30px;color:var(--muted);font-size:11.5px;text-align:center}
 // ===========================================================================
 const LEAGUE_K_PER_PA=0.225, LEAGUE_BF_PER_START=23.0, PITCHER_PRIOR_PA=80.0,
       TEAM_PRIOR_PA=200.0, BF_SPREAD=[-4,-2,0,2,4], BF_WEIGHTS=[0.15,0.2,0.3,0.2,0.15], BF_FLOOR=8;
+// ---- BET-GATE CONSTANTS (single source of truth; every gate reads these) ----
+const EDGE_STRONG_BAR=0.20;   // model edge ≥20% = Strong tier (Combo)
+const EDGE_MAX_LINE=5.5;      // Combo low-line bucket
+const CONV_DISAGREE_MIN=1.0;  // Conviction gate: Over must project ≥1.0K above line.
+                              // Tightened from 0.75 (2026-06-30): the 0.75–1.0 band
+                              // was dead weight (+6.7% Over). At ≥1.0 the bucket is
+                              // 106-37 / +33% ROI and holds out-of-sample (2025 +27%,
+                              // 2026 +40%). One constant feeds every Conviction gate.
 const MLB="https://statsapi.mlb.com/api/v1", ODDS="https://api.the-odds-api.com/v4";
+
+// ── SS: durable, roomy replacement for localStorage ─────────────────────────
+// The Mac web engine caps localStorage at ~5MB; this app's multi-month history
+// blows past it and setItem throws "The quota has been exceeded". SS is a
+// drop-in (same getItem/setItem/removeItem/key/length API) backed by a native
+// file: the file's contents are injected into window.__SE_STORE__ before any
+// script runs (so reads stay synchronous), and every change is written back
+// through the `sestore` bridge. No practical size limit, and it survives the
+// WebKit storage eviction that can silently wipe localStorage.
+const SS = (function(){
+  let map = Object.create(null);
+  // 1) preload from the native store file (injected at document start)
+  try{ if(window.__SE_STORE__ && typeof window.__SE_STORE__==="object"){
+    for(const k in window.__SE_STORE__) map[k]=String(window.__SE_STORE__[k]);
+  }}catch(e){}
+  // 2) one-time migration: if empty but the old localStorage still holds data, adopt it
+  try{
+    if(!Object.keys(map).length && window.localStorage && window.localStorage.length){
+      for(let i=0;i<window.localStorage.length;i++){ const k=window.localStorage.key(i); if(k) map[k]=window.localStorage.getItem(k); }
+    }
+  }catch(e){}
+  // ── per-key timestamps (for newest-wins across devices) ───────────────────
+  // Each key carries an ISO write-time. Stored as ONE JSON key (se__meta_ts) so
+  // it rides the same sestore/Supabase path — no extra native plumbing. On
+  // hydrate, a cloud value only overwrites local if the cloud row's updated_at
+  // is newer than our local timestamp for that key.
+  const META_TS_KEY="se__meta_ts";
+  let metaTs=Object.create(null);
+  try{ const raw=map[META_TS_KEY]; if(raw){ const o=JSON.parse(raw); if(o&&typeof o==="object") metaTs=o; } }catch(e){}
+  function tsOf(k){ return metaTs[k]||""; }
+  function stampNow(k){ metaTs[k]=new Date().toISOString(); map[META_TS_KEY]=JSON.stringify(metaTs); }
+
+  // ── SUPABASE SYNC (dual-write; local is offline-safe, Supabase is shared) ──
+  const SB_URL="https://mqbkfyrvcdblzmbmgvjn.supabase.co";
+  const SB_KEY="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1xYmtmeXJ2Y2RibHptYm1ndmpuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODI5NDYxODksImV4cCI6MjA5ODUyMjE4OX0.DdavCC20eaBdzfP21pLryvqYaWcD2ImbsdqnTtxhGck";
+  const SB_TABLE="store";
+  const MYBETS_KEY_NAME="se_mybets";
+  const sbHeaders={ "apikey":SB_KEY, "Authorization":"Bearer "+SB_KEY, "Content-Type":"application/json" };
+  function sbUrl(p){ return SB_URL.replace(/\/+$/,"")+"/rest/v1/"+p; }
+
+  // Merge two se_mybets arrays by bet id (graded copy beats ungraded; else cloud wins)
+  function mergeMyBets(localJson, cloudJson){
+    let a=[],b=[];
+    try{ a=JSON.parse(localJson||"[]"); if(!Array.isArray(a)) a=[]; }catch{ a=[]; }
+    try{ b=JSON.parse(cloudJson||"[]"); if(!Array.isArray(b)) b=[]; }catch{ b=[]; }
+    const byId=new Map();
+    for(const bet of a){ if(bet&&bet.id!=null) byId.set(String(bet.id),bet); }
+    for(const bet of b){
+      if(!bet||bet.id==null) continue;
+      const id=String(bet.id), have=byId.get(id);
+      if(!have){ byId.set(id,bet); continue; }
+      const haveGraded=have.result!=null, betGraded=bet.result!=null;
+      if(betGraded&&!haveGraded) byId.set(id,bet);
+      else if(!betGraded&&haveGraded){ /* keep local graded */ }
+      else byId.set(id,bet);
+    }
+    const idless=[...a,...b].filter(x=>x&&x.id==null);
+    return JSON.stringify([...byId.values(), ...idless]);
+  }
+
+  // Pull whole cloud store; newest-wins per key (se_mybets always merges by id).
+  async function hydrate(){
+    if(typeof fetch!=="function") return;
+    try{
+      const res=await fetch(sbUrl(SB_TABLE+"?select=key,value,updated_at"), { headers:sbHeaders });
+      if(!res.ok) throw new Error("hydrate HTTP "+res.status);
+      const rows=await res.json();
+      if(!Array.isArray(rows)) return;
+      let touched=false;
+      for(const row of rows){
+        if(!row||row.key==null) continue;
+        const k=String(row.key), v=row.value==null?"":String(row.value), cloudTs=row.updated_at||"";
+        if(k===META_TS_KEY) continue; // rebuilt from local writes; never overwrite wholesale
+        if(k===MYBETS_KEY_NAME){
+          const before=map[k]||""; const merged=mergeMyBets(before, v);
+          if(merged!==before){ map[k]=merged; stampNow(k); touched=true; }
+          continue;
+        }
+        // newest-wins: only take cloud if it's strictly newer than our local stamp
+        const localTs=tsOf(k);
+        if(!(k in map) || (cloudTs && cloudTs>localTs)){
+          map[k]=v; metaTs[k]=cloudTs||new Date().toISOString(); touched=true;
+        }
+      }
+      if(touched){ map[META_TS_KEY]=JSON.stringify(metaTs); flushLocal(); }
+    }catch(e){ try{ console.warn("[SS] Supabase hydrate skipped:",e.message); }catch{} }
+  }
+
+  async function sbUpsert(k,v){
+    if(typeof fetch!=="function") return;
+    try{
+      await fetch(sbUrl(SB_TABLE), {
+        method:"POST",
+        headers:{...sbHeaders, "Prefer":"resolution=merge-duplicates"},
+        body: JSON.stringify({ key:String(k), value:(v==null?null:String(v)), updated_at:(metaTs[k]||new Date().toISOString()) })
+      });
+    }catch(e){ try{ console.warn("[SS] Supabase upsert failed for",k,e.message); }catch{} }
+  }
+  async function sbDelete(k){
+    if(typeof fetch!=="function") return;
+    try{ await fetch(sbUrl(SB_TABLE+"?key=eq."+encodeURIComponent(String(k))), { method:"DELETE", headers:sbHeaders }); }catch(e){}
+  }
+
+  let t=null;
+  const dirty=new Set(), deleted=new Set();
+  function flushLocal(){
+    try{
+      const mh=window.webkit&&window.webkit.messageHandlers&&window.webkit.messageHandlers.sestore;
+      if(mh){ mh.postMessage(JSON.stringify(map)); return; }
+    }catch(e){}
+    try{ if(window.localStorage){ for(const k in map){ try{ window.localStorage.setItem(k,map[k]); }catch{} } } }catch(e){}
+  }
+  function flushCloud(){
+    const ups=[...dirty]; dirty.clear();
+    const dels=[...deleted]; deleted.clear();
+    if(ups.length){ sbUpsert(META_TS_KEY, map[META_TS_KEY]); } // keep cloud timestamps fresh
+    for(const k of ups){ if(k in map) sbUpsert(k,map[k]); }
+    for(const k of dels){ if(!(k in map)) sbDelete(k); }
+  }
+  function flush(){ flushLocal(); flushCloud(); }
+  function schedule(){ if(t) clearTimeout(t); t=setTimeout(flush,400); }
+  const api={
+    getItem(k){ k=String(k); return (k in map) ? map[k] : null; },
+    setItem(k,v){ k=String(k); map[k]=String(v); stampNow(k); dirty.add(k); deleted.delete(k); schedule(); },
+    removeItem(k){ k=String(k); delete map[k]; delete metaTs[k]; map[META_TS_KEY]=JSON.stringify(metaTs); deleted.add(k); dirty.delete(k); schedule(); },
+    key(i){ const ks=Object.keys(map); return (i>=0 && i<ks.length) ? ks[i] : null; },
+    clear(){ for(const k in map) deleted.add(k); map=Object.create(null); metaTs=Object.create(null); schedule(); },
+    flushNow:flush,
+    hydrate
+  };
+  Object.defineProperty(api,"length",{get(){ return Object.keys(map).length; }});
+  window.addEventListener("pagehide", flush);
+  document.addEventListener("visibilitychange", ()=>{ if(document.visibilityState==="hidden") flush(); });
+  return api;
+})();
 
 const regressed=(e,o,pn,lg)=>(e+lg*pn)/(o+pn);
 // CALIBRATED per-batter K probability.
@@ -1064,7 +1357,39 @@ const fmtSigned=x=>x==null?"—":(x>=0?"+":"")+(x*100).toFixed(1)+"%";
 const fmtPrice=p=>p==null?"—":(p>0?"+":"")+p;
 
 // ---- fetch helpers ----
-async function jget(u){const r=await fetch(u);if(!r.ok)throw new Error(r.status+" "+(await r.text()).slice(0,120));return r.json();}
+const sleep=ms=>new Promise(r=>setTimeout(r,ms));
+// Retry a fetch on TRANSIENT failures: HTTP 429 (rate limit), 5xx, or a dropped
+// connection. Uses exponential backoff. A 429/5xx returns no data and is NOT
+// billed, so retrying costs nothing. Other 4xx (bad request, bad key) are not
+// retried — they return immediately so the caller can surface the real status.
+// This is what keeps a long month-backfill from dying on one transient 429.
+// DIAGNOSTIC: record the last failing HTTP call (URL with key masked, status,
+// body) so we can see exactly what the API rejected without live console access.
+function _recordHttpErr(u, status, body){
+  try{ SS.setItem('se_last_http_err', JSON.stringify({
+    when:new Date().toISOString(), status,
+    url:String(u).replace(/apiKey=[^&]*/,'apiKey=KEY'),
+    body:String(body||'').slice(0,300)
+  })); }catch(_){}
+}
+async function fetchRetry(u, opts, tries=4){
+  let wait=1200;
+  for(let i=0;i<tries;i++){
+    let r;
+    try{ r=await fetch(u,opts); }
+    catch(netErr){ if(i===tries-1) throw netErr; await sleep(wait); wait=Math.round(wait*2.2); continue; }
+    if(r.status>=400){
+      let body=''; try{ body=await r.clone().text(); }catch(_){}
+      _recordHttpErr(u, r.status, body);
+    }
+    if(r.status===429 || r.status>=500){
+      if(i===tries-1) return r;                 // out of retries — let caller see the status
+      await sleep(wait); wait=Math.round(wait*2.2); continue;
+    }
+    return r;
+  }
+}
+async function jget(u){const r=await fetchRetry(u);if(!r.ok)throw new Error(r.status+" "+(await r.text()).slice(0,120));return r.json();}
 
 // ===========================================================================
 //  HISTORICAL ODDS  (paid endpoint — only used by the CLV/leak-fix tools)
@@ -1078,7 +1403,7 @@ const HIST_PROPS_FROM="2023-05-03";        // props history starts here
 // list of events (games) that existed at a historical snapshot time
 async function histEvents(key,iso){
   const u=`${ODDS}/historical/sports/baseball_mlb/events?apiKey=${key}&date=${encodeURIComponent(iso)}`;
-  const r=await fetch(u);
+  const r=await fetchRetry(u);
   if(!r.ok) throw new Error("hist events "+r.status+" "+(await r.text()).slice(0,120));
   const remaining=r.headers.get("x-requests-remaining");
   const j=await r.json();
@@ -1089,7 +1414,7 @@ async function histEvents(key,iso){
 async function histEventProps(key,eventId,iso){
   const u=`${ODDS}/historical/sports/baseball_mlb/events/${eventId}/odds`+
           `?apiKey=${key}&regions=us&markets=pitcher_strikeouts&oddsFormat=american&date=${encodeURIComponent(iso)}`;
-  const r=await fetch(u);
+  const r=await fetchRetry(u);
   if(!r.ok) throw new Error("hist props "+r.status+" "+(await r.text()).slice(0,120));
   const remaining=r.headers.get("x-requests-remaining");
   const j=await r.json();
@@ -1293,13 +1618,13 @@ async function opponentKRate(gp,oppSide,oppTid,s,pHand){const lo=await lineup(gp
 // ===========================================================================
 const KEY_K="se_odds_key";
 const dayKey=d=>"se_day_"+d;
-function getKey(){return localStorage.getItem(KEY_K)||"";}
-function setKey(v){localStorage.setItem(KEY_K,v);}
+function getKey(){return SS.getItem(KEY_K)||"";}
+function setKey(v){SS.setItem(KEY_K,v);}
 const CRED_K="se_credits_remaining";
-function setCredits(v){ if(v!=null && v!=="") localStorage.setItem(CRED_K,String(v)); }
-function getCredits(){ const v=localStorage.getItem(CRED_K); return v==null?null:Number(v); }
+function setCredits(v){ if(v!=null && v!=="") SS.setItem(CRED_K,String(v)); }
+function getCredits(){ const v=SS.getItem(CRED_K); return v==null?null:Number(v); }
 // Session-only per-book cache: keeps the "books ▾" data alive for the whole day
-// after a pull, without ever writing it to localStorage. Cleared on reload / restage.
+// after a pull, without ever writing it to SS. Cleared on reload / restage.
 const _booksCache={};  // { "date|pid-or-name": recs[] }
 // Session-only watch cache: keeps each watched pitcher's live line + verdict so
 // watching a second game doesn't erase the first. In-memory, never saved.
@@ -1319,11 +1644,12 @@ function applyWatchCache(date, rows){
   const have=new Set((rows||[]).map(r=>norm(r.pitcher||"")));
   (rows||[]).forEach(r=>{
     const c=_watchCache[watchCacheKey(date,r.pitcher)];
-    if(c && r._watchLine==null && !r.resolved){
+    if(c && r._watchLine==null){
+      // restore the full watch payload for BOTH pulled and un-pulled rows.
+      // Pulled rows use it for the drift ✱ and the live-tier re-eval; un-pulled
+      // rows use it for the "would be" verdict.
       r._watchLine=c.line; r._watchOver=c.over; r._watchUnder=c.under; r._watchLive=c.live;
       r._watchEK=c.eK; r._watchSide=c.side; r._watchEdge=c.edge; r._watchCombo=c.combo; r._watchConv=c.conv; r._watchCeil=c.ceil;
-    } else if(c && r.resolved && r._watchLine==null){
-      r._watchLine=c.line; // resolved rows just show the drift ✱
     }
   });
   Object.keys(_watchCache).forEach(k=>{
@@ -1341,7 +1667,7 @@ function applyWatchCache(date, rows){
 const BOOKS_DAY_K="se_books_today";
 function booksKey(date,r){ return date+"|"+(r.pid!=null?("pid:"+r.pid):("nm:"+norm(r.pitcher||""))); }
 function loadBooksDay(date){
-  try{ const raw=localStorage.getItem(BOOKS_DAY_K); if(!raw) return;
+  try{ const raw=SS.getItem(BOOKS_DAY_K); if(!raw) return;
     const obj=JSON.parse(raw);
     if(obj && obj.date===date && obj.books){ Object.assign(_booksCache, obj.books); } // only today's
   }catch{}
@@ -1350,10 +1676,14 @@ function persistBooksDay(date){
   try{
     const books={};
     for(const k in _booksCache){ if(k.startsWith(date+"|")) books[k]=_booksCache[k]; }
-    localStorage.setItem(BOOKS_DAY_K, JSON.stringify({date, books})); // overwrites prior day
+    SS.setItem(BOOKS_DAY_K, JSON.stringify({date, books})); // overwrites prior day
   }catch{}
 }
 function cacheBooks(date,rows){
+  // Load already-persisted books for today FIRST. Otherwise a pull right after a
+  // reload (empty in-memory cache) would persist only this game and wipe the
+  // book data from every earlier pull — making their "books ▾" toggle vanish.
+  if(Object.keys(_booksCache).length===0) loadBooksDay(date);
   let any=false;
   (rows||[]).forEach(r=>{ if(r && r._books && r._books.length){ _booksCache[booksKey(date,r)]=r._books; any=true; } });
   if(any) persistBooksDay(date);   // survive reloads, today only (~20KB, replaced each day)
@@ -1373,9 +1703,9 @@ function saveDay(rec){
       .filter(r=> !(r && r._watchOnly))
       .map(r=>{ if(r && r._books){ const {_books,...rest}=r; return rest; } return r; })} : rec;
   const payload=JSON.stringify(slim);
-  localStorage.setItem(k,payload);
+  SS.setItem(k,payload);
   // seatbelt: confirm the write landed and round-trips
-  const back=localStorage.getItem(k);
+  const back=SS.getItem(k);
   if(back!==payload){console.warn("saveDay verify FAILED for",rec.date);return false;}
   return true;
 }
@@ -1385,13 +1715,57 @@ function rowKey(r){ return r.pid!=null ? ("pid:"+r.pid) : ("nm:"+norm(r.pitcher|
 // A second pull on a date (re-pull, or re-run on a thin slate) must ADD and
 // REFRESH pitchers, never SHRINK the day. This is the guard that prevents a
 // sparse late/early slate from wiping a full logged day.
+// ---- Undo last pull ----
+// Before each pull/re-pull we stash the prior state of every row it touches.
+// Undo restores those rows (or removes ones the pull newly added). One level deep.
+const UNDO_PULL_K="se_undo_pull";
+let _pullBatch=false;   // true during a "Pull All" so its games accumulate into ONE undo
+function captureUndoPull(date, rows){
+  try{
+    if(_pullBatch){
+      let prev=null; try{ prev=JSON.parse(SS.getItem(UNDO_PULL_K)||"null"); }catch{}
+      if(prev && prev.date===date){
+        const seen=new Set(prev.rows.map(u=>u.key));
+        rows.forEach(u=>{ if(!seen.has(u.key)) prev.rows.push(u); }); // keep the earliest prior per pitcher
+        prev.ts=new Date().toISOString();
+        SS.setItem(UNDO_PULL_K, JSON.stringify(prev)); return;
+      }
+    }
+    SS.setItem(UNDO_PULL_K, JSON.stringify({date, ts:new Date().toISOString(), rows}));
+  }catch{}
+}
+function undoLastPull(){
+  const raw=SS.getItem(UNDO_PULL_K);
+  if(!raw){ setStatus("Nothing to undo — no pull recorded yet."); return; }
+  let undo; try{ undo=JSON.parse(raw); }catch{ SS.removeItem(UNDO_PULL_K); setStatus("Nothing to undo."); return; }
+  const rec=loadDay(undo.date);
+  if(!rec || !(rec.rows||[]).length){ SS.removeItem(UNDO_PULL_K); setStatus("Nothing to undo for that day."); return; }
+  const restore=(undo.rows||[]).filter(u=>u.prior).length;
+  const remove =(undo.rows||[]).filter(u=>!u.prior).length;
+  if(!confirm(`Undo last pull?\n\nReverts ${undo.rows.length} pitcher row(s) to their state before the pull`
+    +(remove?` (${restore} restored, ${remove} removed)`:"")+`. The logged line goes back to what it was.\n\nThis can't be redone.`)) return;
+  const byKey={}; (rec.rows||[]).forEach(r=>{ byKey[rowKey(r)]=r; });
+  (undo.rows||[]).forEach(u=>{ if(u.prior) byKey[u.key]=u.prior; else delete byKey[u.key]; });
+  rec.rows=Object.values(byKey);
+  saveDay(rec);
+  SS.removeItem(UNDO_PULL_K);
+  try{ renderToday(rec.rows); }catch(e){}
+  try{ updateMetaStrip(); }catch(e){}
+  setStatus("Last pull undone.",1);
+}
+
 function savePulledDay(newRec){
   const existing=loadDay(newRec.date);
-  if(!existing || !(existing.rows||[]).length){ saveDay(newRec); return newRec.rows||[]; } // first pull: just save
+  if(!existing || !(existing.rows||[]).length){
+    captureUndoPull(newRec.date, (newRec.rows||[]).map(nr=>({key:rowKey(nr), prior:null})));
+    saveDay(newRec); return newRec.rows||[]; // first pull: just save
+  }
 
   const exRows=existing.rows||[], nwRows=newRec.rows||[];
   const byKey={};
   exRows.forEach(r=>{ byKey[rowKey(r)]=r; });
+  // snapshot each touched row's PRIOR state so the pull can be undone
+  captureUndoPull(newRec.date, nwRows.map(nr=>{ const p=byKey[rowKey(nr)]; return {key:rowKey(nr), prior: p?JSON.parse(JSON.stringify(p)):null}; }));
 
   let added=0, refreshed=0;
   nwRows.forEach(nr=>{
@@ -1427,9 +1801,9 @@ function savePulledDay(newRec){
   saveDay(merged);
   return mergedRows; // live rows WITH _books, for immediate render
 }
-function loadDay(d){const v=localStorage.getItem(dayKey(d));return v?JSON.parse(v):null;}
-function allDays(){const out=[];for(let i=0;i<localStorage.length;i++){const k=localStorage.key(i);
-  if(k.startsWith("se_day_")){try{out.push(JSON.parse(localStorage.getItem(k)));}catch{}}}return out;}
+function loadDay(d){const v=SS.getItem(dayKey(d));return v?JSON.parse(v):null;}
+function allDays(){const out=[];for(let i=0;i<SS.length;i++){const k=SS.key(i);
+  if(k.startsWith("se_day_")){try{out.push(JSON.parse(SS.getItem(k)));}catch{}}}return out;}
 const todayISO=()=>new Date().toISOString().slice(0,10);
 
 // ---- ONE-TIME MIGRATION: re-benchmark existing logged rows to the no-vig fair
@@ -1439,10 +1813,10 @@ const todayISO=()=>new Date().toISOString().slice(0,10);
 // `fair` value, and preserves the original under `edgeRaw` for reference.
 function migrateDevig(){
   let changed=0;
-  for(let i=0;i<localStorage.length;i++){
-    const k=localStorage.key(i);
+  for(let i=0;i<SS.length;i++){
+    const k=SS.key(i);
     if(!k||!k.startsWith("se_day_")) continue;
-    let rec; try{ rec=JSON.parse(localStorage.getItem(k)); }catch{ continue; }
+    let rec; try{ rec=JSON.parse(SS.getItem(k)); }catch{ continue; }
     let touched=false;
     (rec.rows||[]).forEach(r=>{
       const fixRow=(obj, side, prob)=>{
@@ -1473,7 +1847,7 @@ function migrateDevig(){
         }
       }
     });
-    if(touched){ try{ localStorage.setItem(k, JSON.stringify(rec)); }catch{} }
+    if(touched){ try{ SS.setItem(k, JSON.stringify(rec)); }catch{} }
   }
   return changed;
 }
@@ -1487,17 +1861,17 @@ function migrateDevig(){
 // not grade anything new, just re-labels what was already graded. Idempotent.
 function migrateGameFinal(){
   let changed=0;
-  for(let i=0;i<localStorage.length;i++){
-    const k=localStorage.key(i);
+  for(let i=0;i<SS.length;i++){
+    const k=SS.key(i);
     if(!k||!k.startsWith("se_day_")) continue;
-    let rec; try{ rec=JSON.parse(localStorage.getItem(k)); }catch{ continue; }
+    let rec; try{ rec=JSON.parse(SS.getItem(k)); }catch{ continue; }
     let touched=false;
     (rec.rows||[]).forEach(r=>{
       if(r.gameFinal!==true && r.resolved===true && r.actualK!=null && r.hit!=null){
         r.gameFinal=true; touched=true; changed++;
       }
     });
-    if(touched){ try{ localStorage.setItem(k, JSON.stringify(rec)); }catch{} }
+    if(touched){ try{ SS.setItem(k, JSON.stringify(rec)); }catch{} }
   }
   return changed;
 }
@@ -1543,6 +1917,41 @@ $("saveNewKey") && ($("saveNewKey").onclick=()=>{
 // Render the Lab without letting an error there break the rest of the page wiring.
 function safeRenderLab(){ try{ renderLab(); }catch(e){ console.error("renderLab failed:",e); } }
 
+// Manual cloud sync: re-pull the shared Supabase store into memory (newest-wins;
+// se_mybets merges by id), then repaint whatever is on screen so changes made on
+// the other device appear here. No credits, no API pulls.
+let _syncing=false;
+async function syncNow(){
+  if(_syncing) return;
+  _syncing=true;
+  const btn=$("syncBtn"); const label=btn?btn.textContent:"";
+  if(btn){ btn.disabled=true; btn.textContent="⟳ Syncing…"; }
+  try{
+    if(SS.hydrate) await SS.hydrate();
+    // restore latest staged day into Today (same logic as boot)
+    try{
+      const days=allDays().filter(d=>d.stageGames&&d.stageGames.length)
+        .sort((a,b)=>(b.date||"").localeCompare(a.date||""));
+      if(days.length){ _loadedDate=days[0].date; _stageGames=days[0].stageGames; renderToday(days[0].rows||[]); }
+    }catch(e){ console.error("sync: restore day failed:",e); }
+    // repaint the currently-active tab (tab state lives only in the DOM .on class)
+    try{
+      const active=(document.querySelector(".tnav.on")||{}).dataset;
+      const which=(active&&active.tab)|| ($("tabToday")&&$("tabToday").classList.contains("on")?"Today":"Today");
+      showTab(which);
+      if(which==="Perf"){ try{renderPerf();}catch(e){console.error(e);} }
+      else if(which==="Hist"){ try{renderHistory();}catch(e){console.error(e);} }
+      else if(which==="Data"){ try{renderData();}catch(e){console.error(e);} }
+      else if(which==="Bets"){ try{renderMyBets();}catch(e){console.error(e);} }
+      safeRenderLab();
+    }catch(e){ console.error("sync: repaint failed:",e); }
+    if(btn){ btn.textContent="✓ Synced"; setTimeout(()=>{ if(btn){btn.textContent=label; btn.disabled=false;} },1200); }
+  }catch(e){
+    console.error("syncNow failed:",e);
+    if(btn){ btn.textContent="Sync failed"; setTimeout(()=>{ if(btn){btn.textContent=label; btn.disabled=false;} },1600); }
+  }finally{ _syncing=false; }
+}
+
 // Freshness + credit strip (pinned under the tab bar).
 function updateMetaStrip(){
   const fresh=$("metaFresh"), cr=$("metaCredits");
@@ -1587,13 +1996,26 @@ function renderRail(){
   // ---- performance (filtered by selected window) ----
   let allF=[]; try{ const _s=_perfWindow; _perfWindow="alltime"; allF=collectScorecardRows().filter(r=>!r.voided&&r.hit!=null); _perfWindow=_s; }catch(e){}
   const all=allF;  // for the bet-style panels below (always all-time)
-  const cutoff=dataWindowCutoff(_perfRailWin);
-  const perfRows = cutoff ? all.filter(r=>(r.date||"")>=cutoff) : all;
+  let perfRows;
+  if(_perfRailWin==="month"){
+    perfRows = all.filter(r=>(r.date||"").startsWith(_perfRailMonth));
+    if($("railMonthLabel")) $("railMonthLabel").textContent = railMonthLabel(_perfRailMonth);
+  } else {
+    const cutoff=dataWindowCutoff(_perfRailWin);
+    perfRows = cutoff ? all.filter(r=>(r.date||"")>=cutoff) : all;
+  }
+  if($("railMonthNav")) $("railMonthNav").style.display = _perfRailWin==="month" ? "flex" : "none";
   // tracked-only, sized: ONE bet per pitcher, staked N units = # strategies cleared.
   const ts=sizedTotals(perfRows);
   const n=ts.bets, w=ts.wins, u=ts.u;
   const wr=ts.wr, roi=ts.roi;   // roi is profit / units-risked (variable stake)
-  if($("railUnits")){ $("railUnits").textContent=(u>=0?"+":"")+u.toFixed(1); $("railUnits").style.color=n?(u>0?"var(--pos)":u<0?"var(--neg)":"var(--text)"):"var(--muted)"; }
+  const roiMode=_railMetric==="roi";
+  if($("railUnits")){
+    $("railUnits").textContent = roiMode ? (n?`${roi>=0?"+":""}${roi.toFixed(1)}%`:"—") : ((u>=0?"+":"")+u.toFixed(1));
+    const mv=roiMode?roi:u;
+    $("railUnits").style.color=n?(mv>0?"var(--pos)":mv<0?"var(--neg)":"var(--text)"):"var(--muted)";
+  }
+  if($("railUnitsLabel")) $("railUnitsLabel").textContent = (roiMode?"ROI":"units")+" · sized by strats cleared";
   if($("railRecord")) $("railRecord").textContent=`${w}-${n-w}`;
   if($("railWinrate")) $("railWinrate").textContent=n?`${(wr*100).toFixed(1)}%`:"—";
   if($("railRoi")){ $("railRoi").textContent=n?`${roi>=0?"+":""}${roi.toFixed(1)}%`:"—"; $("railRoi").style.color=n?(roi>0?"var(--pos)":roi<0?"var(--neg)":"var(--text)"):"var(--muted)"; }
@@ -1603,7 +2025,11 @@ function renderRail(){
   const vs=styleStat(perfRows.filter(r=>r.isConvOver));
   const cl=styleStat(perfRows.filter(r=>r.isCeiling));
   const setStyle=(pre,o,col)=>{
-    const ue=$(pre+"Units"); if(ue){ ue.textContent=(o.u>=0?"+":"")+o.u.toFixed(1)+"u"; ue.style.color=o.n?(o.u>0?"var(--pos)":o.u<0?"var(--neg)":"var(--text)"):"var(--muted)"; }
+    const ue=$(pre+"Units");
+    if(ue){
+      if(roiMode){ const rv=o.n?o.u/o.n*100:0; ue.textContent=o.n?`${rv>=0?"+":""}${rv.toFixed(0)}%`:"—"; ue.style.color=o.n?(rv>0?"var(--pos)":rv<0?"var(--neg)":"var(--text)"):"var(--muted)"; }
+      else { ue.textContent=(o.u>=0?"+":"")+o.u.toFixed(1)+"u"; ue.style.color=o.n?(o.u>0?"var(--pos)":o.u<0?"var(--neg)":"var(--text)"):"var(--muted)"; }
+    }
     const re=$(pre+"Rec"); if(re) re.textContent=o.n?`${o.w}-${o.n-o.w}`:"0-0";
     const pe=$(pre+"Pct"); if(pe) pe.textContent=o.n?`${(o.wr*100).toFixed(0)}%`:"—";
   };
@@ -1611,19 +2037,23 @@ function renderRail(){
   // single-factor components: how picks did on ONE condition alone (the other ignored)
   const setComp=(pre,rows)=>{
     const o=styleStat(rows);
-    const ue=$(pre+"U"); if(ue){ ue.textContent=o.n?`${o.u>=0?"+":""}${o.u.toFixed(1)}u`:"—"; ue.style.color=o.n?(o.u>0?"var(--pos)":o.u<0?"var(--neg)":"var(--text)"):"var(--muted)"; }
+    const ue=$(pre+"U");
+    if(ue){
+      if(roiMode){ const rv=o.n?o.u/o.n*100:0; ue.textContent=o.n?`${rv>=0?"+":""}${rv.toFixed(0)}%`:"—"; ue.style.color=o.n?(rv>0?"var(--pos)":rv<0?"var(--neg)":"var(--text)"):"var(--muted)"; }
+      else { ue.textContent=o.n?`${o.u>=0?"+":""}${o.u.toFixed(1)}u`:"—"; ue.style.color=o.n?(o.u>0?"var(--pos)":o.u<0?"var(--neg)":"var(--text)"):"var(--muted)"; }
+    }
     const se=$(pre+"S"); if(se) se.textContent=o.n?`${o.w}-${o.n-o.w} · ${(o.wr*100).toFixed(0)}%`:"—";
   };
   setComp("bsCompLine", perfRows.filter(r=>r.line!=null && r.line<=5.5));
   setComp("bsCompEdge", perfRows.filter(r=>r.edge!=null && r.edge>=0.20));
   setComp("bsCompOver", perfRows.filter(r=>r.side==="Over"));
-  setComp("bsCompDist", perfRows.filter(r=>r.disagree!=null && r.disagree>=0.75));
+  setComp("bsCompDist", perfRows.filter(r=>r.disagree!=null && r.disagree>=CONV_DISAGREE_MIN));
   setComp("bsCompCeilOver", perfRows.filter(r=>r.side==="Over"));
   setComp("bsCompHiLine", perfRows.filter(r=>r.line!=null && r.line>=5.5));
 }
 
 function showTab(which){
-  for(const[t,c] of [["tabToday","todayCard"],["tabPerf","perfCard"],["tabHist","histCard"],["tabData","dataCard"]]){
+  for(const[t,c] of [["tabToday","todayCard"],["tabPerf","perfCard"],["tabHist","histCard"],["tabData","dataCard"],["tabBets","myBetsCard"],["tabSettings","settingsCard"]]){
     const on=(t==="tab"+which);
     const tb=$(t); if(tb) tb.classList.toggle("on",on);
     const cc=$(c); if(cc) cc.classList.toggle("hidden",!on);
@@ -1632,6 +2062,8 @@ function showTab(which){
   document.querySelectorAll(".tnav").forEach(b=>{
     b.classList.toggle("on", b.dataset.tab===which);
   });
+  // live in-game feed only runs on the Today tab
+  try{ if(which==="Today"){ startLiveUpdates(); refreshLiveStatus(); } else { stopLiveUpdates(); } }catch(e){}
   try{ renderRail(); }catch(e){ console.error("rail failed:",e); }
 }
 // top nav buttons
@@ -1644,9 +2076,11 @@ document.querySelectorAll(".tnav").forEach(b=>{
     if(w==="Perf"){try{renderPerf();}catch(e){console.error(e);}}
     if(w==="Hist"){try{renderHistory();}catch(e){console.error(e);}}
     if(w==="Data"){try{renderData();}catch(e){console.error(e);}}
+    if(w==="Bets"){try{renderMyBets();}catch(e){console.error(e);}}
   };
 });
 $("tabToday") && ($("tabToday").onclick=()=>showTab("Today"));
+$("syncBtn") && ($("syncBtn").onclick=syncNow);
 $("tabPerf") && ($("tabPerf").onclick=()=>{showTab("Perf");try{renderPerf();}catch(e){console.error(e);}});
 $("tabHist") && ($("tabHist").onclick=()=>{showTab("Hist");try{renderHistory();}catch(e){console.error(e);}});
 $("tabData") && ($("tabData").onclick=()=>{showTab("Data");try{renderData();}catch(e){console.error("renderData failed:",e);}});
@@ -1656,6 +2090,17 @@ document.querySelectorAll("#perfWin button").forEach(b=>{
     _perfRailWin=b.dataset.win;
     document.querySelectorAll("#perfWin button").forEach(x=>x.classList.toggle("on",x===b));
     const di=$("perfDays"); if(di) di.value="";
+    if(b.dataset.win==="month") _perfRailMonth=todayISO().slice(0,7);  // reset to current month on select
+    try{ renderRail(); }catch(e){ console.error(e); }
+  };
+});
+$("railMonthPrev") && ($("railMonthPrev").onclick=()=>shiftRailMonth(-1));
+$("railMonthNext") && ($("railMonthNext").onclick=()=>shiftRailMonth(1));
+// rail Units / ROI metric toggle
+document.querySelectorAll("#railMetricSeg [data-rm]").forEach(b=>{
+  b.onclick=()=>{
+    _railMetric=b.dataset.rm;
+    document.querySelectorAll("#railMetricSeg [data-rm]").forEach(x=>x.classList.toggle("on",x===b));
     try{ renderRail(); }catch(e){ console.error(e); }
   };
 });
@@ -1692,6 +2137,27 @@ document.querySelectorAll&&(function(){
     const rl=$("rangeLabel"); if(rl) rl.textContent=`Custom: ${f||"start"} → ${t||"today"}`;
     try{renderPerf();}catch(e){console.error(e);}
   };
+  // Historical month-backfill (paid) — reaches the orphaned runHistRange().
+  // Separate from the display-window Apply above so a filter and a credit-spend can't be confused.
+  $("histRangeBtn") && ($("histRangeBtn").onclick=()=>{
+    const mv=$("histRangeMonth")&&$("histRangeMonth").value;   // "YYYY-MM"
+    if(!mv || !/^\d{4}-\d{2}$/.test(mv)){ alert("Pick a month to backfill."); return; }
+    const [y,m]=mv.split("-").map(Number);
+    const from=`${mv}-01`;
+    const last=new Date(y,m,0).getDate();                       // last day of that month
+    const to=`${mv}-${String(last).padStart(2,"0")}`;
+    const name=["January","February","March","April","May","June","July","August","September","October","November","December"][m-1];
+    // confirm the CORRECT month before the credit dry-run inside runHistRange
+    if(!confirm(`Backfill ALL of ${name} ${y}?\n\n${from}  →  ${to}\n\nNext you'll see the exact game count and credit cost (free dry-run) before anything is spent.`)) return;
+    runHistRange(from,to);
+  });
+  // populate the month dropdown (WebKit has no <input type=month> picker) — last 24 months, newest first
+  $("histRangeMonth") && (function(sel){
+    const nm=["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+    let y=+todayISO().slice(0,4), m=+todayISO().slice(5,7), opts="";
+    for(let i=0;i<24;i++){ opts+=`<option value="${y}-${String(m).padStart(2,"0")}">${nm[m-1]} ${y}</option>`; m--; if(m<1){m=12;y--;} }
+    sel.innerHTML=opts;
+  })($("histRangeMonth"));
   const mt=$("metricToggle");
   if(mt) mt.querySelectorAll("[data-metric]").forEach(b=>b.onclick=()=>{
     _perfMetric=b.dataset.metric;
@@ -1745,6 +2211,62 @@ function renderBooksPanel(r){
     `best prices at that line highlighted</div></div>`;
 }
 
+// ---- Live in-game feed (MLB StatsAPI, free, no key) ----
+// Fills the .gt-live badge next to each pitcher with current K + inning while
+// that pitcher's game is in progress. Polls every 45s only while the Today tab
+// is visible and at least one tracked game is live.
+let _liveTimer=null;
+async function refreshLiveStatus(){
+  const cells=[...document.querySelectorAll('.gt-live[data-pid]')];
+  if(!cells.length) return false;
+  const day=_loadedDate||todayISO();
+  let sched=null;
+  try{ sched=await jget(`${MLB}/schedule?sportId=1&date=${day}&hydrate=linescore`); }catch{ return false; }
+  const games=[];
+  (sched?.dates||[]).forEach(dt=>(dt.games||[]).forEach(g=>games.push(g)));
+  // saved rows don't store gamePk — match each pitcher's game by team name (same as the ESP32 feed)
+  const findG=(home,away)=>{
+    const h=norm(home||''), a=norm(away||'');
+    return games.find(g=>{ const gh=norm(g.teams?.home?.team?.name||''), ga=norm(g.teams?.away?.team?.name||''); return (gh===h&&ga===a)||(gh===a&&ga===h); })||null;
+  };
+  const cellGame=new Map(); const liveGps=new Set();
+  cells.forEach(c=>{ const g=findG(c.dataset.home,c.dataset.away); cellGame.set(c,g); if(g && g.status?.abstractGameState==='Live') liveGps.add(g.gamePk); });
+  // only fetch a boxscore for games that are actually live
+  const boxCache={};
+  for(const gp of liveGps){ try{ boxCache[gp]=await jget(`${MLB}/game/${gp}/boxscore`); }catch{} }
+  let anyLive=false;
+  cells.forEach(c=>{
+    const g=cellGame.get(c);
+    if(!g || g.status?.abstractGameState!=='Live'){ c.innerHTML=''; return; }  // pre/final → nothing (Pick cell shows final)
+    anyLive=true;
+    const ls=g.linescore||{};
+    const inn=ls.currentInningOrdinal||(ls.currentInning!=null?ls.currentInning:'');
+    const st=({Top:'▲ Top',Bottom:'▼ Bot',Middle:'Mid',End:'End'})[ls.inningState]||ls.inningState||'';
+    let k=null;
+    const box=boxCache[g.gamePk];
+    if(box){ for(const sd of ['home','away']){ const pl=box.teams?.[sd]?.players?.['ID'+c.dataset.pid]; if(pl && pl.stats?.pitching?.strikeOuts!=null){ k=Number(pl.stats.pitching.strikeOuts); break; } } }
+    const line=parseFloat(c.dataset.line), side=c.dataset.side;
+    let col='var(--text)';
+    if(k!=null && !isNaN(line) && side){
+      if(side==='Over')  col = k>line ? 'var(--pos)' : 'var(--text)';        // Over locks a win once cleared
+      else if(side==='Under') col = k>line ? 'var(--neg)' : 'var(--pos)';    // Under: cleared = lost, else on track
+    }
+    const kStr = k!=null ? `${k}K` : '—';
+    c.innerHTML=`<span class="gt-live-dot">●</span><span class="gt-live-k" style="color:${col}">${kStr}</span><span class="gt-live-inn">${st} ${inn}</span>`;
+  });
+  return anyLive;
+}
+function startLiveUpdates(){
+  if(_liveTimer) return;
+  refreshLiveStatus();
+  _liveTimer=setInterval(()=>{
+    const tc=$("todayCard");
+    if(!tc || tc.classList.contains('hidden')) return;   // only poll while Today tab is showing
+    refreshLiveStatus();
+  }, 45000);
+}
+function stopLiveUpdates(){ if(_liveTimer){ clearInterval(_liveTimer); _liveTimer=null; } }
+
 function renderToday(rows){
   rows = rows || [];
   rehydrateBooks(_loadedDate||todayISO(), rows);  // restore "books ▾" data for the session
@@ -1752,6 +2274,8 @@ function renderToday(rows){
   const board=$("todayBoard");
   const dateEl=$("todayDate"), subEl=$("todaySub");
   if(!board) return;
+  const _logged=_loggedBetSet();               // "already tracked" state for the ＄ buttons
+  const _tDate=_loadedDate||todayISO();
 
   // date header
   if(_loadedDate){
@@ -1846,7 +2370,7 @@ function renderToday(rows){
     const w=graded.filter(r=>r.hit).length, u=graded.reduce((s,r)=>s+(r.tiers?.t1?.units ?? r.units ?? 0),0);
     return {n:picks.length, g:graded.length, w, l:graded.length-w, u};
   };
-  const dc=dayStat(r=>r._verdict.isCombo), dv=dayStat(r=>r._verdict.isConvOver);
+  const dc=dayStat(r=>r._verdict.isCombo), dv=dayStat(r=>r._verdict.isConvOver), dcl=dayStat(r=>r._verdict.isCeiling);
   // "Day" = every graded pitcher we have a model number + result for, bet or not
   const dall=dayStat(r=>r.modelSide && r.eK!=null);
   const recChip=(label,o,col)=>{
@@ -1854,7 +2378,7 @@ function renderToday(rows){
     const uCol=o.u>0?"var(--pos)":o.u<0?"var(--neg)":"var(--muted)";
     return `<span class="gt-rec" style="border-color:${col}"><b style="color:${col}">${label}</b> ${o.w}-${o.l} <span style="color:${uCol}">${o.u>=0?"+":""}${o.u.toFixed(1)}u</span></span>`;
   };
-  const dayRecHTML = `<div class="gt-dayrec">${recChip("Combo",dc,"var(--bet)")}${recChip("Conv",dv,"var(--accent)")}${recChip("Day",dall,"var(--text)")}</div>`;
+  const dayRecHTML = `<div class="gt-dayrec">${recChip("Combo",dc,"var(--bet)")}${recChip("Conv",dv,"var(--accent)")}${recChip("Ceiling",dcl,"var(--ceiling)")}${recChip("Day",dall,"var(--text)")}</div>`;
   let tbl=`<div class="gamestbl">`+
     `<div class="gt-head"><div class="gt-title">Today's games <span class="gt-count">${_stageGames.length} games</span></div>${dayRecHTML}</div>`+
     `<div class="gt-row gt-colhead"><span title="Track on ESP">●</span><span>Time</span><span>Matchup</span><span>Pitcher</span><span>Line</span><span>Model</span><span>Edge</span><span>Pick</span></div>`;
@@ -1907,9 +2431,10 @@ function renderToday(rows){
         // modeled bet row
         const v=r._verdict||{};
         const edgeK=(r.eK-r.line);
-        const isBoth = v.isCombo && v.isConvOver;
-        if(v.isCombo||v.isConvOver) rowCls+=" gt-bet";
-        if(isBoth) rowCls+=" gt-bet-both";
+        const nStyles=(v.isCombo?1:0)+(v.isConvOver?1:0)+(v.isCeiling?1:0);
+        if(nStyles>=1) rowCls+=" gt-bet";
+        if(nStyles===2) rowCls+=" gt-bet-both";
+        else if(nStyles>=3) rowCls+=" gt-bet-tri";
         const edgeColC = r.edge>=0.05?"var(--pos)":r.edge<=-0.05?"var(--neg)":"var(--muted)";
         const px=(r.sidePrice!=null)?r.sidePrice:(r.modelSide==="Over"?r.bestOver:r.bestUnder);
         const pxStr=(px!=null)?((px>0?"+":"")+px):"";
@@ -1922,10 +2447,30 @@ function renderToday(rows){
         edgeCell=`<span style="color:${edgeColC}"><b>${edgeK>=0?"+":""}${edgeK.toFixed(1)}</b><br><small>${fmtSigned(r.edge)}</small></span>`;
         if(r.voided) pickCell=`<span class="gt-pick gt-void">VOID</span>`;
         else if(r.actualK!=null) pickCell=`<span class="gt-pick ${r.hit?'gt-win':'gt-loss'}">${r.hit?'WON':'LOST'} · ${r.actualK}K</span>`;
-        else if(isBoth) pickCell=`<span class="gt-pick gt-combo gt-both" title="Hits all four filters — Combo AND Conviction. The strongest signal.">★ ${r.modelSide} ${r.line}</span>`;
+        else if(nStyles>=2){
+          const chips=(v.isCombo?`<span class="gt-sc gt-sc-combo" title="Combo — Strong + line ≤5.5">C</span>`:"")
+                     +(v.isConvOver?`<span class="gt-sc gt-sc-conv" title="Conviction — Over + ≥1.0 from line">V</span>`:"")
+                     +(v.isCeiling?`<span class="gt-sc gt-sc-ceil" title="Ceiling — Over + line ≥5.5">X</span>`:"");
+          pickCell=`<span class="gt-pick gt-multi" title="Qualifies for ${nStyles} bet styles — see the C/V/X tags">★ ${r.modelSide} ${r.line}</span><span class="gt-scs">${chips}</span>`;
+        }
         else if(v.isCombo) pickCell=`<span class="gt-pick gt-combo">${r.modelSide} ${r.line}</span>`;
         else if(v.isConvOver) pickCell=`<span class="gt-pick gt-conv">${r.modelSide} ${r.line}</span>`;
+        else if(v.isCeiling) pickCell=`<span class="gt-pick gt-ceil">${r.modelSide} ${r.line}</span>`;
         else pickCell=`<span class="gt-pick gt-pass">PASS</span>`;
+        // Live re-eval: if a Watch ran, show what the CURRENT live line would flag —
+        // only when something actually changed (line drifted or tier flipped).
+        if(r.actualK==null && !r.voided && r._watchLine!=null && r._watchEK!=null){
+          const liveSet=(r._watchCombo?"C":"")+(r._watchConv?"V":"")+(r._watchCeil?"X":"");
+          const offSet=(v.isCombo?"C":"")+(v.isConvOver?"V":"")+(v.isCeiling?"X":"");
+          if(r._watchLine!==r.line || liveSet!==offSet){
+            const lc=(r._watchCombo?`<span class="gt-sc gt-sc-combo">C</span>`:"")
+                    +(r._watchConv?`<span class="gt-sc gt-sc-conv">V</span>`:"")
+                    +(r._watchCeil?`<span class="gt-sc gt-sc-ceil">X</span>`:"");
+            pickCell += (liveSet==="")
+              ? `<span class="gt-livetier gt-livetier-pass" title="At the live line (${r._watchLine}) the model no longer flags this as a tracked bet.">✱ live ${r._watchLine}: no edge</span>`
+              : `<span class="gt-livetier" title="At the live line (${r._watchLine}) this would flag as ${liveSet.split('').join('/')}.">✱ live ${r._watchLine}: ${liveSet===offSet?'still':'now'}<span class="gt-scs">${lc}</span></span>`;
+          }
+        }
       } else if(r && r.resolved){
         // pulled but no model number (line only)
         rowCls+=" gt-unpulled";
@@ -1946,7 +2491,13 @@ function renderToday(rows){
           ? `<span class="gt-muted">${(r._watchEdge>=0?"+":"")}${(r._watchEdge*100).toFixed(0)}%</span>`
           : `<span class="gt-muted">—</span>`;
         // would-be verdict from the free model run against the live line
-        if(r._watchCombo){
+        const nW=(r._watchCombo?1:0)+(r._watchConv?1:0)+(r._watchCeil?1:0);
+        if(nW>=2){
+          const chips=(r._watchCombo?`<span class="gt-sc gt-sc-combo" title="Combo — Strong + line ≤5.5">C</span>`:"")
+                     +(r._watchConv?`<span class="gt-sc gt-sc-conv" title="Conviction — Over + ≥1.0 from line">V</span>`:"")
+                     +(r._watchCeil?`<span class="gt-sc gt-sc-ceil" title="Ceiling — Over + line ≥5.5">X</span>`:"");
+          pickCell=`<span class="gt-pick gt-multi" title="At the live line this would qualify for ${nW} bet styles — not logged. Official pull to lock it.">would be ✱</span><span class="gt-scs">${chips}</span>`;
+        } else if(r._watchCombo){
           pickCell=`<span class="gt-pick gt-watch-combo" title="At the live DK/FD line this would qualify as a COMBO. Not logged — do an Official pull to lock it.">would be COMBO ✱</span>`;
         } else if(r._watchConv){
           pickCell=`<span class="gt-pick gt-watch-conv" title="At the live DK/FD line this would qualify as CONVICTION. Not logged — do an Official pull to lock it.">would be CONV ✱</span>`;
@@ -2004,13 +2555,13 @@ function renderToday(rows){
         trkCell+
         `<span class="gt-time gt-time-stack">${timeCell}</span>`+
         `<span class="gt-match">${matchCell}</span>`+
-        `<span class="gt-pitch">${pitchCell}${booksToggle}</span>`+
+        `<span class="gt-pitch"><span class="gt-pname">${pitchCell}</span>${booksToggle}${(r && r.pid!=null && !r.skipped && (r.homeName||r.awayName))?`<span class="gt-live" data-pid="${r.pid}" data-home="${(r.homeName||'').replace(/"/g,'&quot;')}" data-away="${(r.awayName||'').replace(/"/g,'&quot;')}" data-line="${r.line!=null?r.line:''}" data-side="${r.modelSide||''}"></span>`:""}</span>`+
         `<span class="gt-statwrap">`+
         `<span class="gt-num" data-mlabel="Line">${lineCell}</span>`+
         `<span class="gt-num" data-mlabel="Model">${modelCell}</span>`+
         `<span class="gt-num" data-mlabel="Edge">${edgeCell}</span>`+
         `</span>`+
-        `<span class="gt-pickcell">${pickCell}${whyIcon}</span></div>`+
+        `<span class="gt-pickcell">${pickCell}${whyIcon}${(r && r.resolved && r.modelSide && !r.skipped)?(()=>{const _lg=betIsLogged(_logged,_tDate,r.pitcher);return `<button class="gt-logbet${_lg?' logged':''}" title="${_lg?'Bet already logged for this pitcher — click to add another':'Log a bet you placed on this pitcher'}" data-bd="${_tDate}" data-bp="${(r.pitcher||'').replace(/"/g,'&quot;')}" data-bs="${r.modelSide}" data-bl="${r.line!=null?r.line:''}" data-bpr="${(r.sidePrice!=null?r.sidePrice:(r.modelSide==='Over'?r.bestOver:r.bestUnder))??''}" data-bcombo="${(r._verdict&&r._verdict.isCombo)?1:0}" data-bconv="${(r._verdict&&r._verdict.isConvOver)?1:0}" data-bceil="${(r._verdict&&r._verdict.isCeiling)?1:0}">${_lg?'✓＄':'＄'}</button>`;})():""}</span></div>`+
         booksPanel;
     });
   });
@@ -2029,6 +2580,14 @@ function renderToday(rows){
     watchOneGame(g);
   });
   // why-flagged icon: click toggles the popover (hover also works on desktop)
+  // ＄ log-bet buttons → open the bet modal pre-filled from this pick
+  board.querySelectorAll(".gt-logbet").forEach(btn=>btn.onclick=(e)=>{
+    e.stopPropagation();
+    openBetModal({ pitcher:btn.dataset.bp, date:(_loadedDate||todayISO()),
+      side:btn.dataset.bs, line:(btn.dataset.bl!==""?parseFloat(btn.dataset.bl):null),
+      price:(btn.dataset.bpr!==""?parseInt(btn.dataset.bpr,10):null),
+      styles:{combo:btn.dataset.bcombo==="1",conv:btn.dataset.bconv==="1",ceil:btn.dataset.bceil==="1"} });
+  });
   board.querySelectorAll(".why-i").forEach(btn=>btn.onclick=(e)=>{
     e.stopPropagation();
     const pop=btn.parentElement.querySelector(".why-pop");
@@ -2036,11 +2595,18 @@ function renderToday(rows){
     const wasOpen=pop.classList.contains("open");
     board.querySelectorAll(".why-pop.open").forEach(p=>p.classList.remove("open"));
     if(!wasOpen){
-      // flip the popover above the icon if there isn't room below it in the viewport
-      const r=btn.getBoundingClientRect();
-      const spaceBelow=window.innerHeight - r.bottom;
-      pop.classList.toggle("up", spaceBelow < 230);
+      // Render as a viewport-fixed box positioned at the icon and clamped on-screen.
+      // Fixed escapes the card's clipping, so a bottom-of-list popover is never cut off.
       pop.classList.add("open");
+      const r=btn.getBoundingClientRect();
+      const popW=pop.offsetWidth||248, popH=pop.offsetHeight||260;
+      let top=r.bottom+6;
+      if(top+popH > window.innerHeight-8) top=Math.max(8, r.top-popH-6); // flip above if needed
+      let left=r.right-popW;                                             // right-align to the icon
+      if(left<8) left=8;
+      if(left+popW > window.innerWidth-8) left=window.innerWidth-8-popW;
+      pop.style.position="fixed"; pop.style.left=left+"px"; pop.style.top=top+"px";
+      pop.style.right="auto"; pop.style.bottom="auto";
     }
   });
   // per-book breakdown toggle
@@ -2072,6 +2638,7 @@ function renderToday(rows){
     tp.querySelectorAll(".pickcard").forEach(pc=>pc.classList.remove("hidden"));
     document.querySelectorAll("#statStrip .ss-click").forEach(x=>x.classList.toggle("on", opening));
   });
+  try{ startLiveUpdates(); }catch(e){}
 }
 
 // one pitcher's inline line under a game: pick, confidence, line, result
@@ -2116,6 +2683,7 @@ function renderPitcherLine(r){
 }
 
 $("runBtn").onclick=pullAllStaged;
+$("undoPullBtn") && ($("undoPullBtn").onclick=undoLastPull);
 $("watchBtn") && ($("watchBtn").onclick=runIntradayWatch);
 $("previewBtn") && ($("previewBtn").onclick=previewSlate);
 $("gradeTodayBtn") && ($("gradeTodayBtn").onclick=async()=>{
@@ -2217,7 +2785,7 @@ function previewRead(r){
   const pOver=probOver(r.dist,line), pUnder=1-pOver;
   const side=pOver>=pUnder?"Over":"Under";
   const dist=Math.abs(r.eK-line);
-  const convOver = (side==="Over" && dist>=0.75);
+  const convOver = (side==="Over" && dist>=CONV_DISAGREE_MIN);
   // edge/combo only possible if BOTH prices are typed (need de-vig)
   let edge=null, combo=false;
   if(r.previewOver!=null && r.previewUnder!=null){
@@ -2279,7 +2847,11 @@ function renderPreview(){
 }
 
 
-let _perfRailWin="test";  // rail performance window: test | 7 | 30 | season | alltime
+let _perfRailWin="test";  // rail performance window: test | 7 | month | season | alltime
+let _perfRailMonth=todayISO().slice(0,7);  // "YYYY-MM" for the Month view
+function railMonthLabel(ym){ const [y,m]=ym.split("-").map(Number); return ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"][(m||1)-1]+" "+y; }
+function shiftRailMonth(delta){ let [y,m]=_perfRailMonth.split("-").map(Number); m+=delta; if(m<1){m=12;y--;} if(m>12){m=1;y++;} _perfRailMonth=y+"-"+String(m).padStart(2,"0"); try{ renderRail(); }catch(e){} }
+let _railMetric="units";  // right-rail metric: units | roi
 let _loadedDate=null;  // the date currently shown on the Today page
 
 // STAGE DAY — saves the current loaded day first (never lose it), then loads a
@@ -2447,10 +3019,13 @@ async function pullAllStaged(){
   if(!todo.length){ setStatus("All staged games already pulled. Use a game's ↻ Re-pull to refresh one."); return; }
   if(!confirm(`Pull lines for ${todo.length} game(s)? ~${todo.length} credits.`)) return;
   const pa=$("runBtn"); if(pa) pa.disabled=true;
-  for(let i=0;i<todo.length;i++){
-    setStatus(`Pulling all… ${i+1} of ${todo.length}`, i/todo.length);
-    await pullOneGame(todo[i]);
-  }
+  SS.removeItem(UNDO_PULL_K); _pullBatch=true;  // accumulate this whole batch into one undo
+  try{
+    for(let i=0;i<todo.length;i++){
+      setStatus(`Pulling all… ${i+1} of ${todo.length}`, i/todo.length);
+      await pullOneGame(todo[i]);
+    }
+  } finally { _pullBatch=false; }
   if(pa) pa.disabled=false;
   setStatus(`Pull all complete — ${todo.length} game(s).`,1);
   // Final sweep: each per-game pull above already captured its own free lines.
@@ -2862,7 +3437,14 @@ async function runHistRange(fromISO, toISO){
       for(const hg of byDate[date]){
         done++;
         setStatus(`Backfilling ${date} — ${hg.away} @ ${hg.home} (${done}/${games.length})`, done/games.length);
-        const res=await scoreHistGame(key, hg, probList, season);
+        // THROTTLE: space each game's calls so a full month never bursts past
+        // the API rate limit. RESILIENCE: if one game still errors after the
+        // fetch-layer retries, skip just that game — never abort the whole run.
+        // Skipped games have no saved row, so a later re-run re-pulls only them.
+        if(done>1) await sleep(250);
+        let res;
+        try{ res=await scoreHistGame(key, hg, probList, season); }
+        catch(gErr){ continue; }
         if(res.remaining!=null){ lastRemaining=res.remaining; setCredits(res.remaining); }
         if(res.matched) matched++;
         if(res.rows && res.rows.length){
@@ -2924,7 +3506,7 @@ function dl(text,name,type){
 }
 
 // MAX_HIST_GAMES caps a single run so one click can't drain the whole budget.
-let MAX_HIST_GAMES=40;   // hard ceiling per run (tune to your credit budget)
+let MAX_HIST_GAMES=600;   // ceiling per run — sized to fit one full month (~400-465 games); dry-run confirms the exact credit cost first
 function histClvCandidates(){
   // logged picks that have an opening fair prob but no close yet, grouped by day
   const out=[];
@@ -3253,14 +3835,19 @@ function collectScorecardRows(){
         isEdge: !!(v && v.bet),
         isCombo: !!(v && v.isCombo),       // Strong + ≤5.5 — the bet flag
         isOver: !!(v && v.isOver),         // model says Over (candidate, not a bet)
-        isConvOver: !!(v && v.isConvOver), // Over & ≥0.75 from line (candidate)
+        isConvOver: !!(v && v.isConvOver), // Over & ≥1.0 from line (candidate)
         isCeiling: !!(v && v.isCeiling),   // Over & line ≥5.5 (candidate — Track 3)
         side: r.modelSide,                 // Over / Under
+        modelSide: r.modelSide,            // alias — freeVerdict/rowVerdict/free-vs-paid panels key on modelSide
         line: r.line!=null?Number(r.line):null,
         disagree,                          // |projected K − line|
         workload: r.traits&&r.traits.workload || null,  // deep/medium/short
         actualK: r.actualK,
         isForward: !r.histBackfill,        // true = real logged pick, not backfill
+        eK: (r.eK!=null?Number(r.eK):null),                    // projected K (line-independent) — freeVerdict needs it
+        freeLine: (r.freeLine!=null?Number(r.freeLine):null),  // SharpAPI free-feed line + prices, for the
+        freeOver: (r.freeOver!=null?r.freeOver:null),          // free-vs-paid flag-agreement comparison
+        freeUnder: (r.freeUnder!=null?r.freeUnder:null),
         date: rec.date
       });
     });
@@ -3368,7 +3955,7 @@ function renderHistory(){
       const t=r.tiers&&r.tiers.t1; if(!t||t.hit==null||t.units==null||r.voided) return;
       const disag=(r.eK!=null&&r.line!=null)?Math.abs(r.eK-r.line):0;
       if(r.line<=5.5 && r.edge>=0.20){ combo.n++; if(t.hit)combo.w++; combo.u+=t.units; }
-      if(r.modelSide==="Over" && disag>=0.75){ conv.n++; if(t.hit)conv.w++; conv.u+=t.units; }
+      if(r.modelSide==="Over" && disag>=CONV_DISAGREE_MIN){ conv.n++; if(t.hit)conv.w++; conv.u+=t.units; }
       if(r.modelSide==="Over" && r.line!=null && r.line>=5.5){ ceil.n++; if(t.hit)ceil.w++; ceil.u+=t.units; }
     });
     return {combo,conv,ceil};
@@ -3384,7 +3971,7 @@ function renderHistory(){
     const picks=rows.filter(r=>!r.skipped && r.modelSide);
     const g=picks.filter(r=>r.hit!=null && !r.voided);
     const w=g.filter(r=>r.hit).length;
-    const tag = g.length? `${w}/${g.length}` : (rec.graded?"0 graded":"ungraded");
+    const tag = g.length? `${w}/${g.length}<span class="tierstat-lbl">won</span>` : (rec.graded?"0 graded":"ungraded");
     const on = rec.date===histOpenDate;
     const {combo,conv,ceil}=dayRecord(rec);
     let block=`<div class="tierrow" style="grid-template-columns:1fr 110px 40px 40px;cursor:pointer" data-date="${rec.date}">`+
@@ -3416,18 +4003,28 @@ function renderHistory(){
     if(!confirm(`Delete the logged day ${d}?\n\n`+
       `${np} pick${np===1?"":"s"} will be removed from your record. `+
       `A one-step restore is kept until you delete another day.\n\nProceed?`))return;
-    const cur=localStorage.getItem(dayKey(d));
-    if(cur!=null) localStorage.setItem("se_restore_"+d,cur);
-    localStorage.removeItem(dayKey(d));
+    const cur=SS.getItem(dayKey(d));
+    if(cur!=null) SS.setItem("se_restore_"+d,cur);
+    SS.removeItem(dayKey(d));
     if(histOpenDate===d) histOpenDate=null;
     renderHistory();
     try{renderPerf();}catch{}
     try{safeRenderLab();}catch{}
   });
+
+  // ＄ log-bet buttons in the expanded day detail → backfill a bet you forgot
+  dates.querySelectorAll(".hist-logbet").forEach(btn=>btn.onclick=(e)=>{
+    e.stopPropagation();
+    openBetModal({ pitcher:btn.dataset.bp, date:btn.dataset.bd, side:btn.dataset.bs,
+      line:(btn.dataset.bl!==""?parseFloat(btn.dataset.bl):null),
+      price:(btn.dataset.bpr!==""?parseInt(btn.dataset.bpr,10):null),
+      styles:{combo:btn.dataset.bcombo==="1",conv:btn.dataset.bconv==="1",ceil:btn.dataset.bceil==="1"} });
+  });
 }
 
 // Build the per-day pick table HTML (rendered inline under the open day).
 function histDetailHTML(rec){
+  const _logged=_loggedBetSet();               // "already tracked" state for the ＄ buttons
   let h=`<div class="thead histthead"><span>Bet</span><span>Pitcher</span><span>Line</span><span>Pick</span><span>Edge</span><span>Actual</span><span>Result</span></div>`;
   (rec.rows||[]).forEach(r=>{
     const res=histRowResult(r);
@@ -3436,7 +4033,7 @@ function histDetailHTML(rec){
     if(!res.skipped && !r.voided && !res.nopick && r.modelSide){
       const disag=(r.eK!=null&&r.line!=null)?Math.abs(r.eK-r.line):0;
       isCombo = (r.line!=null && r.line<=5.5 && r.edge!=null && r.edge>=0.20);
-      isConv  = (r.modelSide==="Over" && disag>=0.75);
+      isConv  = (r.modelSide==="Over" && disag>=CONV_DISAGREE_MIN);
       isCeiling = (r.modelSide==="Over" && r.line!=null && r.line>=5.5);
     }
     let betCell="";
@@ -3465,7 +4062,7 @@ function histDetailHTML(rec){
        `<span>${pickCell}</span>`+
        `<span class="mono">${edgeCell}</span>`+
        `<span class="mono">${actualCell}</span>`+
-       `<span>${resultCell}</span></div>`;
+       `<span>${resultCell}${(!res.skipped && !r.voided && !res.nopick && r.modelSide)?(()=>{const _lg=betIsLogged(_logged,rec.date,r.pitcher);return `<button class="gt-logbet hist-logbet${_lg?' logged':''}" title="${_lg?'Bet already logged for this pitcher — click to add another':'Log a bet you placed on this pitcher'}" data-bp="${(r.pitcher||'').replace(/"/g,'&quot;')}" data-bd="${rec.date}" data-bs="${r.modelSide}" data-bl="${r.line!=null?r.line:''}" data-bpr="${res.price!=null?res.price:''}" data-bcombo="${isCombo?1:0}" data-bconv="${isConv?1:0}" data-bceil="${isCeiling?1:0}">${_lg?'✓＄':'＄'}</button>`;})():""}</span></div>`;
   });
   return h;
 }
@@ -3479,7 +4076,7 @@ function histDetailHTML(rec){
 // Returns an ISO date string (inclusive lower bound) or null for "all time".
 function dataWindowCutoff(win){
   if(win==="alltime"||win==null) return null;
-  if(win==="test") return localStorage.getItem("se_fwd_start") || "2026-06-20";
+  if(win==="test") return SS.getItem("se_fwd_start") || "2026-06-20";
   if(win==="season") return todayISO().slice(0,4)+"-01-01";
   const days=parseInt(win,10);
   if(!isNaN(days) && days>0){ const d=new Date(); d.setDate(d.getDate()-days); return d.toISOString().slice(0,10); }
@@ -3535,17 +4132,19 @@ function dataTable(rows, dimKey, metric, clickable){
   const stats=dataBucketStats(rows, dimKey);
   if(!stats.length) return `<div class="empty small">No picks match.</div>`;
   const cells=stats.map(s=>{
-    const wr=s.n?s.w/s.n:0, faint=s.n<10;
-    const showUnits=metric==="units";
-    const big = showUnits ? `${s.u>=0?"+":""}${s.u.toFixed(1)}u` : `${Math.round(wr*100)}%`;
-    const col = showUnits ? (s.u>0?"var(--pos)":s.u<0?"var(--neg)":"var(--muted)")
-                          : (wr>=0.524?"var(--pos)":"var(--neg)");
+    const wr=s.n?s.w/s.n:0, roi=s.n?s.u/s.n*100:0, faint=s.n<10;
+    const big = metric==="units" ? `${s.u>=0?"+":""}${s.u.toFixed(1)}u`
+              : metric==="roi"   ? `${roi>=0?"+":""}${Math.round(roi)}%`
+              :                    `${Math.round(wr*100)}%`;
+    const col = metric==="units" ? (s.u>0?"var(--pos)":s.u<0?"var(--neg)":"var(--muted)")
+              : metric==="roi"   ? (roi>0?"var(--pos)":roi<0?"var(--neg)":"var(--muted)")
+              :                    (wr>=0.524?"var(--pos)":"var(--neg)");
     const sel = clickable && _dataCombo[dimKey] && _dataCombo[dimKey].has(s.k);
     const clk = clickable ? ` dcell-click${sel?" dcell-sel":""}" data-dim="${dimKey}" data-bucket="${String(s.k).replace(/"/g,"&quot;")}"` : `"`;
     return `<div class="dcell${faint?" dcell-faint":""}${clk}>`+
       `<div class="dclabel">${s.k}</div>`+
       `<div class="dcbig" style="color:${col}">${big}</div>`+
-      `<div class="dcsub">${s.w}–${s.n-s.w} · ${s.n} pick${s.n===1?"":"s"}${showUnits?` · ${Math.round(wr*100)}%`:` · ${s.u>=0?"+":""}${s.u.toFixed(1)}u`}</div></div>`;
+      `<div class="dcsub">${s.w}–${s.n-s.w} · ${s.n} pick${s.n===1?"":"s"}${metric==="units"?` · ${Math.round(wr*100)}%`:` · ${s.u>=0?"+":""}${s.u.toFixed(1)}u`}</div></div>`;
   }).join("");
   return `<div class="dgrid">${cells}</div>`;
 }
@@ -3554,7 +4153,7 @@ function renderDataFixed(){
   const el=$("dataFixed"); if(!el) return;
   const rows=dataAllRows();
   const metric=$("slMetric")?.value||"pct";
-  const metricLabel=metric==="units"?"units ±":"hit %";
+  const metricLabel=metric==="units"?"units ±":metric==="roi"?"ROI %":"hit %";
   if($("dataFixedMetric")) $("dataFixedMetric").textContent=metricLabel;
   // pre-named dimensions, one grid each — big number follows the shared metric toggle
   const dims=["line","edgeband","convdist","side","workload","dow","month"];
@@ -3623,10 +4222,10 @@ let _dataWired=false;
 // ---- saved searches: persist named combos, reload them onto the current window ----
 const SAVED_COMBO_KEY="se_saved_combos";
 function loadSavedCombos(){
-  try{ const a=JSON.parse(localStorage.getItem(SAVED_COMBO_KEY)||"[]"); return Array.isArray(a)?a:[]; }
+  try{ const a=JSON.parse(SS.getItem(SAVED_COMBO_KEY)||"[]"); return Array.isArray(a)?a:[]; }
   catch{ return []; }
 }
-function saveSavedCombos(list){ try{ localStorage.setItem(SAVED_COMBO_KEY, JSON.stringify(list)); }catch{} }
+function saveSavedCombos(list){ try{ SS.setItem(SAVED_COMBO_KEY, JSON.stringify(list)); }catch{} }
 function serializeCombo(combo){
   // {dimKey: Set} -> {dimKey: [buckets]}
   const out={};
@@ -3804,8 +4403,6 @@ function computeProvenBuckets(picks){
 // 65%, Jun'25 65%, May'26 76%). Replaces the old disagreement-bucket gate, which
 // fired on the wrong signal and flooded the slate (16+ "EDGE" picks a night, many
 // on line/side combos that LOSE money). EDGE now bets exactly what was proven.
-const EDGE_STRONG_BAR=0.20;   // model edge ≥20% = Strong tier
-const EDGE_MAX_LINE=5.5;      // the validated low-line bucket
 function rowVerdict(r, provenBuckets){
   if(r.skipped) return {bet:false, reason:"skipped"};
   if(r.eK==null || r.line==null || r.edge==null) return {bet:false, reason:"no model number"};
@@ -3817,7 +4414,7 @@ function rowVerdict(r, provenBuckets){
   // as classification flags only, so renderForwardTest can count them silently.
   const isCombo = (r.line <= EDGE_MAX_LINE) && (r.edge >= EDGE_STRONG_BAR);
   const isOver  = (side === "Over");
-  const isConvOver = isOver && disagree >= 0.75;
+  const isConvOver = isOver && disagree >= CONV_DISAGREE_MIN;
   const isCeiling = isOver && (r.line >= 5.5);   // high-line Over — candidate, not a bet
   if(!isCombo) return {bet:false, reason:`not combo (line ${r.line}, edge ${(r.edge*100).toFixed(0)}%)`, side, isCombo:false, isOver, isConvOver, isCeiling};
   return {bet:true, side, mode:"combo", isCombo:true, isOver, isConvOver, isCeiling};
@@ -3846,10 +4443,10 @@ function whyFlag(r){
     chk(edge>=EDGE_STRONG_BAR, `Edge ${(edge*100).toFixed(0)}% ≥ ${(EDGE_STRONG_BAR*100).toFixed(0)}%`),
   ];
   const isCombo=comboChecks.every(c=>c.pass);
-  // Conviction requires: pick is Over AND projection is ≥0.75 K from the line
+  // Conviction requires: pick is Over AND projection is ≥1.0 K from the line
   const convChecks=[
     chk(side==="Over", `Pick is Over (${side})`),
-    chk(disagree>=0.75, `Projection ${disagree.toFixed(1)}K from line ≥ 0.75K`),
+    chk(disagree>=CONV_DISAGREE_MIN, `Projection ${disagree.toFixed(1)}K from line ≥ ${CONV_DISAGREE_MIN.toFixed(1)}K`),
   ];
   const isConv=convChecks.every(c=>c.pass);
   // Ceiling requires: pick is Over AND line >= 5.5
@@ -4053,7 +4650,7 @@ function renderLab(){
 
 // ---- export / backup ----
 function doExportBackup(){
-  const dump={exportedAt:new Date().toISOString(), version:"se-history-1", days:allDays()};
+  const dump={exportedAt:new Date().toISOString(), version:"se-history-1", days:allDays(), mybets:loadMyBets()};
   const blob=new Blob([JSON.stringify(dump,null,2)],{type:"application/json"});
   const url=URL.createObjectURL(blob);
   const a=document.createElement("a");
@@ -4063,6 +4660,28 @@ function doExportBackup(){
 }
 $("exportBtn").onclick=doExportBackup;
 $("exportBtnM") && ($("exportBtnM").onclick=doExportBackup);
+// Settings tab
+$("chgOddsKey") && ($("chgOddsKey").onclick=()=>{ const k=prompt("Paste your Odds API key (the-odds-api.com):", getKey()||""); if(k!=null && k.trim()){ setKey(k.trim()); setStatus("Odds API key updated.",1); } });
+$("chgSharpKey") && ($("chgSharpKey").onclick=()=>{ const k=prompt("Paste your free SharpAPI key (sharpapi.io):", getSharpKey()||""); if(k!=null){ setSharpKey(k.trim()); setStatus(k.trim()?"SharpAPI key updated.":"SharpAPI key cleared.",1); } });
+$("setExportBtn") && ($("setExportBtn").onclick=doExportBackup);
+$("setRestoreBtn") && ($("setRestoreBtn").onclick=()=>{ const f=$("restoreFile"); if(f) f.click(); });
+
+// Automatic backup → hand the full backup JSON to the native macOS app, which
+// saves it (timestamped, last 14 kept) into the iCloud folder you chose. The
+// native side throttles/dedupes, so calling this often is harmless.
+window.nativeAutoBackup = function(){
+  try{
+    const mh = window.webkit && window.webkit.messageHandlers && window.webkit.messageHandlers.autobackup;
+    if(!mh) return;
+    const days = allDays();
+    if(!days.length) return;
+    mh.postMessage(JSON.stringify({exportedAt:new Date().toISOString(), version:"se-history-1", reason:"auto", days, mybets:loadMyBets()}));
+  }catch(e){}
+};
+setTimeout(window.nativeAutoBackup, 6000);                       // shortly after load
+setInterval(window.nativeAutoBackup, 30*60*1000);               // every 30 min while open
+window.addEventListener("pagehide", window.nativeAutoBackup);   // on quit / reload
+document.addEventListener("visibilitychange", ()=>{ if(document.visibilityState==="hidden") window.nativeAutoBackup(); });
 $("restoreBtn").onclick=()=>$("restoreFile").click();
 $("restoreBtnM") && ($("restoreBtnM").onclick=()=>$("restoreFile").click());
 $("restoreFile").onchange=(ev)=>{
@@ -4085,17 +4704,24 @@ $("restoreFile").onchange=(ev)=>{
     let added=0, overwritten=0;
     for(const d of valid){
       const k=dayKey(d.date);
-      if(localStorage.getItem(k)!=null) overwritten++; else added++;
+      if(SS.getItem(k)!=null) overwritten++; else added++;
     }
     if(!confirm(`Restore from backup (merge)?\n\n${valid.length} day(s) in file:\n  • ${added} new day(s) added\n  • ${overwritten} existing day(s) overwritten\n\nDays not in the file are kept untouched. This cannot be undone — export a backup first if unsure.\n\nProceed?`)){
       $("restoreFile").value=""; return;
     }
     for(const d of valid){
-      try{ localStorage.setItem(dayKey(d.date), JSON.stringify(d)); }
+      try{ SS.setItem(dayKey(d.date), JSON.stringify(d)); }
       catch(e){ alert("Restore stopped partway: browser storage is full ("+e.name+"). Some days may not have been written."); break; }
     }
+    // also merge logged bets (My Bets), by id, so they survive a restore
+    let betsAdded=0;
+    if(Array.isArray(dump.mybets)){
+      const cur=loadMyBets(); const ids=new Set(cur.map(x=>x.id));
+      dump.mybets.forEach(b=>{ if(b && b.id && !ids.has(b.id)){ cur.push(b); betsAdded++; } });
+      if(betsAdded) saveMyBets(cur);
+    }
     $("restoreFile").value="";
-    alert(`Restored ${valid.length} day(s): ${added} added, ${overwritten} overwritten.\n\nReloading…`);
+    alert(`Restored ${valid.length} day(s): ${added} added, ${overwritten} overwritten.`+(betsAdded?`\n${betsAdded} logged bet(s) merged.`:"")+`\n\nReloading…`);
     location.reload();
   };
   reader.onerror=()=>{ alert("Restore failed: couldn't read that file."); $("restoreFile").value=""; };
@@ -4175,7 +4801,7 @@ async function watchGameInto(g, all, probList, day, season){
       const disagree=Math.abs(m.eK-red.line);
       r._watchSide=side; r._watchEdge=edge;
       r._watchCombo = (edge!=null) && (red.line<=EDGE_MAX_LINE) && (edge>=EDGE_STRONG_BAR);
-      r._watchConv  = (side==="Over") && (disagree>=0.75);
+      r._watchConv  = (side==="Over") && (disagree>=CONV_DISAGREE_MIN);
       r._watchCeil  = (side==="Over") && (red.line>=5.5);
     } else { r._watchEK=null; r._watchCombo=false; r._watchConv=false; r._watchCeil=false; r._watchEdge=null; }
     cacheWatch(day, r);
@@ -4230,7 +4856,7 @@ async function watchOneGame(g){
       : `Watch: no live DK/FD strikeout line posted for ${g.awayTeam} @ ${g.homeTeam} yet (lines fill in a few hours before first pitch).`,1);
   }catch(e){
     const m=e.message||String(e);
-    if(m.includes("401")||m.includes("invalid_api_key")){ if(confirm("SharpAPI key rejected (401). Clear it so you can re-enter?")) localStorage.removeItem(SHARP_KEY_K); setStatus("SharpAPI key cleared."); }
+    if(m.includes("401")||m.includes("invalid_api_key")){ if(confirm("SharpAPI key rejected (401). Clear it so you can re-enter?")) SS.removeItem(SHARP_KEY_K); setStatus("SharpAPI key cleared."); }
     else setStatus("Watch failed: "+m);
   }
 }
@@ -4243,8 +4869,8 @@ function clearWatch(r){ delete r._watchLine; delete r._watchOver; delete r._watc
 // forward test. The official bet of record is still a Pull All.
 const SHARP="https://api.sharpapi.io/api/v1";
 const SHARP_KEY_K="se_sharp_key";
-function getSharpKey(){return localStorage.getItem(SHARP_KEY_K)||"";}
-function setSharpKey(v){localStorage.setItem(SHARP_KEY_K,v);}
+function getSharpKey(){return SS.getItem(SHARP_KEY_K)||"";}
+function setSharpKey(v){SS.setItem(SHARP_KEY_K,v);}
 
 async function sharpGet(path){
   const key=getSharpKey();
@@ -4305,7 +4931,7 @@ async function runIntradayWatch(){
   }catch(e){
     const m=e.message||String(e);
     if(m.includes("401")||m.includes("invalid_api_key")){
-      if(confirm("SharpAPI key was rejected (401). Clear the saved key so you can paste a new one?")) localStorage.removeItem(SHARP_KEY_K);
+      if(confirm("SharpAPI key was rejected (401). Clear the saved key so you can paste a new one?")) SS.removeItem(SHARP_KEY_K);
     } else setStatus("Intraday watch failed: "+m);
   } finally { if(btn) btn.disabled=false; }
 }
@@ -4325,16 +4951,16 @@ async function runIntradayWatch(){
 function trackKey(date){ return "se_track_"+date; }
 function trackRowKey(r){ return r.pid!=null ? ("pid:"+r.pid) : ("nm:"+norm(r.pitcher||"")); }
 function loadTrackSet(date){
-  try{ const v=localStorage.getItem(trackKey(date)); return new Set(v?JSON.parse(v):[]); }
+  try{ const v=SS.getItem(trackKey(date)); return new Set(v?JSON.parse(v):[]); }
   catch{ return new Set(); }
 }
 function saveTrackSet(date,set){
-  try{ localStorage.setItem(trackKey(date), JSON.stringify([...set])); }catch{}
+  try{ SS.setItem(trackKey(date), JSON.stringify([...set])); }catch{}
 }
 // initialize a day's selection to the auto-flagged picks IF no selection saved yet.
 // returns the active set. once the user has touched it, their choices win.
 function ensureTrackSet(date, rows){
-  const existing=localStorage.getItem(trackKey(date));
+  const existing=SS.getItem(trackKey(date));
   if(existing!=null) return loadTrackSet(date); // user state exists, respect it
   const set=new Set();
   (rows||[]).forEach(r=>{
@@ -4363,8 +4989,8 @@ async function exportEsp32Feed(){
         pid: r.pid, pitcher: r.pitcher, side: r.modelSide, line: r.line,
         price: r.sidePrice, edge: r.edge, projK: r.eK,
         away: r.awayName, home: r.homeName,
-        combo: !!v.isCombo, conv: !!v.isConvOver,
-        manual: !(v.isCombo||v.isConvOver),  // checked but not a model pick → grey
+        combo: !!v.isCombo, conv: !!v.isConvOver, ceil: !!v.isCeiling,
+        manual: !(v.isCombo||v.isConvOver||v.isCeiling),  // checked but not a tracked bet → grey
         gamePk:null, status:"pre", state:"", k:null, result:"pending"
       });
     });
@@ -4414,30 +5040,44 @@ async function exportEsp32Feed(){
     const feed={
       date: day,
       updatedAt: new Date().toISOString(),
-      counts: { combo: picks.filter(p=>p.combo).length, conv: picks.filter(p=>p.conv).length, watch: picks.filter(p=>p.manual).length },
+      counts: { combo: picks.filter(p=>p.combo).length, conv: picks.filter(p=>p.conv).length, ceiling: picks.filter(p=>p.ceil).length, watch: picks.filter(p=>p.manual).length },
       picks: picks.map(p=>{
-        // type: combo / conv / both for model picks, "watch" for manual greys
-        const type = p.manual ? "watch" : (p.combo ? (p.conv?"both":"combo") : "conv");
-        // ESP color key — matches the dashboard palette:
-        //   Combo / both = phosphor cyan (--bet),  Conviction = amber (--accent),  manual watch = grey
-        const color = type==="watch" ? "#8a8a8a" : (type==="conv" ? "#e6a94a" : "#36c5d8");
+        // One type/color per pick for the ESP. Priority: combo > conviction > ceiling.
+        // Palette matches the dashboard: combo/both = cyan, conviction = amber,
+        // ceiling = purple, manual watch = grey.
+        let type, color;
+        if(p.manual){ type="watch"; color="#8a8a8a"; }
+        else if(p.combo){ type=p.conv?"both":"combo"; color="#36c5d8"; }
+        else if(p.conv){ type="conv"; color="#e6a94a"; }
+        else if(p.ceil){ type="ceiling"; color="#b07cff"; }
+        else { type="watch"; color="#8a8a8a"; }
         return {
           pid:p.pid, gamePk:p.gamePk,
           pitcher:p.pitcher, side:p.side, line:p.line, price:p.price,
-          type, color,
+          type, color, combo:p.combo, conv:p.conv, ceil:p.ceil,
           away:p.away, home:p.home,
           status:p.status, state:p.state, k:p.k, result:p.result
         };
       })
     };
-    const blob=new Blob([JSON.stringify(feed)],{type:"application/json"});
-    const url=URL.createObjectURL(blob);
-    const a=document.createElement("a");
-    a.href=url; a.download="esp32_picks.json";
-    document.body.appendChild(a); a.click(); a.remove();
-    setTimeout(()=>URL.revokeObjectURL(url),1000);
+    const json=JSON.stringify(feed);
     const live=picks.filter(p=>p.status!=="pre").length;
-    setStatus(`Exported esp32_picks.json — ${picks.length} pick(s), ${live} with live status.`,1);
+    // Prefer the native bridge: writes esp32_picks.json straight to ~/Downloads,
+    // no fragile blob/WKDownload interception. Fall back to a blob download when
+    // running in a plain browser (no webkit message handler).
+    const mh = window.webkit && window.webkit.messageHandlers && window.webkit.messageHandlers.esp32feed;
+    if(mh){
+      mh.postMessage(json);
+      setStatus(`Exported esp32_picks.json → Downloads — ${picks.length} pick(s), ${live} live. Now run push-picks to send it.`,1);
+    } else {
+      const blob=new Blob([json],{type:"application/json"});
+      const url=URL.createObjectURL(blob);
+      const a=document.createElement("a");
+      a.href=url; a.download="esp32_picks.json";
+      document.body.appendChild(a); a.click(); a.remove();
+      setTimeout(()=>URL.revokeObjectURL(url),1000);
+      setStatus(`Exported esp32_picks.json — ${picks.length} pick(s), ${live} with live status.`,1);
+    }
   }catch(e){ setStatus("ESP32 export failed: "+e.message); }
   finally{ if(btn) btn.disabled=false; }
 }
@@ -4445,7 +5085,7 @@ async function exportEsp32Feed(){
 // ---- reset / fresh start (keeps API key, wipes all logged days) ----
 function downloadBackup(reason){
   const days=allDays();
-  const dump={exportedAt:new Date().toISOString(),version:"se-history-1",reason,days};
+  const dump={exportedAt:new Date().toISOString(),version:"se-history-1",reason,days,mybets:loadMyBets()};
   const blob=new Blob([JSON.stringify(dump,null,2)],{type:"application/json"});
   const url=URL.createObjectURL(blob);
   const a=document.createElement("a");
@@ -4729,10 +5369,110 @@ function renderFreeVsPaid(){
     `<p class="fine" style="color:var(--muted)">If identical-line % is high and the ROIs track each other, the free feed is a viable stand-in for the paid one. A big gap means the free lines drift enough to matter. ${n} graded pairs so far — read nothing until this is deep.</p></div>`;
 }
 
+// FLAG AGREEMENT — the credits question, answered with data. For every pick that
+// has BOTH a paid (Odds API) line and a free (SharpAPI/DK-FD) line, recompute the
+// bucket flags (Combo / Conviction / Ceiling) the SAME way for each line and count
+// how often the free feed would have flagged a DIFFERENT bet than the paid one.
+// Outcome-grade flips (in renderFreeVsPaid) ask "did the W/L change"; THIS asks the
+// decision question: "would Watch-only have placed the same bets?" If flag agreement
+// is ~97%+ across a deep sample, the official pull is retireable.
+function freeVerdict(r){
+  // Recompute side+edge against the FREE line/prices, then reuse rowVerdict's gates.
+  // eK is line-independent, so the projection carries over; only line+prices change.
+  if(r.eK==null || r.freeLine==null) return null;
+  const line=r.freeLine, over=r.freeOver, under=r.freeUnder;
+  // side: model takes whichever side its projection favors at THIS line
+  const side = r.eK>=line ? "Over" : "Under";
+  const price = side==="Over" ? over : under;
+  const fair = fairProb(over, under, side);
+  const edge = (fair!=null) ? (/*model prob unknown here; use eK-vs-line edge proxy*/ null) : null;
+  // We don't re-store model prob per side on the row, but Combo needs `edge`.
+  // The paid row already carries r.edge computed at the paid line. For the free
+  // line we approximate Combo eligibility with the paid edge IF the line matches,
+  // else we mark edge unknown so Combo is only compared when both lines agree.
+  const sameLine = (line===r.line);
+  const useEdge = sameLine ? r.edge : null;
+  const synth = {skipped:r.skipped, eK:r.eK, line, edge:useEdge, modelSide:side};
+  return {v: rowVerdict(synth, null), sameLine, edgeKnown: useEdge!=null};
+}
+function renderFlagAgreement(){
+  const el=$("flagAgree"); if(!el) return;
+  const rows=collectScorecardRows().filter(r=>!r.voided && r.freeLine!=null && r.line!=null && r.eK!=null && r.modelSide);
+  if(rows.length<3){ el.innerHTML=""; return; }
+  // per-bucket agreement: count picks where paid-flag === free-flag
+  const B={combo:{n:0,agree:0,paidOnly:0,freeOnly:0,edgeBlind:0},
+           conv:{n:0,agree:0,paidOnly:0,freeOnly:0},
+           ceil:{n:0,agree:0,paidOnly:0,freeOnly:0}};
+  let anyN=0, anyAgree=0, sideFlips=0;
+  rows.forEach(r=>{
+    const paid=rowVerdict(r,null);
+    const fr=freeVerdict(r); if(!fr) return;
+    const f=fr.v;
+    anyN++;
+    if((paid.side||"")!==(f.side||"")) sideFlips++;
+    // CONVICTION (no edge needed — pure side+disagree+line)
+    {const p=!!paid.isConvOver, q=!!f.isConvOver; B.conv.n++; if(p===q)B.conv.agree++; else if(p)B.conv.paidOnly++; else B.conv.freeOnly++;}
+    // CEILING (side + line only)
+    {const p=!!paid.isCeiling, q=!!f.isCeiling; B.ceil.n++; if(p===q)B.ceil.agree++; else if(p)B.ceil.paidOnly++; else B.ceil.freeOnly++;}
+    // COMBO (needs edge; only comparable when free line==paid line so edge transfers)
+    {const p=!!paid.isCombo;
+     if(!fr.edgeKnown){ B.combo.edgeBlind++; }
+     else { const q=!!f.v.isCombo; B.combo.n++; if(p===q)B.combo.agree++; else if(p)B.combo.paidOnly++; else B.combo.freeOnly++; }}
+    // overall: agree only if ALL three flags match (and combo comparable)
+    const cMatch = fr.edgeKnown ? (!!paid.isCombo===!!f.isCombo) : (paid.isCombo===false); // if edge blind, only "neither combo" counts as agree
+    const vMatch = (!!paid.isConvOver===!!f.isConvOver);
+    const xMatch = (!!paid.isCeiling===!!f.isCeiling);
+    if(cMatch&&vMatch&&xMatch) anyAgree++;
+  });
+  if(!anyN){ el.innerHTML=""; return; }
+  const pct=(a,n)=> n? Math.round(a/n*100) : null;
+  const overall=pct(anyAgree,anyN);
+  const col=p=> p==null?"var(--muted)": p>=97?"var(--pos)": p>=90?"var(--accent)":"var(--neg)";
+  const cell=(label,b)=>{
+    const p=pct(b.agree,b.n);
+    const miss=(b.paidOnly||0)+(b.freeOnly||0);
+    return `<div class="fvp-cell"><div class="fvp-l">${label}</div>`+
+      `<div class="fvp-v" style="color:${col(p)}">${p==null?"—":p+"%"}</div>`+
+      `<div class="fvp-n">${b.agree}/${b.n} agree${miss?` · ${miss} differ`:""}</div></div>`;
+  };
+  const verdict = overall==null ? "" :
+    overall>=97 ? `<b style="color:var(--pos)">Free feed is tracking the paid feed.</b> If this holds past ~100 pairs, the official pull is retireable — Watch-only would place the same bets.`
+    : overall>=90 ? `<span style="color:var(--accent)">Close, but the official pull is still pulling weight.</span> The free feed flags a different bet ${100-overall}% of the time — keep both running.`
+    : `<span style="color:var(--neg)">Don't drop the official pull.</span> The free line diverges enough to change ${100-overall}% of your bets.`;
+  el.innerHTML=
+    `<div class="fvp"><div class="fvp-h">Watch-only viability — flag agreement `+
+      `<span class="fvp-sub">For picks with BOTH lines, would the free DK/FD feed have flagged the same Combo / Conviction / Ceiling bets as the paid pull? This is the credits question.</span></div>`+
+    `<div class="fvp-grid">`+
+      `<div class="fvp-cell"><div class="fvp-l">All flags match</div><div class="fvp-v" style="color:${col(overall)}">${overall}%</div><div class="fvp-n">${anyAgree}/${anyN} picks${sideFlips?` · ${sideFlips} side-flip`:""}</div></div>`+
+      cell("Combo",B.combo)+ cell("Conviction",B.conv)+ cell("Ceiling",B.ceil)+
+    `</div>`+
+    `<p class="fine" style="color:var(--muted)">${verdict} ${B.combo.edgeBlind?`(${B.combo.edgeBlind} Combo pairs skipped — free line differed from paid, so the de-vig edge can't be carried over.) `:""}${anyN} graded pairs so far — read nothing until this is deep (~100+).</p></div>`;
+}
+
+// Subtly flag the scoreboard month chips that actually contain graded data, so
+// empty months read as visibly distinct from months worth clicking into.
+function markPerfMonthsWithData(){
+  try{
+    const months=new Set(), years=new Set();
+    for(const rec of allDays()){
+      if(rec&&rec.date&&(rec.rows||[]).some(r=>r&&r.actualK!=null)){ months.add(rec.date.slice(0,7)); years.add(rec.date.slice(0,4)); }
+    }
+    const MON={jan:"01",feb:"02",mar:"03",apr:"04",may:"05",jun:"06",jul:"07",aug:"08",sep:"09",oct:"10",nov:"11",dec:"12"};
+    document.querySelectorAll(".winchip[data-preset]").forEach(b=>{
+      const p=b.dataset.preset||""; let has=false;
+      const a=p.match(/^all(\d{4})$/), m=p.match(/^([a-z]{3})(\d{4})$/);
+      if(a) has=years.has(a[1]);
+      else if(m&&MON[m[1]]) has=months.has(m[2]+"-"+MON[m[1]]);
+      b.classList.toggle("has-data",has);
+    });
+  }catch(e){}
+}
 function renderPerf(){
+  try{ markPerfMonthsWithData(); }catch(e){}
   try{ renderBetSummary(); }catch(e){ console.error("bet summary failed:",e); }
   try{ renderBetGraph(); }catch(e){ console.error("bet graph failed:",e); }
   try{ renderFreeVsPaid(); }catch(e){ console.error("free vs paid failed:",e); }
+  try{ renderFlagAgreement(); }catch(e){ console.error("flag agreement failed:",e); }
   const picks=collectTierPicks();
   const t1=picks.t1, t0=picks.t0;
 
@@ -4753,15 +5493,15 @@ function renderPerf(){
 function renderForwardTest(){
   const el=$("forwardTest"); if(!el) return;
   // Forward counts ONLY real picks logged on/after the day the gate went live.
-  let startDate=localStorage.getItem("se_fwd_start");
+  let startDate=SS.getItem("se_fwd_start");
   // One-time reset: the real forward test (cleaned-up gates, two tracked bets)
   // starts today. Stamps a marker so this only resets once, then persists normally.
-  if(localStorage.getItem("se_fwd_reset_v2")!=="1"){
+  if(SS.getItem("se_fwd_reset_v2")!=="1"){
     startDate=todayISO();
-    localStorage.setItem("se_fwd_start", startDate);
-    localStorage.setItem("se_fwd_reset_v2","1");
+    SS.setItem("se_fwd_start", startDate);
+    SS.setItem("se_fwd_reset_v2","1");
   }
-  if(!startDate){ startDate=todayISO(); localStorage.setItem("se_fwd_start", startDate); }
+  if(!startDate){ startDate=todayISO(); SS.setItem("se_fwd_start", startDate); }
   const _saved=_perfWindow; _perfWindow="alltime";
   const all=collectScorecardRows(); _perfWindow=_saved;
   const fwdAll=all.filter(r=>r.isForward && (r.date||"")>=startDate);
@@ -4803,7 +5543,7 @@ function renderForwardTest(){
   el.innerHTML=
     `<div class="fwd3">`+
     track(comboRows, 5, 30, "Combo (Strong + ≤5.5) · THE BET", "Your primary bet. This is the only one you bet today.", "var(--bet)")+
-    track(convRows, 5, 50, "Conviction Over (Over & ≥0.75 from line) · TESTING", "Candidate — model says Over and projects ≥0.75 K above the line. Bar is ROI ≥ +5%. Not a bet until it clears.", "var(--accent)")+
+    track(convRows, 5, 50, "Conviction Over (Over & ≥1.0 from line) · TESTING", "Candidate — model says Over and projects ≥1.0 K above the line. Bar is ROI ≥ +5%. Not a bet until it clears.", "var(--accent)")+
     track(ceilRows, 5, 40, "Ceiling (Over & line ≥5.5) · TESTING", "Candidate — model takes the Over on a high line (≥5.5). In-sample +44% ROI but found by mining; bar is ROI ≥ +5% over 40. Not a bet until it clears.", "var(--ceiling)")+
     `</div>`;
 }
@@ -5127,19 +5867,207 @@ async function handednessAB(){
 // initial paint — runs AFTER all click handlers are wired, so a render error
 // here can never leave the tabs unclickable. Pre-render Today's table (into its
 // hidden card) and paint the default Lab tab, both guarded.
-if(getKey()){
-  try{ migrateDevig(); }catch(e){ console.error("devig migration failed:",e); }
-  // restore the most recent day that has a staged slate, so Today survives reload
-  // and inactivity (it shows that day until you deliberately Stage Day again).
-  try{
-    const days=allDays().filter(d=>d.stageGames&&d.stageGames.length)
-      .sort((a,b)=>(b.date||"").localeCompare(a.date||""));
-    if(days.length){ _loadedDate=days[0].date; _stageGames=days[0].stageGames; renderToday(days[0].rows||[]); }
-    else { renderToday([]); }
-  }catch(e){ console.error("restore day failed:",e); try{renderToday([]);}catch{} }
-  try{ safeRenderLab(); }catch(e){ console.error("renderLab failed:",e); }
-  try{ showTab("Today"); }catch(e){ console.error("showTab failed:",e); }
+// Boot is gated on SS.hydrate(): the shared Supabase store is merged into the
+// in-memory map (newest-wins per key; se_mybets merges by id) BEFORE the first
+// paint reads allDays(). If Supabase is unreachable, hydrate() resolves quietly
+// and we paint from the Mac's native store (offline-safe).
+(async function boot(){
+  try{ if(SS.hydrate) await SS.hydrate(); }catch(e){ console.warn("hydrate failed, booting local:",e); }
+  if(getKey()){
+    try{ migrateDevig(); }catch(e){ console.error("devig migration failed:",e); }
+    // restore the most recent day that has a staged slate, so Today survives reload
+    // and inactivity (it shows that day until you deliberately Stage Day again).
+    try{
+      const days=allDays().filter(d=>d.stageGames&&d.stageGames.length)
+        .sort((a,b)=>(b.date||"").localeCompare(a.date||""));
+      if(days.length){ _loadedDate=days[0].date; _stageGames=days[0].stageGames; renderToday(days[0].rows||[]); }
+      else { renderToday([]); }
+    }catch(e){ console.error("restore day failed:",e); try{renderToday([]);}catch{} }
+    try{ safeRenderLab(); }catch(e){ console.error("renderLab failed:",e); }
+    try{ showTab("Today"); }catch(e){ console.error("showTab failed:",e); }
+  }
+})();
+
+// ===========================================================================
+//  MY BETS — the real wagers I actually placed (separate from the model's picks)
+// ===========================================================================
+const MYBETS_K="se_mybets";
+function loadMyBets(){ try{ const a=JSON.parse(SS.getItem(MYBETS_K)||"[]"); return Array.isArray(a)?a:[]; }catch{ return []; } }
+function saveMyBets(a){ try{ SS.setItem(MYBETS_K, JSON.stringify(a)); }catch{} }
+// Set of "date|pitcher" for every logged bet — lets the ＄ buttons show an
+// "already tracked" state so a game isn't accidentally double-logged.
+function _loggedBetSet(){ const s=new Set(); for(const b of loadMyBets()){ if(b&&b.date) s.add(b.date+"|"+norm(b.pitcher||"")); } return s; }
+function betIsLogged(set,date,pitcher){ return set.has((date||"")+"|"+norm(pitcher||"")); }
+function americanProfit(odds, stake){ const o=Number(odds); if(!o||isNaN(o)) return stake; return o>0 ? stake*o/100 : stake*100/Math.abs(o); }
+
+// Grade any ungraded bet against the strikeout result already in the logged day.
+function gradeMyBets(){
+  const bets=loadMyBets(); let changed=false;
+  bets.forEach(b=>{
+    if(b.result) return;
+    const day=loadDay(b.date); if(!day) return;
+    const row=(day.rows||[]).find(r=>norm(r.pitcher||"")===norm(b.pitcher||""));
+    if(!row || row.actualK==null) return;
+    const k=Number(row.actualK), line=Number(b.line);
+    let res = (k===line) ? "push" : (b.side==="Over" ? (k>line?"win":"loss") : (k<line?"win":"loss"));
+    b.actualK=k; b.result=res;
+    b.pl = res==="push" ? 0 : (res==="win" ? americanProfit(b.odds, Number(b.stake)) : -Number(b.stake));
+    changed=true;
+  });
+  if(changed) saveMyBets(bets);
+  return bets;
 }
+
+let _betCtx=null, _betSide="Over", _betCovered=[];
+function updateBetNote(){
+  const note=$("bmNote"); if(!note) return;
+  if(_betCovered.length<2){ note.style.display="none"; return; }
+  const on=[...$("bmStyles").querySelectorAll(".bm-stylechip.on")].map(c=>c.dataset.style);
+  const names=on.map(k=>(STYLE_DEFS.find(d=>d[0]===k)||[])[1]).filter(Boolean);
+  note.style.display="block";
+  note.textContent = on.length>=2 ? `Converges — logs ${on.length} separate bets (${names.join(" + ")}), each at the stake below.`
+    : on.length===1 ? `Logs 1 bet tagged ${names[0]}.` : `No style selected — logs 1 untagged bet.`;
+}
+function setBetSide(s){ _betSide=s; const o=$("bmOver"),u=$("bmUnder"); if(o)o.classList.toggle("on",s==="Over"); if(u)u.classList.toggle("on",s==="Under"); }
+const STYLE_DEFS=[["combo","Combo","var(--bet)"],["conv","Conviction","var(--accent)"],["ceil","Ceiling","var(--ceiling)"]];
+function openBetModal(ctx){
+  _betCtx=ctx||{};
+  $("bmPitcher").textContent = (ctx.pitcher||"—") + (ctx.date?`  ·  ${ctx.date}`:"");
+  // which tracked styles this pick covers → chips (checked by default). 2+ = converge.
+  const st=ctx.styles||{}; const covered=STYLE_DEFS.filter(d=>st[d[0]]);
+  const row=$("bmStylesRow"), box=$("bmStyles"), note=$("bmNote");
+  if(covered.length>=2){
+    box.innerHTML=covered.map(d=>`<button type="button" class="bm-stylechip on" data-style="${d[0]}" style="border-color:${d[2]};color:${d[2]}">${d[1]}</button>`).join("");
+    box.querySelectorAll(".bm-stylechip").forEach(c=>c.onclick=()=>{ c.classList.toggle("on"); updateBetNote(); });
+    row.style.display="flex"; note.style.display="block";
+  } else {
+    box.innerHTML=""; row.style.display="none"; note.style.display="none";
+  }
+  _betCovered=covered.map(d=>d[0]);
+  updateBetNote();
+  setBetSide(ctx.side||"Over");
+  $("bmLine").value = ctx.line!=null?ctx.line:"";
+  $("bmOdds").value = (ctx.price!=null&&ctx.price!=="")?ctx.price:"";
+  $("bmStake").value = "1";
+  $("betModal").classList.remove("hidden");
+  setTimeout(()=>{ const s=$("bmStake"); if(s){ s.focus(); s.select(); } },30);
+}
+function closeBetModal(){ $("betModal").classList.add("hidden"); _betCtx=null; }
+function saveBetFromModal(){
+  if(!_betCtx) return;
+  const line=parseFloat($("bmLine").value), odds=parseInt($("bmOdds").value,10), stake=parseFloat($("bmStake").value);
+  if(isNaN(line) || isNaN(stake) || stake<=0){ alert("Enter a valid line and a stake greater than 0."); return; }
+  // styles to log: 2+ covered → one bet per CHECKED chip; 1 covered → tag it; 0 → untagged single.
+  let styles;
+  if(_betCovered.length>=2){ styles=[...$("bmStyles").querySelectorAll(".bm-stylechip.on")].map(c=>c.dataset.style); if(!styles.length) styles=[null]; }
+  else if(_betCovered.length===1){ styles=[_betCovered[0]]; }
+  else { styles=[null]; }
+  const bets=loadMyBets(); const now=Date.now();
+  styles.forEach((s,i)=>{
+    bets.push({ id:"b"+now+"_"+i+Math.floor(Math.random()*1e4), date:_betCtx.date||todayISO(), pitcher:_betCtx.pitcher||"?",
+      side:_betSide, line, odds:isNaN(odds)?null:odds, stake, style:s||null, loggedAt:new Date().toISOString(), result:null, pl:null, actualK:null });
+  });
+  saveMyBets(bets);
+  const p=_betCtx.pitcher, nB=styles.length, bd=_betCtx.date||todayISO();
+  closeBetModal();
+  setStatus(`Logged ${nB} bet${nB>1?"s":""}: ${p} ${_betSide} ${line} @ ${isNaN(odds)?"—":(odds>0?"+"+odds:odds)} · ${stake}u each`,1);
+  try{ gradeMyBets(); }catch{}
+  try{ if(!$("myBetsCard").classList.contains("hidden")) renderMyBets(); }catch{}
+  // flip the matching ＄ button(s) to the "tracked" state without a full re-render
+  try{
+    const np=norm(p||"");
+    document.querySelectorAll(".gt-logbet").forEach(b=>{
+      if(norm(b.dataset.bp||"")===np && (b.dataset.bd||"")===bd){ b.classList.add("logged"); b.textContent="✓＄"; }
+    });
+  }catch(e){}
+}
+
+function drawMyBetsCurve(graded){
+  const el=$("mbCurve"); if(!el) return;
+  if(graded.length<2){ el.innerHTML=`<div class="muted small" style="color:var(--muted)">Cumulative units — appears once you have 2+ graded bets.</div>`; return; }
+  const sorted=graded.slice().sort((a,b)=>(a.date+a.loggedAt).localeCompare(b.date+b.loggedAt));
+  let cum=0; const pts=sorted.map(b=>{ cum+=Number(b.pl||0); return cum; });
+  const W=560,H=120,pad=10;
+  const min=Math.min(0,...pts), max=Math.max(0,...pts), range=(max-min)||1;
+  const x=i=>pad+(pts.length<2?0:(i/(pts.length-1))*(W-2*pad));
+  const y=v=>H-pad-((v-min)/range)*(H-2*pad);
+  const d=pts.map((v,i)=>`${i?'L':'M'}${x(i).toFixed(1)},${y(v).toFixed(1)}`).join(" ");
+  const col=pts[pts.length-1]>=0?"var(--pos)":"var(--neg)";
+  el.innerHTML=`<svg viewBox="0 0 ${W} ${H}" width="100%" height="${H}" preserveAspectRatio="none">`+
+    `<line x1="${pad}" y1="${y(0).toFixed(1)}" x2="${W-pad}" y2="${y(0).toFixed(1)}" stroke="var(--line)" stroke-dasharray="3 3"/>`+
+    `<path d="${d}" fill="none" stroke="${col}" stroke-width="2"/></svg>`+
+    `<div class="muted small" style="color:var(--muted);margin-top:4px">Cumulative units over your graded bets (dashed = break-even)</div>`;
+}
+
+function styleTag(s){
+  const d=STYLE_DEFS.find(x=>x[0]===s); if(!d) return "";
+  return `<span class="mb-tag" style="color:${d[2]}">${d[1].slice(0,4).toUpperCase()}</span>`;
+}
+function renderMyBetsStyleBreak(bets){
+  const el=$("mbStyleBreak"); if(!el) return;
+  const groups=[["combo","Combo","var(--bet)"],["conv","Conviction","var(--accent)"],["ceil","Ceiling","var(--ceiling)"],[null,"Untagged","var(--muted)"]];
+  el.innerHTML=groups.map(([key,label,col])=>{
+    const g=bets.filter(b=>(b.style||null)===key);
+    const settled=g.filter(b=>b.result&&b.result!=="push");
+    const w=settled.filter(b=>b.result==="win").length, l=settled.filter(b=>b.result==="loss").length;
+    const net=g.filter(b=>b.pl!=null).reduce((s,b)=>s+Number(b.pl||0),0);
+    const staked=settled.reduce((s,b)=>s+Number(b.stake||0),0);
+    const roi=staked?net/staked*100:0;
+    const nCol=net>0?"var(--pos)":net<0?"var(--neg)":"var(--muted)";
+    return `<div class="mb-sb"><div class="h" style="color:${col}">${label}</div>`+
+      `<div class="v" style="color:${nCol}">${g.length?((net>=0?"+":"")+net.toFixed(2)+"u"):"—"}</div>`+
+      `<div class="s">${g.length?`${w}-${l} · ${(roi>=0?"+":"")+roi.toFixed(0)}% ROI`:"no bets"}</div></div>`;
+  }).join("");
+}
+function renderMyBets(){
+  const el=$("myBetsList"); if(!el) return;
+  const bets=gradeMyBets();
+  const settled=bets.filter(b=>b.result && b.result!=="push");
+  const w=settled.filter(b=>b.result==="win").length, l=settled.filter(b=>b.result==="loss").length;
+  const staked=settled.reduce((s,b)=>s+Number(b.stake||0),0);
+  const net=bets.filter(b=>b.pl!=null).reduce((s,b)=>s+Number(b.pl||0),0);
+  const roi=staked? net/staked*100 : 0;
+  const pending=bets.filter(b=>!b.result).length;
+  const col=v=>v>0?"var(--pos)":v<0?"var(--neg)":"var(--text)";
+  if($("mbRecord")) $("mbRecord").textContent=`${w}-${l}`;
+  if($("mbNet")){ $("mbNet").textContent=(net>=0?"+":"")+net.toFixed(2)+"u"; $("mbNet").style.color=col(net); }
+  if($("mbRoi")){ $("mbRoi").textContent=(roi>=0?"+":"")+roi.toFixed(1)+"%"; $("mbRoi").style.color=col(roi); }
+  if($("mbStaked")) $("mbStaked").textContent=staked.toFixed(1)+"u";
+  if($("mbPending")) $("mbPending").textContent=pending;
+  drawMyBetsCurve(bets.filter(b=>b.pl!=null));
+  renderMyBetsStyleBreak(bets);
+  if(!bets.length){ el.innerHTML=`<div class="empty small">No bets logged yet. On the <b>Today</b> tab, click the <b>＄</b> button next to any pick to log a bet you placed — set the line, odds, and stake you actually got.</div>`; return; }
+  const fmtOdds=o=>o==null?"—":(o>0?"+"+o:""+o);
+  el.innerHTML = bets.slice().sort((a,b)=>(b.date+b.loggedAt).localeCompare(a.date+a.loggedAt)).map(b=>{
+    const resCls=b.result==="win"?"mb-win":b.result==="loss"?"mb-loss":b.result==="push"?"mb-push":"mb-pending";
+    const resTxt=b.result?(b.result.toUpperCase()+(b.actualK!=null?` · ${b.actualK}K`:"")):"pending";
+    const plTxt=b.pl!=null?`${b.pl>=0?"+":""}${b.pl.toFixed(2)}u`:"";
+    const plCls=b.pl>0?"mb-win":b.pl<0?"mb-loss":"";
+    return `<div class="mb-row">`+
+      `<div class="mb-c mb-date">${b.date}</div>`+
+      `<div class="mb-c mb-pitch">${b.pitcher}${styleTag(b.style)}</div>`+
+      `<div class="mb-c">${b.side} ${b.line}</div>`+
+      `<div class="mb-c">${fmtOdds(b.odds)}</div>`+
+      `<div class="mb-c">${Number(b.stake).toFixed(2)}u</div>`+
+      `<div class="mb-c ${resCls}">${resTxt}</div>`+
+      `<div class="mb-c ${plCls}">${plTxt}</div>`+
+      `<div class="mb-c"><button class="mb-del" data-del="${b.id}" title="Delete this bet">×</button></div>`+
+    `</div>`;
+  }).join("");
+  el.querySelectorAll("[data-del]").forEach(btn=>btn.onclick=()=>{
+    if(!confirm("Delete this logged bet? (Doesn't affect anything else.)")) return;
+    saveMyBets(loadMyBets().filter(x=>x.id!==btn.dataset.del));
+    renderMyBets();
+  });
+}
+
+// modal wiring
+$("bmOver") && ($("bmOver").onclick=()=>setBetSide("Over"));
+$("bmUnder") && ($("bmUnder").onclick=()=>setBetSide("Under"));
+$("bmCancel") && ($("bmCancel").onclick=closeBetModal);
+$("bmSave") && ($("bmSave").onclick=saveBetFromModal);
+$("betModal") && $("betModal").addEventListener("click",(e)=>{ if(e.target.id==="betModal") closeBetModal(); });
+document.addEventListener("keydown",(e)=>{ if(e.key==="Escape" && !$("betModal").classList.contains("hidden")) closeBetModal(); });
 </script>
 </body>
 </html>
