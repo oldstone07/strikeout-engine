@@ -158,7 +158,7 @@ button:active{transform:translateY(1px)}
 .gt-logbet{flex:0 0 auto;font-size:11px;font-weight:700;border:1px solid var(--line2);background:transparent;color:var(--muted);border-radius:4px;padding:3px 7px;cursor:pointer;margin-left:2px}
 .gt-logbet:hover{color:var(--pos);border-color:var(--pos)}
 .gt-logbet.logged{color:var(--pos);border-color:var(--pos);background:color-mix(in srgb,var(--pos) 16%,transparent);font-weight:800}
-.mb-summary{display:grid;grid-template-columns:repeat(5,1fr);gap:12px;margin:0 0 18px}
+.mb-summary{display:grid;grid-template-columns:repeat(6,1fr);gap:12px;margin:0 0 18px}
 .mb-stat{border:1px solid var(--line);border-radius:8px;padding:13px 14px;background:var(--card)}
 .mb-stat .v{font:800 24px/1 var(--mono,ui-monospace,Menlo,monospace);letter-spacing:-.02em}
 .mb-stat .l{font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-top:6px}
@@ -1134,6 +1134,7 @@ footer{margin-top:30px;color:var(--muted);font-size:11.5px;text-align:center}
       <div class="mb-stat"><div class="v" id="mbRoi">+0.0%</div><div class="l">roi</div></div>
       <div class="mb-stat"><div class="v" id="mbStaked">0.0u</div><div class="l">staked</div></div>
       <div class="mb-stat"><div class="v" id="mbPending">0</div><div class="l">pending</div></div>
+      <div class="mb-stat"><div class="v" id="mbCash">$0</div><div class="l">net @ $20/u</div></div>
     </div>
     <div id="mbStyleBreak" class="mb-stylebreak"></div>
     <div id="mbCurve"></div>
@@ -6186,6 +6187,7 @@ function renderMyBets(){
   if($("mbRoi")){ $("mbRoi").textContent=(roi>=0?"+":"")+roi.toFixed(1)+"%"; $("mbRoi").style.color=col(roi); }
   if($("mbStaked")) $("mbStaked").textContent=staked.toFixed(1)+"u";
   if($("mbPending")) $("mbPending").textContent=pending;
+  if($("mbCash")){ const cash=net*20; $("mbCash").textContent=(cash>=0?"+$":"-$")+Math.abs(cash).toFixed(0); $("mbCash").style.color=col(net); }
   drawMyBetsCurve(bets.filter(b=>b.pl!=null));
   renderMyBetsStyleBreak(bets);
   if(!bets.length){ el.innerHTML=`<div class="empty small">No bets logged yet. On the <b>Today</b> tab, click the <b>＄</b> button next to any pick to log a bet you placed — set the line, odds, and stake you actually got.</div>`; return; }
