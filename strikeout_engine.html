@@ -55,6 +55,7 @@ header{display:flex;gap:18px;align-items:center;margin-bottom:0;padding:12px 22p
 /* three-column app shell */
 .appgrid{display:grid;grid-template-columns:minmax(0,1fr) 312px;gap:18px;padding:14px 22px 0;align-items:start}
 .topnav{display:flex;align-items:center;gap:4px;align-self:stretch}
+.tnav-mobile{display:none} /* phone-only Tracked tab */
 .tnav{background:transparent;color:var(--muted);border:none;border-bottom:2px solid transparent;border-radius:0;
   padding:12px 16px;font:600 14px/1 var(--mono,ui-monospace,Menlo,monospace);letter-spacing:.02em;cursor:pointer;margin-bottom:-13px}
 .tnav:hover{color:var(--text)}
@@ -711,6 +712,18 @@ footer{margin-top:30px;color:var(--muted);font-size:11.5px;text-align:center}
   .appgrid{grid-template-columns:1fr;padding:12px 12px 0;gap:0}
   #rail{display:none !important}
 
+  /* phone-only Tracked tab: surface the existing rail full-width as a card */
+  .tnav-mobile{display:inline-block}
+  #rail.rail-astab{
+    display:block !important;
+    grid-column:1 / -1;
+    padding:0 12px 16px;
+  }
+  #rail.rail-astab .railpanel{
+    background:var(--bg2);border:1px solid var(--line);border-radius:14px;
+    padding:16px;margin-bottom:12px;
+  }
+
   /* only the Today tab is reachable on phone */
   .topnav .tnav[data-tab="Perf"],
   .topnav .tnav[data-tab="Hist"],
@@ -862,6 +875,7 @@ footer{margin-top:30px;color:var(--muted);font-size:11.5px;text-align:center}
   </div>
   <nav class="topnav" id="topnav">
     <button class="tnav on" data-tab="Today">▤ Today</button>
+    <button class="tnav tnav-mobile" data-tab="Tracked">◱ Tracked</button>
     <button class="tnav" data-tab="Perf">▥ Scoreboard</button>
     <button class="tnav" data-tab="Hist">◷ History</button>
     <button class="tnav" data-tab="Data">▦ Data</button>
@@ -2158,6 +2172,12 @@ function showTab(which){
     const tb=$(t); if(tb) tb.classList.toggle("on",on);
     const cc=$(c); if(cc) cc.classList.toggle("hidden",!on);
   }
+  // "Tracked" is a phone-only tab that surfaces the existing rail (#rail). It is
+  // not a card — it toggles a class the phone CSS uses to show the rail full-width
+  // and hide the Today card. Desktop never reaches this branch (tab is hidden).
+  const railEl=$("rail");
+  if(railEl) railEl.classList.toggle("rail-astab", which==="Tracked");
+  if(which==="Tracked"){ const tc=$("todayCard"); if(tc) tc.classList.add("hidden"); }
   // sync top nav highlight
   document.querySelectorAll(".tnav").forEach(b=>{
     b.classList.toggle("on", b.dataset.tab===which);
