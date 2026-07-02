@@ -198,6 +198,9 @@ button:active{transform:translateY(1px)}
 /* desktop: the collapsible wrapper is transparent — buttons sit inline as before */
 #actionMenuToggle{display:none}
 .actionmenu{display:contents}
+/* desktop keeps Stage Day first even though it now lives inside the menu wrapper */
+#stageBtn{order:-2}
+#syncBtn{order:-1}
 .actionbar .primary.big{padding:11px 18px;font-size:13.5px}
 @media(max-width:1180px){ .actionbar{flex-wrap:wrap} }
 .tabs{display:flex;gap:2px;margin-left:auto;background:var(--bg2);padding:3px;border-radius:9px;border:1px solid var(--line)}
@@ -754,8 +757,9 @@ footer{margin-top:30px;color:var(--muted);font-size:11.5px;text-align:center}
   .actionbar button{padding:11px 14px;font-size:13.5px}
   .gt-head{flex-wrap:wrap;gap:8px}
 
-  /* collapse the 7 secondary actions behind a menu so games/summary sit up top.
-     Stage Day + Sync now stay inline; ⋯ Actions toggles the rest. */
+  /* collapse the secondary actions behind a menu so games/summary sit up top.
+     Only Sync now stays inline; Stage Day + the rest live in ⋯ Actions
+     (staging happens once, from the Mac). */
   #actionMenuToggle{display:inline-block}
   .actionmenu{
     display:none;
@@ -814,10 +818,10 @@ footer{margin-top:30px;color:var(--muted);font-size:11.5px;text-align:center}
 
   <div id="todayCard" class="card hidden">
     <div class="bar actionbar">
-      <button class="primary big" id="stageBtn" title="Free — loads today's matchups, probable pitchers, and game times. Saves the current day first, then loads fresh.">Stage Day</button>
       <button class="ghost" id="syncBtn" title="Pull the latest saved state from the cloud (picks, pulls, bets from your other device) and refresh the screen. No credits.">⟳ Sync now</button>
       <button class="ghost" id="actionMenuToggle" aria-expanded="false" title="Show all actions">⋯ Actions</button>
       <div class="actionmenu" id="actionMenu">
+      <button class="primary big" id="stageBtn" title="Free — loads today's matchups, probable pitchers, and game times. Saves the current day first, then loads fresh.">Stage Day</button>
       <button class="ghost" id="runBtn" title="Pull lines for every game on the loaded day at once (~1 credit per game).">Pull All</button>
       <button class="ghost" id="undoPullBtn" title="Revert the most recent pull or re-pull — restores the affected pitcher(s) to their state before that pull. One level of undo. Doesn't refund credits.">↩ Undo pull</button>
       <button class="ghost" id="watchBtn" title="Free — fetches live DraftKings/FanDuel strikeout lines from SharpAPI and shows how they compare to your model. No credits, nothing saved. Use this to watch lines move; do an official Pull All for the bet of record.">Intraday watch</button>
