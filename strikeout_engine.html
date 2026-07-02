@@ -771,6 +771,60 @@ footer{margin-top:30px;color:var(--muted);font-size:11.5px;text-align:center}
   .actionmenu.open{display:flex}
   .actionmenu button{width:100%}
 
+  /* ── My Bets → stacked cards on phone (P/L is the anchor) ──────────────
+     The desktop 8-col grid (~656px) overflows a phone. Reflow each row into
+     a card: big result-colored P/L up top, pitcher under it, the rest as
+     small labeled fields. Pure CSS — JS/tombstone logic untouched. */
+  .mb-row{
+    display:block;
+    position:relative;
+    border:1px solid var(--line);
+    border-radius:12px;
+    padding:14px 14px 12px;
+    margin-bottom:10px;
+  }
+  .mb-row:first-child{border-top:1px solid var(--line)} /* neutralize desktop rule */
+  .mb-c{white-space:normal;overflow:visible;text-overflow:clip}
+  /* P/L: the anchor — big, colored by win/loss class already on the cell */
+  .mb-row .mb-c:nth-child(7){
+    font-size:30px;font-weight:800;line-height:1;
+    font-family:var(--mono,ui-monospace,Menlo,monospace);
+    display:block;margin-bottom:2px;
+  }
+  .mb-row .mb-c:nth-child(7):empty::before{content:"—";color:var(--muted)}
+  /* pitcher: secondary heading */
+  .mb-pitch{font-size:16px;font-weight:700;display:block;margin-bottom:10px}
+  /* result badge sits top-right */
+  .mb-row .mb-c:nth-child(6){
+    position:absolute;top:14px;right:40px;
+    font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.04em;
+    padding:3px 8px;border:1px solid var(--line2);border-radius:6px;
+  }
+  /* delete × top-right corner, tappable */
+  .mb-row .mb-c:nth-child(8){position:absolute;top:8px;right:8px}
+  .mb-del{font-size:20px;padding:4px 8px}
+  /* the four detail fields → labeled strip */
+  .mb-row .mb-c:nth-child(1),
+  .mb-row .mb-c:nth-child(3),
+  .mb-row .mb-c:nth-child(4),
+  .mb-row .mb-c:nth-child(5){
+    display:inline-flex;flex-direction:column;
+    font-size:14px;font-weight:600;font-family:var(--mono,ui-monospace,Menlo,monospace);
+    margin:0 18px 0 0;
+  }
+  .mb-row .mb-c:nth-child(1)::before{content:"DATE"}
+  .mb-row .mb-c:nth-child(3)::before{content:"BET"}
+  .mb-row .mb-c:nth-child(4)::before{content:"ODDS"}
+  .mb-row .mb-c:nth-child(5)::before{content:"STAKE"}
+  .mb-row .mb-c:nth-child(1)::before,
+  .mb-row .mb-c:nth-child(3)::before,
+  .mb-row .mb-c:nth-child(4)::before,
+  .mb-row .mb-c:nth-child(5)::before{
+    font-size:9px;letter-spacing:.08em;color:var(--muted);
+    font-weight:600;margin-bottom:3px;
+  }
+  .mb-date{color:var(--text)} /* override desktop muted so the strip reads evenly */
+
   /* Export/Restore live on the History tab (hidden on phone), so surface
      them here on the Today card. Desktop hides this row (rule below). */
   .mobile-backup{display:flex;gap:8px;margin:10px 0 0}
