@@ -488,6 +488,8 @@ button:active{transform:translateY(1px)}
 .gt-match{display:flex;align-items:center;gap:5px;flex-wrap:nowrap}
 
 .gt-pullbtns{display:flex;flex-direction:row;flex-wrap:wrap;gap:6px;margin-top:6px;align-items:center}
+.gt-pulltoggle{display:none}
+.gt-gamehead{display:none} /* phone-only; desktop shows time in its row column */
 .gt-official,.gt-watch1{border-radius:4px;padding:3px 9px;font-family:var(--mono);font-size:10px;cursor:pointer;letter-spacing:.02em;white-space:nowrap}
 .gt-official{background:rgba(88,165,180,.12);border:1px solid var(--bet);color:var(--bet)}
 .gt-official:hover{background:var(--bet);color:var(--bg)}
@@ -753,6 +755,27 @@ footer{margin-top:30px;color:var(--muted);font-size:11.5px;text-align:center}
 
   /* comfortably tappable pull controls */
   .gt-pullbtns{display:flex;gap:8px;flex-wrap:wrap}
+  /* game header bar: time + pulled + ⋯Pull, above both pitcher cards, doubles
+     as a divider between games. The in-row time cell and the desktop pull
+     buttons are hidden so each pitcher card starts at the pitcher name. */
+  .gt-gamehead{
+    display:block;
+    border-top:2px solid var(--line2);
+    padding:12px 14px 4px;
+    margin-top:4px;
+  }
+  .gt-gh-top{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap}
+  .gt-gh-time{font-size:13px;font-weight:700;color:var(--text)}
+  .gt-gh-pulled{font-size:12px;color:var(--pos)}
+  .gt-row .gt-time{display:none} /* hoisted into the game header */
+  .gt-pullbtns-desktop{display:none !important} /* header carries the buttons now */
+  .gt-pulltoggle{display:none !important}
+  .gt-gamehead .gt-pullbtns{display:flex;margin-top:8px}
+
+  /* My Bets top: the 5-col summary and 4-col bucket break overflow a phone.
+     Drop both to 2 columns so they wrap instead of running off the side. */
+  .mb-summary{grid-template-columns:1fr 1fr}
+  .mb-stylebreak{grid-template-columns:1fr 1fr}
   .gt-official,.gt-watch1{padding:9px 13px;font-size:13px}
   .actionbar button{padding:11px 14px;font-size:13.5px}
   .gt-head{flex-wrap:wrap;gap:8px}
@@ -825,10 +848,7 @@ footer{margin-top:30px;color:var(--muted);font-size:11.5px;text-align:center}
   }
   .mb-date{color:var(--text)} /* override desktop muted so the strip reads evenly */
 
-  /* Export/Restore live on the History tab (hidden on phone), so surface
-     them here on the Today card. Desktop hides this row (rule below). */
-  .mobile-backup{display:flex;gap:8px;margin:10px 0 0}
-  .mobile-backup button{flex:1}
+  /* Export/Restore live only in Settings now — no phone Today surface. */
 }
 </style>
 </head>
@@ -886,10 +906,6 @@ footer{margin-top:30px;color:var(--muted);font-size:11.5px;text-align:center}
     </div>
     <div class="metastrip" id="metaStrip">
       <span id="metaFresh">No pull yet today</span>
-    </div>
-    <div class="mobile-backup" id="mobileBackup">
-      <button class="ghost small" id="exportBtnM">⬇ Export backup</button>
-      <button class="ghost small" id="restoreBtnM">⬆ Restore backup</button>
     </div>
     <div class="status" id="status"></div>
 
@@ -1975,8 +1991,12 @@ function setStatus(t,frac){
 function edgeColor(e){return e==null?"var(--muted)":e>=0.05?"var(--pos)":e<=-0.05?"var(--neg)":"var(--text)";}
 
 function showMain(){$("setup").classList.add("hidden");$("main").classList.remove("hidden");updateMetaStrip();}
+// The phone/PWA is a view + sync + log-bets client — it never pulls odds (staging is
+// Mac-only), so it must NOT be blocked by the Odds-key setup screen. "Native Mac app"
+// = the sestore bridge is present; anything else (phone/PWA in Safari) skips the gate.
+function _isNativeApp(){ return !!(window.webkit && window.webkit.messageHandlers && window.webkit.messageHandlers.sestore); }
 // If opened via a Share link, show the read-only picks and skip the normal app.
-if(getKey()){showMain();}
+if(getKey() || !_isNativeApp()){showMain();}
 $("keyInput").value="";
 $("saveKey").onclick=()=>{const v=$("keyInput").value.trim();if(!v)return;setKey(v);showMain();safeRenderLab();};
 // change-key panel (Past Days) — lets you swap the saved key after first setup
@@ -2481,6 +2501,22 @@ function renderToday(rows){
     const pulledAt = gRows[0] && gRows[0].pulledAtLocal ? gRows[0].pulledAtLocal : null;
     const anyPulledGame = gRows.some(r=>r.resolved);
 
+    // Phone-only game header: hoists time + pulled + ⋯Pull (and the Re-pull/Watch
+    // buttons it reveals) ABOVE both pitcher cards, so the two cards are uniform
+    // and the header doubles as a divider between games. Hidden on desktop, where
+    // time stays an in-row column. data-pull/data-watch wiring is unaffected —
+    // the buttons live here now instead of in the j===0 row.
+    const ghTime = `${time}${anyPulledGame?' <span class="gt-okcheck" title="Official Odds API pull logged — bet of record.">✓</span>':''}`;
+    const ghPulled = pulledAt ? `<span class="gt-gh-pulled${anyPulledGame?' gt-pulled-ok':''}">pulled ${pulledAt}</span>` : "";
+    const ghPull = !settled
+      ? `<button class="gt-pulltoggle" type="button" title="Show Re-pull / Watch">⋯ Pull</button>`+
+        `<div class="gt-pullbtns">`+
+          `<button class="gt-official${anyPulledGame?' gt-official-re':''}" data-pull="${i}" title="${anyPulledGame?'Re-pull with the Odds API — spends another credit, updates the logged line.':'Odds API — spends 1 credit, logs the bet of record, counts toward the forward test.'}">⬡ ${anyPulledGame?'Re-pull':'Official'}</button>`+
+          (!started?`<button class="gt-watch1" data-watch="${i}" title="SharpAPI — free live DK/FD line, nothing saved, not the bet of record.">✱ Watch</button>`:"")+
+        `</div>`
+      : "";
+    tbl+=`<div class="gt-gamehead"><div class="gt-gh-top"><span class="gt-gh-time">${ghTime}</span>${ghPulled}</div>${ghPull}</div>`;
+
     // Always two slots for uniformity: away starter, then home starter.
     const slots = [
       {name:g.awayName, side:"away"},
@@ -2496,7 +2532,7 @@ function renderToday(rows){
         ? `<div class="gt-time-game">${time}${officialDone?' <span class="gt-okcheck" title="Official Odds API pull logged — bet of record.">✓</span>':''}</div>`+
           (pulledAt?`<div class="gt-pulled${officialDone?' gt-pulled-ok':''}">pulled ${pulledAt}</div>`:"")+
           (!settled
-            ? `<div class="gt-pullbtns">`+
+            ? `<div class="gt-pullbtns gt-pullbtns-desktop">`+
                 `<button class="gt-official${officialDone?' gt-official-re':''}" data-pull="${i}" title="${officialDone?'Re-pull with the Odds API — spends another credit, updates the logged line.':'Odds API — spends 1 credit, logs the bet of record, counts toward the forward test.'}">⬡ ${officialDone?'Re-pull':'Official'}</button>`+
                 (!started?`<button class="gt-watch1" data-watch="${i}" title="SharpAPI — free live DK/FD line, nothing saved, not the bet of record.">✱ Watch</button>`:"")+
               `</div>`
@@ -2663,6 +2699,11 @@ function renderToday(rows){
   board.querySelectorAll("[data-watch]").forEach(b=>b.onclick=()=>{
     const g=_stageGames[Number(b.dataset.watch)];
     watchOneGame(g);
+  });
+  // per-game pull toggle (phone): reveal/hide Re-pull + Watch in the game header
+  board.querySelectorAll(".gt-pulltoggle").forEach(b=>b.onclick=(e)=>{
+    e.stopPropagation();
+    const head=b.closest(".gt-gamehead"); if(head) head.classList.toggle("pull-open");
   });
   // why-flagged icon: click toggles the popover (hover also works on desktop)
   // ＄ log-bet buttons → open the bet modal pre-filled from this pick
@@ -5958,7 +5999,7 @@ async function handednessAB(){
 // and we paint from the Mac's native store (offline-safe).
 (async function boot(){
   try{ if(SS.hydrate) await SS.hydrate(); }catch(e){ console.warn("hydrate failed, booting local:",e); }
-  if(getKey()){
+  if(getKey() || !_isNativeApp()){
     try{ migrateDevig(); }catch(e){ console.error("devig migration failed:",e); }
     // restore the most recent day that has a staged slate, so Today survives reload
     // and inactivity (it shows that day until you deliberately Stage Day again).
