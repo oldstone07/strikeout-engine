@@ -4917,8 +4917,12 @@ async function watchGameInto(g, all, probList, day, season){
     if(!m){ const ln=nm.split(" ").pop(); for(const k in modelByName){ if(k.split(" ").pop()===ln){ m=modelByName[k]; break; } } }
     if(m && m.eK!=null){
       r._watchEK=m.eK;
-      const side = m.eK>=red.line ? "Over" : "Under";
+      // Side must match how the MODEL actually picks (line ~2908): probability,
+      // not eK-vs-line. At a display-tie (eK rounds to the line) the eK>=line
+      // fallback wrongly forced "Over"; the model's own pOver>=pUnder call is
+      // the source of truth and resolves those to Under in the backtest.
       const pOver=probOver(m.dist, red.line), pUnder=1-pOver;
+      const side = pOver>=pUnder ? "Over" : "Under";
       let edge=null;
       if(red.bestOver!=null && red.bestUnder!=null){
         const fair=fairProb(Number(red.bestOver),Number(red.bestUnder),side);
@@ -5507,8 +5511,10 @@ function freeVerdict(r){
   // eK is line-independent, so the projection carries over; only line+prices change.
   if(r.eK==null || r.freeLine==null) return null;
   const line=r.freeLine, over=r.freeOver, under=r.freeUnder;
-  // side: model takes whichever side its projection favors at THIS line
-  const side = r.eK>=line ? "Over" : "Under";
+  // side: use the model's stored (probability-based) pick; eK is line-independent
+  // so the directional call carries over. Falls back to eK-vs-line only if no
+  // stored side. (Matches rowVerdict; avoids the eK>=line tie→Over artifact.)
+  const side = r.modelSide || (r.eK>=line ? "Over" : "Under");
   const price = side==="Over" ? over : under;
   const fair = fairProb(over, under, side);
   const edge = (fair!=null) ? (/*model prob unknown here; use eK-vs-line edge proxy*/ null) : null;
