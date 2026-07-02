@@ -195,6 +195,9 @@ button:active{transform:translateY(1px)}
 .mb-tag{font-size:9px;font-weight:800;padding:2px 5px;border-radius:4px;border:1px solid currentColor;margin-left:6px;vertical-align:middle}
 .bm-actions{display:flex;gap:10px;justify-content:flex-end;margin-top:18px}
 .actionbar button{padding:10px 13px;font-size:13px;white-space:nowrap}
+/* desktop: the collapsible wrapper is transparent — buttons sit inline as before */
+#actionMenuToggle{display:none}
+.actionmenu{display:contents}
 .actionbar .primary.big{padding:11px 18px;font-size:13.5px}
 @media(max-width:1180px){ .actionbar{flex-wrap:wrap} }
 .tabs{display:flex;gap:2px;margin-left:auto;background:var(--bg2);padding:3px;border-radius:9px;border:1px solid var(--line)}
@@ -751,6 +754,19 @@ footer{margin-top:30px;color:var(--muted);font-size:11.5px;text-align:center}
   .actionbar button{padding:11px 14px;font-size:13.5px}
   .gt-head{flex-wrap:wrap;gap:8px}
 
+  /* collapse the 7 secondary actions behind a menu so games/summary sit up top.
+     Stage Day + Sync now stay inline; ⋯ Actions toggles the rest. */
+  #actionMenuToggle{display:inline-block}
+  .actionmenu{
+    display:none;
+    flex:0 0 100%;
+    flex-direction:column;
+    gap:8px;
+    margin-top:8px;
+  }
+  .actionmenu.open{display:flex}
+  .actionmenu button{width:100%}
+
   /* Export/Restore live on the History tab (hidden on phone), so surface
      them here on the Today card. Desktop hides this row (rule below). */
   .mobile-backup{display:flex;gap:8px;margin:10px 0 0}
@@ -800,12 +816,15 @@ footer{margin-top:30px;color:var(--muted);font-size:11.5px;text-align:center}
     <div class="bar actionbar">
       <button class="primary big" id="stageBtn" title="Free — loads today's matchups, probable pitchers, and game times. Saves the current day first, then loads fresh.">Stage Day</button>
       <button class="ghost" id="syncBtn" title="Pull the latest saved state from the cloud (picks, pulls, bets from your other device) and refresh the screen. No credits.">⟳ Sync now</button>
+      <button class="ghost" id="actionMenuToggle" aria-expanded="false" title="Show all actions">⋯ Actions</button>
+      <div class="actionmenu" id="actionMenu">
       <button class="ghost" id="runBtn" title="Pull lines for every game on the loaded day at once (~1 credit per game).">Pull All</button>
       <button class="ghost" id="undoPullBtn" title="Revert the most recent pull or re-pull — restores the affected pitcher(s) to their state before that pull. One level of undo. Doesn't refund credits.">↩ Undo pull</button>
       <button class="ghost" id="watchBtn" title="Free — fetches live DraftKings/FanDuel strikeout lines from SharpAPI and shows how they compare to your model. No credits, nothing saved. Use this to watch lines move; do an official Pull All for the bet of record.">Intraday watch</button>
       <button class="ghost" id="previewBtn" title="Free — runs the model on tonight's probable starters using MLB stats only. Shows projected K, no lines, no credits, nothing saved.">Preview</button>
       <button class="ghost" id="gradeTodayBtn" title="Fetch final strikeout totals and fill in results inline on the games below.">Results</button>
       <button class="ghost" id="esp32Btn" title="Downloads esp32_picks.json — only today's Combo + Conviction picks with live game status and actual strikeouts, ready for the ESP32 to fetch.">Export ESP32 feed</button>
+      </div>
     </div>
     <div class="metastrip" id="metaStrip">
       <span id="metaFresh">No pull yet today</span>
@@ -2084,6 +2103,11 @@ document.querySelectorAll(".tnav").forEach(b=>{
 });
 $("tabToday") && ($("tabToday").onclick=()=>showTab("Today"));
 $("syncBtn") && ($("syncBtn").onclick=syncNow);
+$("actionMenuToggle") && ($("actionMenuToggle").onclick=function(){
+  const m=$("actionMenu"); if(!m) return;
+  const open=m.classList.toggle("open");
+  this.setAttribute("aria-expanded", open?"true":"false");
+});
 $("tabPerf") && ($("tabPerf").onclick=()=>{showTab("Perf");try{renderPerf();}catch(e){console.error(e);}});
 $("tabHist") && ($("tabHist").onclick=()=>{showTab("Hist");try{renderHistory();}catch(e){console.error(e);}});
 $("tabData") && ($("tabData").onclick=()=>{showTab("Data");try{renderData();}catch(e){console.error("renderData failed:",e);}});
