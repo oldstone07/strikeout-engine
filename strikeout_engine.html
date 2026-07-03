@@ -155,7 +155,7 @@ button:active{transform:translateY(1px)}
 .set-h{font:600 11px/1 var(--mono,ui-monospace,Menlo,monospace);letter-spacing:.12em;text-transform:uppercase;color:var(--muted);margin:0 0 11px}
 .set-row{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin:0 0 10px}
 /* My Bets */
-.gt-logbet{flex:0 0 auto;font-size:11px;font-weight:700;border:1px solid var(--line2);background:transparent;color:var(--muted);border-radius:4px;padding:3px 7px;cursor:pointer;margin-left:2px}
+.gt-logbet{flex:0 0 auto;font-size:9.5px;font-weight:700;border:1px solid var(--line);background:transparent;color:var(--faint);border-radius:4px;padding:2px 5px;cursor:pointer;margin-left:2px}
 .gt-logbet:hover{color:var(--pos);border-color:var(--pos)}
 .gt-logbet.logged{color:var(--pos);border-color:var(--pos);background:color-mix(in srgb,var(--pos) 16%,transparent);font-weight:800}
 .mb-summary{display:grid;grid-template-columns:repeat(6,1fr);gap:12px;margin:0 0 18px}
@@ -439,14 +439,30 @@ button:active{transform:translateY(1px)}
 .gt-rec b{font-weight:700;letter-spacing:.03em;margin-right:5px}
 .gt-rec:last-child{background:var(--bg2)}
 .gt-actions{display:flex;gap:8px}
-.gt-row{display:grid;grid-template-columns:26px 96px minmax(110px,0.6fr) minmax(140px,1fr) 60px 52px 70px minmax(152px,auto);gap:10px;align-items:center;padding:9px 16px;border-bottom:1px solid var(--line);font-size:13px}
+.gt-row{display:grid;grid-template-columns:26px 46px minmax(150px,1fr) 60px 52px 70px minmax(150px,auto);gap:10px;align-items:center;padding:8px 16px;border-bottom:1px solid var(--line);font-size:13px}
+/* time + pull buttons live in the per-game header now, not per row */
+.gt-row .gt-time{display:none}
+.gt-teamabbr{color:var(--muted);font-size:10.5px;letter-spacing:.06em;font-weight:600;font-family:var(--mono,ui-monospace,Menlo,monospace)}
+/* per-game header row (desktop): "AWAY @ HOME · time · pulled"  ....  [Official][Watch] */
+.gt-gamehead{display:flex;align-items:baseline;justify-content:space-between;gap:14px;padding:15px 16px 5px;border-top:1px solid var(--line2)}
+.gt-gamehead:first-of-type{border-top:none}
+.gt-gh-top{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap;min-width:0}
+.gt-gh-match{font-family:var(--sans);font-weight:600;font-size:12px;letter-spacing:.08em;color:var(--text)}
+/* mockup font: pitcher names + pick chips in Space Grotesk (sans), not mono */
+.gt-pname{font-family:var(--sans);font-weight:600;letter-spacing:.01em}
+.gt-pick{font-family:var(--sans)}
+.gt-gh-time{color:var(--faint);font-size:11px;letter-spacing:.06em;font-variant-numeric:tabular-nums}
+.gt-gh-pulled{font-size:10px;color:var(--faint)}
+.gt-gamehead .gt-pullbtns{margin-top:0;flex:0 0 auto}
+.gt-gamehead .gt-pulltoggle{display:none}
 /* statwrap is transparent on desktop: its 3 .gt-num children act as direct
    grid cells (display:contents). On phone it becomes a flex strip — see ≤640px. */
 .gt-statwrap{display:contents}
 /* mobile-only backup row on the Today card; shown only ≤640px */
 .mobile-backup{display:none}
 .gt-trk{display:flex;align-items:center;justify-content:center}
-.gt-trk input{width:15px;height:15px;cursor:pointer;accent-color:var(--bet);margin:0}
+.gt-trk input{width:12px;height:12px;cursor:pointer;accent-color:var(--bet);margin:0;opacity:.4;transition:opacity .1s}
+.gt-trk input:checked,.gt-row:hover .gt-trk input:not(:disabled){opacity:1}
 .gt-trk input:disabled{cursor:default;opacity:.22}
 .gt-row.gt-manual{background:rgba(138,138,138,.07)}
 .gt-live{display:block;margin:3px 0 0;font:700 11px/1.2 var(--mono,ui-monospace,Menlo,monospace);white-space:nowrap}
@@ -499,14 +515,6 @@ button:active{transform:translateY(1px)}
 
 .gt-pullbtns{display:flex;flex-direction:row;flex-wrap:wrap;gap:6px;margin-top:6px;align-items:center}
 .gt-pulltoggle{display:none}
-/* Cleaner Today rows (match the mockup): the per-row actions — Re-pull/Watch,
-   the ⓘ why-icon, and the ＄ log-bet — reveal on row hover, so a game at rest
-   shows just its columns. Everything stays one hover away; a logged ＄ stays lit. */
-.gt-pullbtns-desktop{display:none}
-.gt-row:hover .gt-pullbtns-desktop{display:flex}
-.gt-pickcell .why-wrap,.gt-pickcell .gt-logbet:not(.logged){opacity:0;transition:opacity .1s}
-.gt-row:hover .gt-pickcell .why-wrap,.gt-row:hover .gt-pickcell .gt-logbet{opacity:1}
-.gt-gamehead{display:none} /* phone-only; desktop shows time in its row column */
 .gt-official,.gt-watch1{border-radius:4px;padding:3px 9px;font-family:var(--mono);font-size:10px;cursor:pointer;letter-spacing:.02em;white-space:nowrap}
 .gt-official{background:rgba(88,165,180,.12);border:1px solid var(--bet);color:var(--bet)}
 .gt-official:hover{background:var(--bet);color:var(--bg)}
@@ -524,8 +532,8 @@ button:active{transform:translateY(1px)}
 .gt-pickcell .gt-pick{overflow:hidden;text-overflow:ellipsis;min-width:0}
 .gt-pickcell .why-wrap{flex:0 0 auto}
 .gt-pickcell .why-pop{left:auto;right:0}
-.why-i{width:16px;height:16px;border-radius:50%;border:1px solid var(--line2);background:transparent;color:var(--muted);
-  font-size:10px;font-style:italic;font-weight:700;line-height:1;cursor:pointer;padding:0;vertical-align:middle}
+.why-i{width:13px;height:13px;border-radius:50%;border:1px solid var(--line);background:transparent;color:var(--faint);
+  font-size:8.5px;font-style:italic;font-weight:700;line-height:1;cursor:pointer;padding:0;vertical-align:middle}
 .why-i:hover{color:var(--bet);border-color:var(--bet)}
 .why-pop{position:absolute;left:0;top:22px;z-index:60;display:none;width:248px;
   background:var(--card2);border:1px solid var(--line2);border-radius:6px;padding:11px 13px;
@@ -2530,7 +2538,7 @@ function renderToday(rows){
   const slateMeta = `<div class="gt-slatemeta"><b>${nStarters}</b> starters · <span class="gt-sig">${nSignals}</span> signal${nSignals===1?"":"s"} live</div>`;
   let tbl=`<div class="gamestbl">`+
     `<div class="gt-head"><div class="gt-title">Tonight's Slate</div><div class="gt-headright">${slateMeta}${dayRecHTML}</div></div>`+
-    `<div class="gt-row gt-colhead"><span title="Track on ESP">●</span><span>Time</span><span>Matchup</span><span>Pitcher</span><span>Line</span><span>Model</span><span>Edge</span><span>Pick</span></div>`;
+    `<div class="gt-row gt-colhead"><span title="Track on ESP">●</span><span>Team</span><span>Pitcher</span><span>Line</span><span>Model</span><span>Edge</span><span>Pick</span></div>`;
 
   _stageGames.forEach((g,i)=>{
     const gk=norm(g.homeTeam)+"|"+norm(g.awayTeam);
@@ -2559,7 +2567,8 @@ function renderToday(rows){
           (!started?`<button class="gt-watch1" data-watch="${i}" title="SharpAPI — free live DK/FD line, nothing saved, not the bet of record.">✱ Watch</button>`:"")+
         `</div>`
       : "";
-    tbl+=`<div class="gt-gamehead"><div class="gt-gh-top"><span class="gt-gh-time">${ghTime}</span>${ghPulled}</div>${ghPull}</div>`;
+    const ghMatch = `${(teamInfo(g.awayTeam)[0])||"?"} @ ${(teamInfo(g.homeTeam)[0])||"?"}`;
+    tbl+=`<div class="gt-gamehead"><div class="gt-gh-top"><span class="gt-gh-match">${ghMatch}</span><span class="gt-gh-time">${ghTime}</span>${ghPulled}</div>${ghPull}</div>`;
 
     // Always two slots for uniformity: away starter, then home starter.
     const slots = [
@@ -2571,18 +2580,10 @@ function renderToday(rows){
       const r = gRows.find(x=> slot.name && norm(x.pitcher)===norm(slot.name)) || null;
 
       // left/time cell only on the first row of the game
-      const officialDone = anyPulledGame; // this game already has an Official pull
-      const timeCell = j===0
-        ? `<div class="gt-time-game">${time}${officialDone?' <span class="gt-okcheck" title="Official Odds API pull logged — bet of record.">✓</span>':''}</div>`+
-          (pulledAt?`<div class="gt-pulled${officialDone?' gt-pulled-ok':''}">pulled ${pulledAt}</div>`:"")+
-          (!settled
-            ? `<div class="gt-pullbtns gt-pullbtns-desktop">`+
-                `<button class="gt-official${officialDone?' gt-official-re':''}" data-pull="${i}" title="${officialDone?'Re-pull with the Odds API — spends another credit, updates the logged line.':'Odds API — spends 1 credit, logs the bet of record, counts toward the forward test.'}">⬡ ${officialDone?'Re-pull':'Official'}</button>`+
-                (!started?`<button class="gt-watch1" data-watch="${i}" title="SharpAPI — free live DK/FD line, nothing saved, not the bet of record.">✱ Watch</button>`:"")+
-              `</div>`
-            : "")
-        : "";
-      const matchCell = j===0 ? matchup : "";
+      // time + pull/watch buttons now live in the per-game header (gt-gamehead) above.
+      const timeCell = "";
+      // per-row team abbreviation (STL / CHC …), like the mockup
+      const matchCell = `<span class="gt-teamabbr">${(teamInfo(slot.side==="away"?g.awayTeam:g.homeTeam)[0])||""}</span>`;
 
       let rowCls="gt-row", pitchCell, lineCell="—", modelCell="—", edgeCell="—", pickCell;
 
