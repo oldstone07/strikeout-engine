@@ -499,6 +499,13 @@ button:active{transform:translateY(1px)}
 
 .gt-pullbtns{display:flex;flex-direction:row;flex-wrap:wrap;gap:6px;margin-top:6px;align-items:center}
 .gt-pulltoggle{display:none}
+/* Cleaner Today rows (match the mockup): the per-row actions — Re-pull/Watch,
+   the ⓘ why-icon, and the ＄ log-bet — reveal on row hover, so a game at rest
+   shows just its columns. Everything stays one hover away; a logged ＄ stays lit. */
+.gt-pullbtns-desktop{display:none}
+.gt-row:hover .gt-pullbtns-desktop{display:flex}
+.gt-pickcell .why-wrap,.gt-pickcell .gt-logbet:not(.logged){opacity:0;transition:opacity .1s}
+.gt-row:hover .gt-pickcell .why-wrap,.gt-row:hover .gt-pickcell .gt-logbet{opacity:1}
 .gt-gamehead{display:none} /* phone-only; desktop shows time in its row column */
 .gt-official,.gt-watch1{border-radius:4px;padding:3px 9px;font-family:var(--mono);font-size:10px;cursor:pointer;letter-spacing:.02em;white-space:nowrap}
 .gt-official{background:rgba(88,165,180,.12);border:1px solid var(--bet);color:var(--bet)}
