@@ -14,9 +14,9 @@
   --neg:#ec5b52; --neg-dim:rgba(236,91,82,.12);
   --accent:#e6a94a;                          /* Conviction — amber */
   --accent-dim:rgba(230,169,74,.12);
-  --bet:#36c5d8;                             /* Combo — phosphor cyan */
+  --bet:#36c5d8;                             /* Value — phosphor cyan */
   --bet-dim:rgba(54,197,216,.10);
-  --ceiling:#b07cff;                         /* Ceiling (high-line Over) — violet */
+  --ceiling:#b07cff;                         /* Overpower (high-line Over) — violet */
   --ceiling-dim:rgba(176,124,255,.12);
   --watch:#7da0b0;                            /* Watch (live, unqualified) — slate */
   --watch-dim:rgba(125,160,176,.14);
@@ -941,7 +941,7 @@ footer{margin-top:30px;color:var(--muted);font-size:11.5px;text-align:center}
       <button class="ghost" id="watchBtn" title="Free — fetches live DraftKings/FanDuel strikeout lines from SharpAPI and shows how they compare to your model. No credits, nothing saved. Use this to watch lines move; do an official Pull All for the bet of record.">Intraday watch</button>
       <button class="ghost" id="previewBtn" title="Free — runs the model on tonight's probable starters using MLB stats only. Shows projected K, no lines, no credits, nothing saved.">Preview</button>
       <button class="ghost" id="gradeTodayBtn" title="Fetch final strikeout totals and fill in results inline on the games below.">Results</button>
-      <button class="ghost" id="esp32Btn" title="Downloads esp32_picks.json — only today's Combo + Conviction picks with live game status and actual strikeouts, ready for the ESP32 to fetch.">Export ESP32 feed</button>
+      <button class="ghost" id="esp32Btn" title="Downloads esp32_picks.json — only today's Value + Conviction picks with live game status and actual strikeouts, ready for the ESP32 to fetch.">Export ESP32 feed</button>
       </div>
     </div>
     <div class="metastrip" id="metaStrip">
@@ -962,7 +962,7 @@ footer{margin-top:30px;color:var(--muted);font-size:11.5px;text-align:center}
     <div id="perfStatus" class="perfstatus hidden"></div>
 
     <h3>★ Forward test — the real one</h3>
-    <p class="muted small" style="color:var(--muted)">One bet, three candidates — all logged live at real prices. Each is graded on <b>ROI</b> (price-aware, so juiced and cheap tracks compare fairly), bar <b>ROI ≥ +5%</b>. <b>Combo (Strong + ≤5.5)</b> is the only thing you bet, over <b>30</b> picks. <b>Conviction Over</b> is a candidate over <b>50</b>. <b>Ceiling (Over + line ≥5.5)</b> is a candidate over <b>40</b>. Nothing earns money until its track clears +5% ROI. Only live picks count here.</p>
+    <p class="muted small" style="color:var(--muted)">One bet, three candidates — all logged live at real prices. Each is graded on <b>ROI</b> (price-aware, so juiced and cheap tracks compare fairly), bar <b>ROI ≥ +5%</b>. <b>Value (Strong + ≤5.5)</b> is the only thing you bet, over <b>30</b> picks. <b>Conviction Over</b> is a candidate over <b>50</b>. <b>Overpower (Over + line ≥5.5)</b> is a candidate over <b>40</b>. Nothing earns money until its track clears +5% ROI. Only live picks count here.</p>
     <div id="forwardTest"></div>
 
     <h3 style="margin-top:32px">Your three bets — full history</h3>
@@ -1011,12 +1011,12 @@ footer{margin-top:30px;color:var(--muted);font-size:11.5px;text-align:center}
     <h3>Weekly hit rate</h3>
     <p class="muted small" style="color:var(--muted)">Each point is one week's hit rate for the window. The flat reference line is break-even (52.4% at -110). Steadier line = more consistent edge; a saw-tooth that dips below break-even is a signal leaning on hot streaks.</p>
     <div class="graphtoggle" id="graphToggle">
-      <button class="gtg" data-cfg="combo">Combo</button>
+      <button class="gtg" data-cfg="combo">Value</button>
       <button class="gtg" data-cfg="conv">Conviction</button>
-      <button class="gtg" data-cfg="ceil">Ceiling</button>
-      <button class="gtg" data-cfg="combo+conv">Combo+Conv</button>
-      <button class="gtg" data-cfg="combo+ceil">Combo+Ceil</button>
-      <button class="gtg" data-cfg="conv+ceil">Conv+Ceil</button>
+      <button class="gtg" data-cfg="ceil">Overpower</button>
+      <button class="gtg" data-cfg="combo+conv">Value+Conv</button>
+      <button class="gtg" data-cfg="combo+ceil">Value+OP</button>
+      <button class="gtg" data-cfg="conv+ceil">Conv+OP</button>
       <button class="gtg on" data-cfg="all">All 3</button>
     </div>
     <div id="betGraph"></div>
@@ -1039,7 +1039,7 @@ footer{margin-top:30px;color:var(--muted);font-size:11.5px;text-align:center}
         <input id="restoreFile" type="file" accept="application/json,.json" style="display:none">
       </div>
     </div>
-    <p class="muted small" style="color:var(--muted)">Each day's flagged picks and how they did, with that day's Combo and Conviction record. <b>Export backup</b> downloads everything as a file you own. <b>Restore backup</b> merges a backup file in — days in the file overwrite matching days; days not in the file are kept.</p>
+    <p class="muted small" style="color:var(--muted)">Each day's flagged picks and how they did, with that day's Value and Conviction record. <b>Export backup</b> downloads everything as a file you own. <b>Restore backup</b> merges a backup file in — days in the file overwrite matching days; days not in the file are kept.</p>
     <div class="customrange" id="backfillRange" style="margin:4px 0 14px">
       <label>Backfill month <select id="histRangeMonth"></select></label>
       <button class="ghost small" id="histRangeBtn">Backfill month (paid)</button>
@@ -1217,7 +1217,7 @@ footer{margin-top:30px;color:var(--muted);font-size:11.5px;text-align:center}
         <div class="rp-title">By bet style</div>
         <div class="betstyle-heads">
           <div class="bs-cell" style="border-color:var(--bet)">
-            <div class="bs-head" style="color:var(--bet)">COMBO</div>
+            <div class="bs-head" style="color:var(--bet)">VALUE</div>
             <div class="bs-big" id="bsComboUnits">—</div>
             <div class="bs-sub"><span id="bsComboRec">—</span> · <span id="bsComboPct">—</span></div>
           </div>
@@ -1227,14 +1227,14 @@ footer{margin-top:30px;color:var(--muted);font-size:11.5px;text-align:center}
             <div class="bs-sub"><span id="bsConvRec">—</span> · <span id="bsConvPct">—</span></div>
           </div>
           <div class="bs-cell" style="border-color:var(--ceiling)">
-            <div class="bs-head" style="color:var(--ceiling)">CEILING</div>
+            <div class="bs-head" style="color:var(--ceiling)">OVERPOWER</div>
             <div class="bs-big" id="bsCeilUnits">—</div>
             <div class="bs-sub"><span id="bsCeilRec">—</span> · <span id="bsCeilPct">—</span></div>
           </div>
         </div>
         <div class="betstyle betstyle3">
           <div class="bs-col">
-            <div class="bs-collabel" style="color:var(--bet)">Combo =</div>
+            <div class="bs-collabel" style="color:var(--bet)">Value =</div>
             <div class="bs-cell bs-comp">
               <div class="bs-head">Line ≤ 5.5 only</div>
               <div class="bs-big" id="bsCompLineU">—</div>
@@ -1260,7 +1260,7 @@ footer{margin-top:30px;color:var(--muted);font-size:11.5px;text-align:center}
             </div>
           </div>
           <div class="bs-col">
-            <div class="bs-collabel" style="color:var(--ceiling)">Ceiling =</div>
+            <div class="bs-collabel" style="color:var(--ceiling)">Overpower =</div>
             <div class="bs-cell bs-comp">
               <div class="bs-head">Over only</div>
               <div class="bs-big" id="bsCompCeilOverU">—</div>
@@ -1290,8 +1290,8 @@ footer{margin-top:30px;color:var(--muted);font-size:11.5px;text-align:center}
 const LEAGUE_K_PER_PA=0.225, LEAGUE_BF_PER_START=23.0, PITCHER_PRIOR_PA=80.0,
       TEAM_PRIOR_PA=200.0, BF_SPREAD=[-4,-2,0,2,4], BF_WEIGHTS=[0.15,0.2,0.3,0.2,0.15], BF_FLOOR=8;
 // ---- BET-GATE CONSTANTS (single source of truth; every gate reads these) ----
-const EDGE_STRONG_BAR=0.20;   // model edge ≥20% = Strong tier (Combo)
-const EDGE_MAX_LINE=5.5;      // Combo low-line bucket
+const EDGE_STRONG_BAR=0.20;   // model edge ≥20% = Strong tier (Value)
+const EDGE_MAX_LINE=5.5;      // Value low-line bucket
 const CONV_DISAGREE_MIN=1.0;  // Conviction gate: Over must project ≥1.0K above line.
                               // Tightened from 0.75 (2026-06-30): the 0.75–1.0 band
                               // was dead weight (+6.7% Over). At ≥1.0 the bucket is
@@ -2160,7 +2160,7 @@ function renderRail(){
   if($("railRecord")) $("railRecord").textContent=`${w}-${n-w}`;
   if($("railWinrate")) $("railWinrate").textContent=n?`${(wr*100).toFixed(1)}%`:"—";
   if($("railRoi")){ $("railRoi").textContent=n?`${roi>=0?"+":""}${roi.toFixed(1)}%`:"—"; $("railRoi").style.color=n?(roi>0?"var(--pos)":roi<0?"var(--neg)":"var(--text)"):"var(--muted)"; }
-  // ---- by bet style (Combo vs Conviction, same window) ----
+  // ---- by bet style (Value vs Conviction, same window) ----
   const styleStat=(rows)=>{ const n=rows.length,w=rows.filter(r=>r.hit).length,u=rows.reduce((s,r)=>s+(r.units||0),0); return {n,w,u,wr:n?w/n:0}; };
   const cs=styleStat(perfRows.filter(r=>r.isCombo));
   const vs=styleStat(perfRows.filter(r=>r.isConvOver));
@@ -2448,7 +2448,7 @@ function renderToday(rows){
   // proven-bucket verdicts for any pulled rows
   const provenBuckets=computeProvenBuckets(labPicks());
   rows.forEach(r=>{ r._verdict = rowVerdict(r, provenBuckets); });
-  // initialize the ESP track selection for this day (Combo/Conviction default checked)
+  // initialize the ESP track selection for this day (Value/Conviction default checked)
   const _trkDay = _loadedDate||todayISO();
   const _trkSet = ensureTrackSet(_trkDay, rows);
 
@@ -2462,7 +2462,7 @@ function renderToday(rows){
   const nPulled=_stageGames.filter(g=>rowsByGame[norm(g.homeTeam)+"|"+norm(g.awayTeam)]).length;
   subEl.textContent=`${_stageGames.length} games · ${nPulled} pulled · pull each game when its lineup posts (~3–4pm ET for night games).`;
 
-  // ---- STAT STRIP: Combo / Conviction / Pass ----
+  // ---- STAT STRIP: Value / Conviction / Pass ----
   const comboCount = rows.filter(r=>!r.skipped && r._verdict && r._verdict.isCombo).length;
   const convCount  = rows.filter(r=>!r.skipped && r._verdict && r._verdict.isConvOver).length;
   const ceilCount  = rows.filter(r=>!r.skipped && r._verdict && r._verdict.isCeiling).length;
@@ -2472,9 +2472,9 @@ function renderToday(rows){
   rows.forEach(r=>{ if(r._verdict && (r._verdict.isCombo||r._verdict.isConvOver||r._verdict.isCeiling)) flaggedNames.add(r.pitcher); });
   const passCount = Math.max(0, modeledCount - flaggedNames.size);
   let summary=`<div class="statstrip" id="statStrip">`+
-    `<div class="ss-cell ss-click" data-pick="combo"><div class="ss-n" style="color:var(--bet)">${comboCount}</div><div class="ss-l">Combo${comboCount===1?" bet":" bets"}</div></div>`+
+    `<div class="ss-cell ss-click" data-pick="combo"><div class="ss-n" style="color:var(--bet)">${comboCount}</div><div class="ss-l">Value${comboCount===1?" bet":" bets"}</div></div>`+
     `<div class="ss-cell ss-click" data-pick="conv"><div class="ss-n" style="color:var(--accent)">${convCount}</div><div class="ss-l">Conviction</div></div>`+
-    `<div class="ss-cell ss-click" data-pick="ceil"><div class="ss-n" style="color:var(--ceiling)">${ceilCount}</div><div class="ss-l">Ceiling</div></div>`+
+    `<div class="ss-cell ss-click" data-pick="ceil"><div class="ss-n" style="color:var(--ceiling)">${ceilCount}</div><div class="ss-l">Overpower</div></div>`+
     `<div class="ss-cell"><div class="ss-n" style="color:var(--muted)">${passCount}</div><div class="ss-l">Pass</div></div>`+
     `</div>`;
 
@@ -2489,12 +2489,12 @@ function renderToday(rows){
     const card=(p)=>{
       const r=p.r;
       const price=(r.modelSide==="Over"?r.bestOver:r.bestUnder);
-      // priority for the card's identity badge: Combo > Conviction > Ceiling
+      // priority for the card's identity badge: Value > Conviction > Overpower
       const isCombo=p.combo;
       let kind, accent, icon, kindKey;
-      if(isCombo){ kind="Combo bet"; accent="var(--bet)"; icon="⚯"; kindKey="combo"; }
+      if(isCombo){ kind="Value bet"; accent="var(--bet)"; icon="⚯"; kindKey="combo"; }
       else if(p.conv){ kind="Conviction"; accent="var(--accent)"; icon="★"; kindKey="conv"; }
-      else { kind="Ceiling"; accent="var(--ceiling)"; icon="▲"; kindKey="ceil"; }
+      else { kind="Overpower"; accent="var(--ceiling)"; icon="▲"; kindKey="ceil"; }
       const extra = (isCombo&&p.conv?" + CONV":"") + (p.ceil&&isCombo?" + CEIL":"") + (p.ceil&&p.conv&&!isCombo?" + CEIL":"");
       return `<div class="pickcard" data-kind="${kindKey}" style="border-color:${accent}">`+
         `<div class="pc-kind" style="color:${accent}">${icon} ${kind.toUpperCase()}${extra}</div>`+
@@ -2509,13 +2509,13 @@ function renderToday(rows){
     summary+=`<div class="toppicks hidden" id="topPicks"><div class="tp-head">Top picks <span class="tp-hint">tap a count above to show / hide</span></div>`+
       `<div class="pickcards">${flagged.map(card).join("")}</div></div>`;
   } else if(anyPulled){
-    summary+=`<div class="ps-quiet">No tracked pick tonight — no Combo, Conviction, or Ceiling. Sit out. <span class="muted">(That silence is the tool working.)</span></div>`;
+    summary+=`<div class="ps-quiet">No tracked pick tonight — no Value, Conviction, or Overpower. Sit out. <span class="muted">(That silence is the tool working.)</span></div>`;
   } else {
     summary+=`<div class="ps-quiet">Nothing pulled yet. Pull games below as their lineups post.</div>`;
   }
 
   // ---- TODAY'S GAMES TABLE ----
-  // day record: graded Combo / Conviction / all-modeled results so far today
+  // day record: graded Value / Conviction / all-modeled results so far today
   const dayStat=(pred)=>{
     const picks=rows.filter(r=>!r.skipped && r._verdict && pred(r) && !r.voided);
     const graded=picks.filter(r=>r.hit!=null);
@@ -2530,9 +2530,9 @@ function renderToday(rows){
     const uCol=o.u>0?"var(--pos)":o.u<0?"var(--neg)":"var(--muted)";
     return `<span class="gt-rec" style="border-color:${col}"><b style="color:${col}">${label}</b> ${o.w}-${o.l} <span style="color:${uCol}">${o.u>=0?"+":""}${o.u.toFixed(1)}u</span></span>`;
   };
-  const dayRecHTML = `<div class="gt-dayrec">${recChip("Combo",dc,"var(--bet)")}${recChip("Conv",dv,"var(--accent)")}${recChip("Ceiling",dcl,"var(--ceiling)")}${recChip("Day",dall,"var(--text)")}</div>`;
+  const dayRecHTML = `<div class="gt-dayrec">${recChip("Value",dc,"var(--bet)")}${recChip("Conv",dv,"var(--accent)")}${recChip("Overpower",dcl,"var(--ceiling)")}${recChip("Day",dall,"var(--text)")}</div>`;
   // "N STARTERS · M SIGNALS LIVE" — starters = two slots per staged game;
-  // signals live = unique pitchers currently flagged Combo/Conviction/Ceiling.
+  // signals live = unique pitchers currently flagged Value/Conviction/Overpower.
   const nStarters = _stageGames.length * 2;
   const nSignals = flaggedNames.size;
   const slateMeta = `<div class="gt-slatemeta"><b>${nStarters}</b> starters · <span class="gt-sig">${nSignals}</span> signal${nSignals===1?"":"s"} live</div>`;
@@ -2602,7 +2602,7 @@ function renderToday(rows){
         if(nStyles===2) rowCls+=" gt-bet-both";
         else if(nStyles>=3) rowCls+=" gt-bet-tri";
         // single-style rows get a track class so the left-edge accent bar picks up
-        // the right color (Combo=cyan, Conviction=amber, Ceiling=purple)
+        // the right color (Value=cyan, Conviction=amber, Overpower=purple)
         else if(nStyles===1){ rowCls += v.isCombo?" gt-row-combo" : v.isConvOver?" gt-row-conv" : v.isCeiling?" gt-row-ceil" : ""; }
         const edgeColC = r.edge>=0.05?"var(--pos)":r.edge<=-0.05?"var(--neg)":"var(--muted)";
         const px=(r.sidePrice!=null)?r.sidePrice:(r.modelSide==="Over"?r.bestOver:r.bestUnder);
@@ -2617,10 +2617,10 @@ function renderToday(rows){
         if(r.voided) pickCell=`<span class="gt-pick gt-void">VOID</span>`;
         else if(r.actualK!=null) pickCell=`<span class="gt-pick ${r.hit?'gt-win':'gt-loss'}">${r.hit?'WON':'LOST'} · ${r.actualK}K</span>`;
         else if(nStyles>=2){
-          const chips=(v.isCombo?`<span class="gt-sc gt-sc-combo" title="Combo — Strong + line ≤5.5">C</span>`:"")
-                     +(v.isConvOver?`<span class="gt-sc gt-sc-conv" title="Conviction — Over + ≥1.0 from line">V</span>`:"")
-                     +(v.isCeiling?`<span class="gt-sc gt-sc-ceil" title="Ceiling — Over + line ≥5.5">X</span>`:"");
-          pickCell=`<span class="gt-pick gt-multi" title="Qualifies for ${nStyles} bet styles — see the C/V/X tags">★ ${r.modelSide} ${r.line}</span><span class="gt-scs">${chips}</span>`;
+          const chips=(v.isCombo?`<span class="gt-sc gt-sc-combo" title="Value — Strong + line ≤5.5">V</span>`:"")
+                     +(v.isConvOver?`<span class="gt-sc gt-sc-conv" title="Conviction — Over + ≥1.0 from line">C</span>`:"")
+                     +(v.isCeiling?`<span class="gt-sc gt-sc-ceil" title="Overpower — Over + line ≥5.5">O</span>`:"");
+          pickCell=`<span class="gt-pick gt-multi" title="Qualifies for ${nStyles} bet styles — see the V/C/O tags">★ ${r.modelSide} ${r.line}</span><span class="gt-scs">${chips}</span>`;
         }
         else if(v.isCombo) pickCell=`<span class="gt-pick gt-combo">${r.modelSide} ${r.line}</span>`;
         else if(v.isConvOver) pickCell=`<span class="gt-pick gt-conv">${r.modelSide} ${r.line}</span>`;
@@ -2629,12 +2629,12 @@ function renderToday(rows){
         // Live re-eval: if a Watch ran, show what the CURRENT live line would flag —
         // only when something actually changed (line drifted or tier flipped).
         if(r.actualK==null && !r.voided && r._watchLine!=null && r._watchEK!=null){
-          const liveSet=(r._watchCombo?"C":"")+(r._watchConv?"V":"")+(r._watchCeil?"X":"");
-          const offSet=(v.isCombo?"C":"")+(v.isConvOver?"V":"")+(v.isCeiling?"X":"");
+          const liveSet=(r._watchCombo?"V":"")+(r._watchConv?"C":"")+(r._watchCeil?"O":"");
+          const offSet=(v.isCombo?"V":"")+(v.isConvOver?"C":"")+(v.isCeiling?"O":"");
           if(r._watchLine!==r.line || liveSet!==offSet){
-            const lc=(r._watchCombo?`<span class="gt-sc gt-sc-combo">C</span>`:"")
-                    +(r._watchConv?`<span class="gt-sc gt-sc-conv">V</span>`:"")
-                    +(r._watchCeil?`<span class="gt-sc gt-sc-ceil">X</span>`:"");
+            const lc=(r._watchCombo?`<span class="gt-sc gt-sc-combo">V</span>`:"")
+                    +(r._watchConv?`<span class="gt-sc gt-sc-conv">C</span>`:"")
+                    +(r._watchCeil?`<span class="gt-sc gt-sc-ceil">O</span>`:"");
             pickCell += (liveSet==="")
               ? `<span class="gt-livetier gt-livetier-pass" title="At the live line (${r._watchLine}) the model no longer flags this as a tracked bet.">✱ live ${r._watchLine}: no edge</span>`
               : `<span class="gt-livetier" title="At the live line (${r._watchLine}) this would flag as ${liveSet.split('').join('/')}.">✱ live ${r._watchLine}: ${liveSet===offSet?'still':'now'}<span class="gt-scs">${lc}</span></span>`;
@@ -2662,16 +2662,16 @@ function renderToday(rows){
         // would-be verdict from the free model run against the live line
         const nW=(r._watchCombo?1:0)+(r._watchConv?1:0)+(r._watchCeil?1:0);
         if(nW>=2){
-          const chips=(r._watchCombo?`<span class="gt-sc gt-sc-combo" title="Combo — Strong + line ≤5.5">C</span>`:"")
-                     +(r._watchConv?`<span class="gt-sc gt-sc-conv" title="Conviction — Over + ≥1.0 from line">V</span>`:"")
-                     +(r._watchCeil?`<span class="gt-sc gt-sc-ceil" title="Ceiling — Over + line ≥5.5">X</span>`:"");
+          const chips=(r._watchCombo?`<span class="gt-sc gt-sc-combo" title="Value — Strong + line ≤5.5">V</span>`:"")
+                     +(r._watchConv?`<span class="gt-sc gt-sc-conv" title="Conviction — Over + ≥1.0 from line">C</span>`:"")
+                     +(r._watchCeil?`<span class="gt-sc gt-sc-ceil" title="Overpower — Over + line ≥5.5">O</span>`:"");
           pickCell=`<span class="gt-pick gt-multi" title="At the live line this would qualify for ${nW} bet styles — not logged. Official pull to lock it.">would be ✱</span><span class="gt-scs">${chips}</span>`;
         } else if(r._watchCombo){
-          pickCell=`<span class="gt-pick gt-watch-combo" title="At the live DK/FD line this would qualify as a COMBO. Not logged — do an Official pull to lock it.">would be COMBO ✱</span>`;
+          pickCell=`<span class="gt-pick gt-watch-combo" title="At the live DK/FD line this would qualify as a VALUE. Not logged — do an Official pull to lock it.">would be VALUE ✱</span>`;
         } else if(r._watchConv){
           pickCell=`<span class="gt-pick gt-watch-conv" title="At the live DK/FD line this would qualify as CONVICTION. Not logged — do an Official pull to lock it.">would be CONV ✱</span>`;
         } else if(r._watchCeil){
-          pickCell=`<span class="gt-pick gt-watch-ceil" title="At the live DK/FD line this would qualify as CEILING. Not logged — do an Official pull to lock it.">would be CEILING ✱</span>`;
+          pickCell=`<span class="gt-pick gt-watch-ceil" title="At the live DK/FD line this would qualify as OVERPOWER. Not logged — do an Official pull to lock it.">would be OVERPOWER ✱</span>`;
         } else {
           pickCell=`<span class="gt-pick gt-watchtag" title="Live line + model, but doesn't currently qualify. Not the bet of record.">WATCH ✱</span>`;
         }
@@ -2693,9 +2693,9 @@ function renderToday(rows){
         const checkRow=(c)=>`<div class="why-chk ${c.pass?'ok':'no'}">${c.pass?'✓':'✗'} ${c.label}</div>`;
         let inner=`<div class="why-sum">${wf.summary}</div>`;
         if(wf.comboChecks){
-          inner+=`<div class="why-grp"><div class="why-grp-h" style="color:var(--bet)">COMBO needs both</div>${wf.comboChecks.map(checkRow).join("")}</div>`;
+          inner+=`<div class="why-grp"><div class="why-grp-h" style="color:var(--bet)">VALUE needs both</div>${wf.comboChecks.map(checkRow).join("")}</div>`;
           inner+=`<div class="why-grp"><div class="why-grp-h" style="color:var(--accent)">CONVICTION needs both</div>${wf.convChecks.map(checkRow).join("")}</div>`;
-          if(wf.ceilChecks) inner+=`<div class="why-grp"><div class="why-grp-h" style="color:var(--ceiling)">CEILING needs both</div>${wf.ceilChecks.map(checkRow).join("")}</div>`;
+          if(wf.ceilChecks) inner+=`<div class="why-grp"><div class="why-grp-h" style="color:var(--ceiling)">OVERPOWER needs both</div>${wf.ceilChecks.map(checkRow).join("")}</div>`;
         }
         whyIcon=`<span class="why-wrap"><button class="why-i" type="button" title="Why flagged?">i</button><span class="why-pop">${inner}</span></span>`;
       }
@@ -2832,11 +2832,11 @@ function renderPitcherLine(r){
   // call + conf
   const v=r._verdict||{};
   // Call reflects which of the two TRACKED bets fired. A pick can be both.
-  // Combo carries its side (Over/Under); Conviction is always Over.
+  // Value carries its side (Over/Under); Conviction is always Over.
   let callTags=[];
-  if(v.isCombo) callTags.push(`<span class="call call-combo">COMBO ${v.side}</span>`);
+  if(v.isCombo) callTags.push(`<span class="call call-combo">VALUE ${v.side}</span>`);
   if(v.isConvOver) callTags.push(`<span class="call call-conv">CONVICTION</span>`);
-  if(v.isCeiling) callTags.push(`<span class="call call-ceil">CEILING</span>`);
+  if(v.isCeiling) callTags.push(`<span class="call call-ceil">OVERPOWER</span>`);
   const call = callTags.length ? callTags.join(" ") : `<span class="call call-sit">SIT OUT</span>`;
   // confidence tier badge removed — the edge % carries that information.
   // result, if graded
@@ -2893,10 +2893,10 @@ $("cleanBtn") && ($("cleanBtn").onclick=()=>{
   setStatus(`✓ Removed ${stale.length} leftover pitcher${stale.length===1?"":"s"}.`, 1);
 });
 
-// Tonight's picks — a compact panel of ONLY today's flagged bets (Combo +
+// Tonight's picks — a compact panel of ONLY today's flagged bets (Value +
 // Conviction), by name, for a one-screen glance you can screenshot. Read-only;
 // computes verdicts fresh from the loaded day's rows.
-// Build the flagged-picks list HTML (Combo + Conviction only, by name).
+// Build the flagged-picks list HTML (Value + Conviction only, by name).
 
 // ===========================================================================
 //  PHASE 1 — STAGING BOARD (free). Loads today's matchups, probable pitchers,
@@ -2986,7 +2986,7 @@ function renderPreview(){
     const read=previewRead(r);
     let readCell=`<span class="gt-pick gt-pass">type a line</span>`;
     if(read){
-      if(read.combo) readCell=`<span class="gt-pick gt-combo">COMBO · ${read.side} ${read.line}</span>`;
+      if(read.combo) readCell=`<span class="gt-pick gt-combo">VALUE · ${read.side} ${read.line}</span>`;
       else if(read.convOver) readCell=`<span class="gt-pick gt-conv">CONVICTION · Over ${read.line}</span>`;
       else readCell=`<span class="gt-pick gt-pass">${read.side} · ${read.dist.toFixed(1)}K off</span>`;
     }
@@ -3972,7 +3972,7 @@ function stakeOf(r, activeFlags=TRACK_FLAGS){
 }
 // Aggregate a set of rows under the sizing rule. Returns one entry per pick in
 // the record (bets/wins), units scaled by stake. `activeFlags` lets a caller
-// score a subset (e.g. just Combo+Ceiling) the same honest way.
+// score a subset (e.g. just Value+Overpower) the same honest way.
 function sizedTotals(rows, activeFlags=TRACK_FLAGS){
   let bets=0, wins=0, u=0, unitsRisked=0;
   for(const r of rows){
@@ -4052,7 +4052,7 @@ function collectRowsForWindow(winKey){
   return out;
 }
 
-// MULTI-MONTH COMBO TEST — does "Strong AND ≤5.5" hold up across INDEPENDENT
+// MULTI-MONTH VALUE TEST — does "Strong AND ≤5.5" hold up across INDEPENDENT
 // months, or only look good blended? Repeatability across chunks is the real
 // filter; a single blended number can be mined. Sample size shown prominently.
 function renderComboTest(){
@@ -4121,7 +4121,7 @@ function renderHistory(){
   if(!days.length){empty.classList.remove("hidden");dates.innerHTML="";if(detail)detail.innerHTML="";return;}
   empty.classList.add("hidden");
 
-  // per-day Combo / Conviction record (uses the same gates as the bet flags)
+  // per-day Value / Conviction record (uses the same gates as the bet flags)
   const dayRecord=(rec)=>{
     const combo={w:0,n:0,u:0}, conv={w:0,n:0,u:0}, ceil={w:0,n:0,u:0};
     (rec.rows||[]).forEach(r=>{
@@ -4151,7 +4151,7 @@ function renderHistory(){
     let block=`<div class="tierrow" style="grid-template-columns:1fr 110px 40px 40px;cursor:pointer" data-date="${rec.date}">`+
       `<div class="tiername">`+
         `<div class="tiername-top">${rec.date}`+
-          `<span class="dayrecs-inline">`+recChip("Combo",combo,"var(--bet)")+recChip("Conviction",conv,"var(--accent)")+recChip("Ceiling",ceil,"var(--ceiling)")+`</span>`+
+          `<span class="dayrecs-inline">`+recChip("Value",combo,"var(--bet)")+recChip("Conviction",conv,"var(--accent)")+recChip("Overpower",ceil,"var(--ceiling)")+`</span>`+
         `</div>`+
         `<em>${picks.length} pick${picks.length===1?"":"s"} · ${rows.length} pitcher${rows.length===1?"":"s"}</em>`+
       `</div>`+
@@ -4211,9 +4211,9 @@ function histDetailHTML(rec){
       isCeiling = (r.modelSide==="Over" && r.line!=null && r.line>=5.5);
     }
     let betCell="";
-    if(isCombo) betCell=`<span class="hbet hbet-combo" title="Combo bet">⚯</span>`;
+    if(isCombo) betCell=`<span class="hbet hbet-combo" title="Value bet">⚯</span>`;
     else if(isConv) betCell=`<span class="hbet hbet-conv" title="Conviction">★</span>`;
-    else if(isCeiling) betCell=`<span class="hbet hbet-ceiling" title="Ceiling (high-line Over)">▲</span>`;
+    else if(isCeiling) betCell=`<span class="hbet hbet-ceiling" title="Overpower (high-line Over)">▲</span>`;
     let pickCell,edgeCell,actualCell,resultCell,nameMeta;
     if(res.skipped){pickCell="—";edgeCell="—";actualCell=r.actualK!=null?r.actualK:"—";resultCell='<span style="color:var(--muted)">skipped</span>';nameMeta="bullpen/opener";}
     else if(r.voided){pickCell="—";edgeCell="—";actualCell="—";resultCell='<span style="color:var(--muted)">void</span>';nameMeta=r.voidReason||"did not start";}
@@ -4283,7 +4283,7 @@ const DATA_DIMS={
 };
 const DATA_FILTERS={
   all:  {label:"All graded", fn:()=>true},
-  combo:{label:"Combo",      fn:r=>r.isCombo},
+  combo:{label:"Value",      fn:r=>r.isCombo},
   conv: {label:"Conviction", fn:r=>r.isConvOver},
   over: {label:"Over",       fn:r=>r.side==="Over"},
   under:{label:"Under",      fn:r=>r.side==="Under"},
@@ -4600,7 +4600,7 @@ function whyFlag(r){
   if(r.skipped) return {summary:"Bullpen / opener — no starter to model.", combo:[], conv:[]};
   // Official pull populates eK/line/edge. An intraday Watch populates the _watch*
   // fields instead. Fall back to the live watch values so a watched row gets the
-  // same Combo/Conviction breakdown as an official pull (against the live line).
+  // same Value/Conviction breakdown as an official pull (against the live line).
   const isWatch = (r.eK==null||r.line==null||r.edge==null) && r._watchEK!=null && r._watchLine!=null;
   const eK   = r.eK   != null ? r.eK   : (isWatch ? r._watchEK   : null);
   const line = r.line != null ? r.line : (isWatch ? r._watchLine : null);
@@ -4611,7 +4611,7 @@ function whyFlag(r){
   const side = modelSide || (eK>=line ? "Over" : "Under");
   const disagree = Math.abs(eK - line);
   const chk=(pass,label)=>({pass, label});
-  // Combo requires BOTH: line <= 5.5 AND edge >= 20%
+  // Value requires BOTH: line <= 5.5 AND edge >= 20%
   const comboChecks=[
     chk(line<=EDGE_MAX_LINE, `Line ${line} ≤ ${EDGE_MAX_LINE}`),
     chk(edge>=EDGE_STRONG_BAR, `Edge ${(edge*100).toFixed(0)}% ≥ ${(EDGE_STRONG_BAR*100).toFixed(0)}%`),
@@ -4623,7 +4623,7 @@ function whyFlag(r){
     chk(disagree>=CONV_DISAGREE_MIN, `Projection ${disagree.toFixed(1)}K from line ≥ ${CONV_DISAGREE_MIN.toFixed(1)}K`),
   ];
   const isConv=convChecks.every(c=>c.pass);
-  // Ceiling requires: pick is Over AND line >= 5.5
+  // Overpower requires: pick is Over AND line >= 5.5
   const ceilChecks=[
     chk(side==="Over", `Pick is Over (${side})`),
     chk(line>=5.5, `Line ${line} ≥ 5.5`),
@@ -4632,14 +4632,14 @@ function whyFlag(r){
   let summary;
   const tag = isWatch ? " (live line — not yet locked)" : "";
   const flags=[];
-  if(isCombo) flags.push("Combo");
+  if(isCombo) flags.push("Value");
   if(isConv) flags.push("Conviction");
-  if(isCeiling) flags.push("Ceiling");
+  if(isCeiling) flags.push("Overpower");
   if(flags.length===0) summary="Not flagged — sit out."+tag;
   else if(flags.length===1){
-    if(isCombo) summary="Flagged as a Combo bet."+tag;
+    if(isCombo) summary="Flagged as a Value bet."+tag;
     else if(isConv) summary="Flagged as a Conviction Over (candidate)."+tag;
-    else summary="Flagged as a Ceiling (candidate)."+tag;
+    else summary="Flagged as a Overpower (candidate)."+tag;
   }
   else summary=`Flagged as ${flags.join(" + ")}.`+tag;
   return {summary, side, comboChecks, convChecks, ceilChecks, isCombo, isConv, isCeiling};
@@ -4903,7 +4903,7 @@ $("restoreFile").onchange=(ev)=>{
 };
 $("esp32Btn") && ($("esp32Btn").onclick=exportEsp32Feed);
 // watch a SINGLE game — free SharpAPI live line + free model run, so it can show
-// what the verdict WOULD be (e.g. "would be COMBO") without an Official pull.
+// what the verdict WOULD be (e.g. "would be VALUE") without an Official pull.
 // Nothing is saved; never counts toward the forward test.
 // Shared core: apply watch (live line + model verdict) for ONE game into the
 // loaded day. Fetch is done by the caller and passed as `all`. Returns counts.
@@ -5105,7 +5105,7 @@ async function runIntradayWatch(){
     }
     const rec=loadDay(day);
     renderToday(rec?rec.rows:[]);
-    setStatus(`Intraday watch done — ${withLine} live line(s) across the slate, ${flagged} would-be Combo/Conviction. Free, nothing saved.`,1);
+    setStatus(`Intraday watch done — ${withLine} live line(s) across the slate, ${flagged} would-be Value/Conviction. Free, nothing saved.`,1);
   }catch(e){
     const m=e.message||String(e);
     if(m.includes("401")||m.includes("invalid_api_key")){
@@ -5115,7 +5115,7 @@ async function runIntradayWatch(){
 }
 
 // ---- ESP32 live feed export ----
-// Emits a COMPACT json of ONLY today's Combo + Conviction picks, with live
+// Emits a COMPACT json of ONLY today's Value + Conviction picks, with live
 // game status + actual strikeouts resolved IN THE BROWSER (which can reach
 // StatsAPI). The ESP32 does one GET of this small file and renders it — no
 // MLB API work on the microcontroller, no keys embedded there.
@@ -5123,7 +5123,7 @@ async function runIntradayWatch(){
 // Status per pick: "pre" (game not started) | "live" (in progress) |
 // "final". result: "pending" | "hit" | "miss". k = actual strikeouts so far.
 // ---- manual track selection (drives ESP32 export, Option A) ----
-// A per-day set of selected row keys. Combo/Conviction rows start checked;
+// A per-day set of selected row keys. Value/Conviction rows start checked;
 // the user can uncheck any pick or check any game to add a grey "watch".
 // Persisted per day so reloads keep the selection.
 function trackKey(date){ return "se_track_"+date; }
@@ -5155,7 +5155,7 @@ async function exportEsp32Feed(){
   const btn = $("esp32Btn"); if(btn) btn.disabled=true;
   try{
     if(!rec || !(rec.rows||[]).length){ setStatus("No loaded day to export. Stage/pull today first."); return; }
-    // 1) pick the rows the user has CHECKED (Combo/Conviction default checked;
+    // 1) pick the rows the user has CHECKED (Value/Conviction default checked;
     //    user may add manual "watch" picks or uncheck model picks)
     const tset = loadTrackSet(day);
     const picks=[];
@@ -5318,7 +5318,7 @@ function renderCLVInto(el){
 }
 
 // Two-bet summary at the top of the Scoreboard. Respects the active window chip.
-// Combo (Strong + ≤5.5) = the bet. Over&Conviction = the lead candidate.
+// Value (Strong + ≤5.5) = the bet. Over&Conviction = the lead candidate.
 function renderBetSummary(){
   const el=$("betSummary"); if(!el) return;
   const rows=collectScorecardRows();   // already window-filtered via _perfWindow
@@ -5351,9 +5351,9 @@ function renderBetSummary(){
       `${Math.round(d.wr*100)}% · ROI ${(d.roi>=0?"+":"")+d.roi.toFixed(0)}%</div></div>`;
   };
   el.innerHTML =
-    card("Combo (Strong + ≤5.5)","THE BET",combo,"var(--bet)")+
+    card("Value (Strong + ≤5.5)","THE BET",combo,"var(--bet)")+
     card("Over &amp; Conviction","CANDIDATE",conv,"var(--accent)")+
-    card("Ceiling (Over + line ≥5.5)","CANDIDATE",ceil,"var(--ceiling)");
+    card("Overpower (Over + line ≥5.5)","CANDIDATE",ceil,"var(--ceiling)");
 }
 
 // Weekly hit-rate graph for the two bets over the active window. Inline SVG, no
@@ -5489,7 +5489,7 @@ function renderBetGraph(){
     .map(i=>`<text x="${x(i).toFixed(1)}" y="${H-padB+18}" text-anchor="middle" font-size="10" fill="var(--muted)">${allWeeks[i]}</text>`).join("");
 
   const TC={isCombo:"#3ba9c4",isConvOver:"#e0a23a",isCeiling:"#b07cff"};
-  const TN={isCombo:"Combo",isConvOver:"Conviction",isCeiling:"Ceiling"};
+  const TN={isCombo:"Value",isConvOver:"Conviction",isCeiling:"Overpower"};
   const seriesFor={isCombo:combo,isConvOver:conv,isCeiling:ceil};
   let drawn="", legendItems="";
   if(isMulti){
@@ -5549,7 +5549,7 @@ function renderFreeVsPaid(){
 
 // FLAG AGREEMENT — the credits question, answered with data. For every pick that
 // has BOTH a paid (Odds API) line and a free (SharpAPI/DK-FD) line, recompute the
-// bucket flags (Combo / Conviction / Ceiling) the SAME way for each line and count
+// bucket flags (Value / Conviction / Overpower) the SAME way for each line and count
 // how often the free feed would have flagged a DIFFERENT bet than the paid one.
 // Outcome-grade flips (in renderFreeVsPaid) ask "did the W/L change"; THIS asks the
 // decision question: "would Watch-only have placed the same bets?" If flag agreement
@@ -5566,10 +5566,10 @@ function freeVerdict(r){
   const price = side==="Over" ? over : under;
   const fair = fairProb(over, under, side);
   const edge = (fair!=null) ? (/*model prob unknown here; use eK-vs-line edge proxy*/ null) : null;
-  // We don't re-store model prob per side on the row, but Combo needs `edge`.
+  // We don't re-store model prob per side on the row, but Value needs `edge`.
   // The paid row already carries r.edge computed at the paid line. For the free
-  // line we approximate Combo eligibility with the paid edge IF the line matches,
-  // else we mark edge unknown so Combo is only compared when both lines agree.
+  // line we approximate Value eligibility with the paid edge IF the line matches,
+  // else we mark edge unknown so Value is only compared when both lines agree.
   const sameLine = (line===r.line);
   const useEdge = sameLine ? r.edge : null;
   const synth = {skipped:r.skipped, eK:r.eK, line, edge:useEdge, modelSide:side};
@@ -5592,9 +5592,9 @@ function renderFlagAgreement(){
     if((paid.side||"")!==(f.side||"")) sideFlips++;
     // CONVICTION (no edge needed — pure side+disagree+line)
     {const p=!!paid.isConvOver, q=!!f.isConvOver; B.conv.n++; if(p===q)B.conv.agree++; else if(p)B.conv.paidOnly++; else B.conv.freeOnly++;}
-    // CEILING (side + line only)
+    // OVERPOWER (side + line only)
     {const p=!!paid.isCeiling, q=!!f.isCeiling; B.ceil.n++; if(p===q)B.ceil.agree++; else if(p)B.ceil.paidOnly++; else B.ceil.freeOnly++;}
-    // COMBO (needs edge; only comparable when free line==paid line so edge transfers)
+    // VALUE (needs edge; only comparable when free line==paid line so edge transfers)
     {const p=!!paid.isCombo;
      if(!fr.edgeKnown){ B.combo.edgeBlind++; }
      else { const q=!!f.v.isCombo; B.combo.n++; if(p===q)B.combo.agree++; else if(p)B.combo.paidOnly++; else B.combo.freeOnly++; }}
@@ -5621,12 +5621,12 @@ function renderFlagAgreement(){
     : `<span style="color:var(--neg)">Don't drop the official pull.</span> The free line diverges enough to change ${100-overall}% of your bets.`;
   el.innerHTML=
     `<div class="fvp"><div class="fvp-h">Watch-only viability — flag agreement `+
-      `<span class="fvp-sub">For picks with BOTH lines, would the free DK/FD feed have flagged the same Combo / Conviction / Ceiling bets as the paid pull? This is the credits question.</span></div>`+
+      `<span class="fvp-sub">For picks with BOTH lines, would the free DK/FD feed have flagged the same Value / Conviction / Overpower bets as the paid pull? This is the credits question.</span></div>`+
     `<div class="fvp-grid">`+
       `<div class="fvp-cell"><div class="fvp-l">All flags match</div><div class="fvp-v" style="color:${col(overall)}">${overall}%</div><div class="fvp-n">${anyAgree}/${anyN} picks${sideFlips?` · ${sideFlips} side-flip`:""}</div></div>`+
-      cell("Combo",B.combo)+ cell("Conviction",B.conv)+ cell("Ceiling",B.ceil)+
+      cell("Value",B.combo)+ cell("Conviction",B.conv)+ cell("Overpower",B.ceil)+
     `</div>`+
-    `<p class="fine" style="color:var(--muted)">${verdict} ${B.combo.edgeBlind?`(${B.combo.edgeBlind} Combo pairs skipped — free line differed from paid, so the de-vig edge can't be carried over.) `:""}${anyN} graded pairs so far — read nothing until this is deep (~100+).</p></div>`;
+    `<p class="fine" style="color:var(--muted)">${verdict} ${B.combo.edgeBlind?`(${B.combo.edgeBlind} Value pairs skipped — free line differed from paid, so the de-vig edge can't be carried over.) `:""}${anyN} graded pairs so far — read nothing until this is deep (~100+).</p></div>`;
 }
 
 // Subtly flag the scoreboard month chips that actually contain graded data, so
@@ -5722,9 +5722,9 @@ function renderForwardTest(){
   const ceilRows =fwdAll.filter(r=>r.isCeiling);
   el.innerHTML=
     `<div class="fwd3">`+
-    track(comboRows, 5, 30, "Combo (Strong + ≤5.5) · THE BET", "Your primary bet. This is the only one you bet today.", "var(--bet)")+
+    track(comboRows, 5, 30, "Value (Strong + ≤5.5) · THE BET", "Your primary bet. This is the only one you bet today.", "var(--bet)")+
     track(convRows, 5, 50, "Conviction Over (Over & ≥1.0 from line) · TESTING", "Candidate — model says Over and projects ≥1.0 K above the line. Bar is ROI ≥ +5%. Not a bet until it clears.", "var(--accent)")+
-    track(ceilRows, 5, 40, "Ceiling (Over & line ≥5.5) · TESTING", "Candidate — model takes the Over on a high line (≥5.5). In-sample +44% ROI but found by mining; bar is ROI ≥ +5% over 40. Not a bet until it clears.", "var(--ceiling)")+
+    track(ceilRows, 5, 40, "Overpower (Over & line ≥5.5) · TESTING", "Candidate — model takes the Over on a high line (≥5.5). In-sample +44% ROI but found by mining; bar is ROI ≥ +5% over 40. Not a bet until it clears.", "var(--ceiling)")+
     `</div>`;
 }
 
@@ -6109,7 +6109,7 @@ function updateBetNote(){
     : on.length===1 ? `Logs 1 bet tagged ${names[0]}.` : `No style selected — logs 1 untagged bet.`;
 }
 function setBetSide(s){ _betSide=s; const o=$("bmOver"),u=$("bmUnder"); if(o)o.classList.toggle("on",s==="Over"); if(u)u.classList.toggle("on",s==="Under"); }
-const STYLE_DEFS=[["combo","Combo","var(--bet)"],["conv","Conviction","var(--accent)"],["ceil","Ceiling","var(--ceiling)"]];
+const STYLE_DEFS=[["combo","Value","var(--bet)"],["conv","Conviction","var(--accent)"],["ceil","Overpower","var(--ceiling)"]];
 function openBetModal(ctx){
   _betCtx=ctx||{};
   $("bmPitcher").textContent = (ctx.pitcher||"—") + (ctx.date?`  ·  ${ctx.date}`:"");
@@ -6185,7 +6185,7 @@ function styleTag(s){
 }
 function renderMyBetsStyleBreak(bets){
   const el=$("mbStyleBreak"); if(!el) return;
-  const groups=[["combo","Combo","var(--bet)"],["conv","Conviction","var(--accent)"],["ceil","Ceiling","var(--ceiling)"],[null,"Untagged","var(--muted)"]];
+  const groups=[["combo","Value","var(--bet)"],["conv","Conviction","var(--accent)"],["ceil","Overpower","var(--ceiling)"],[null,"Untagged","var(--muted)"]];
   el.innerHTML=groups.map(([key,label,col])=>{
     const g=bets.filter(b=>(b.style||null)===key);
     const settled=g.filter(b=>b.result&&b.result!=="push");
