@@ -426,10 +426,15 @@ button:active{transform:translateY(1px)}
 .tp-hint{font-size:10px;font-weight:400;color:var(--faint);letter-spacing:.04em;text-transform:none;margin-left:8px}
 /* games table */
 .gamestbl{border:1px solid var(--line);border-radius:6px;overflow:hidden;background:var(--card);margin-top:6px}
-.gt-head{display:flex;align-items:center;justify-content:space-between;padding:14px 16px;border-bottom:1px solid var(--line)}
-.gt-title{font-family:var(--sans);font-weight:700;font-size:14px;letter-spacing:.04em;text-transform:uppercase}
+.gt-head{display:flex;align-items:flex-start;justify-content:space-between;padding:14px 16px;border-bottom:1px solid var(--line)}
+.gt-title{font-family:var(--sans);font-weight:700;font-size:14px;letter-spacing:.08em;text-transform:uppercase}
 .gt-count{font-size:11px;color:var(--muted);background:var(--bg2);border:1px solid var(--line);border-radius:3px;padding:2px 8px;margin-left:8px;letter-spacing:.02em}
-.gt-dayrec{display:flex;gap:8px;align-items:center;flex-wrap:nowrap;white-space:nowrap}
+/* right side stacks: "N STARTERS · M SIGNALS LIVE" over the day-record chips */
+.gt-headright{display:flex;flex-direction:column;align-items:flex-end;gap:7px}
+.gt-slatemeta{font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);white-space:nowrap;font-variant-numeric:tabular-nums}
+.gt-slatemeta b{color:var(--text);font-weight:700}
+.gt-slatemeta .gt-sig{color:var(--bet);font-weight:700}
+.gt-dayrec{display:flex;gap:8px;align-items:center;flex-wrap:wrap;justify-content:flex-end;white-space:nowrap}
 .gt-rec{font-size:11.5px;border:1px solid var(--line);border-radius:4px;padding:4px 11px;color:var(--text);font-variant-numeric:tabular-nums}
 .gt-rec b{font-weight:700;letter-spacing:.03em;margin-right:5px}
 .gt-rec:last-child{background:var(--bg2)}
@@ -481,6 +486,10 @@ button:active{transform:translateY(1px)}
 .bk-foot b{color:var(--bet)}
 .gt-colhead{color:var(--muted);font-size:10px;letter-spacing:.08em;text-transform:uppercase;padding-top:9px;padding-bottom:9px;background:var(--bg2)}
 .gt-bet{background:var(--bet-dim)}
+/* left-edge accent bar per pick (single-style rows). PASS/plain rows get none. */
+.gt-row-combo{background:var(--bet-dim);box-shadow:inset 3px 0 0 var(--bet)}
+.gt-row-conv{background:var(--accent-dim);box-shadow:inset 3px 0 0 var(--accent)}
+.gt-row-ceil{background:var(--ceiling-dim);box-shadow:inset 3px 0 0 var(--ceiling)}
 .gt-bet-both{background:linear-gradient(90deg, var(--bet-dim), var(--accent-dim));box-shadow:inset 3px 0 0 var(--bet), inset -3px 0 0 var(--accent)}
 .gt-time{color:var(--muted);font-size:12px;font-variant-numeric:tabular-nums}
 .gt-time-stack{display:flex;flex-direction:column;align-items:flex-start;gap:3px}
@@ -599,11 +608,13 @@ button:active{transform:translateY(1px)}
 /* picks summary banner — the day's headline */
 .picksum{margin-bottom:18px}
 
-.statstrip{display:flex;border:1px solid var(--line);border-radius:6px;overflow:hidden;margin-bottom:20px;background:var(--card)}
-.ss-cell{flex:1;text-align:center;padding:20px 12px;border-right:1px solid var(--line)}
+/* Demoted: was a 4-cell hero row (40px numbers). Now a thin quiet counts strip.
+   DOM + .ss-click → Top Picks reveal wiring unchanged; only presentation shrinks. */
+.statstrip{display:inline-flex;border:1px solid var(--line);border-radius:6px;overflow:hidden;margin-bottom:14px;background:var(--card)}
+.ss-cell{flex:0 0 auto;text-align:center;padding:6px 14px;border-right:1px solid var(--line);display:flex;align-items:baseline;gap:6px}
 .ss-cell:last-child{border-right:none}
-.ss-n{font-size:40px;font-weight:800;line-height:1;font-variant-numeric:tabular-nums}
-.ss-l{font-size:11px;letter-spacing:.13em;text-transform:uppercase;color:var(--muted);margin-top:6px}
+.ss-n{font-size:15px;font-weight:700;line-height:1;font-variant-numeric:tabular-nums}
+.ss-l{font-size:9.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-top:0}
 .toppicks{margin-bottom:22px}
 .tp-head{font-size:12px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);font-family:var(--sans);margin-bottom:10px}
 .pickcards{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px}
@@ -2505,8 +2516,13 @@ function renderToday(rows){
     return `<span class="gt-rec" style="border-color:${col}"><b style="color:${col}">${label}</b> ${o.w}-${o.l} <span style="color:${uCol}">${o.u>=0?"+":""}${o.u.toFixed(1)}u</span></span>`;
   };
   const dayRecHTML = `<div class="gt-dayrec">${recChip("Combo",dc,"var(--bet)")}${recChip("Conv",dv,"var(--accent)")}${recChip("Ceiling",dcl,"var(--ceiling)")}${recChip("Day",dall,"var(--text)")}</div>`;
+  // "N STARTERS · M SIGNALS LIVE" — starters = two slots per staged game;
+  // signals live = unique pitchers currently flagged Combo/Conviction/Ceiling.
+  const nStarters = _stageGames.length * 2;
+  const nSignals = flaggedNames.size;
+  const slateMeta = `<div class="gt-slatemeta"><b>${nStarters}</b> starters · <span class="gt-sig">${nSignals}</span> signal${nSignals===1?"":"s"} live</div>`;
   let tbl=`<div class="gamestbl">`+
-    `<div class="gt-head"><div class="gt-title">Today's games <span class="gt-count">${_stageGames.length} games</span></div>${dayRecHTML}</div>`+
+    `<div class="gt-head"><div class="gt-title">Tonight's Slate</div><div class="gt-headright">${slateMeta}${dayRecHTML}</div></div>`+
     `<div class="gt-row gt-colhead"><span title="Track on ESP">●</span><span>Time</span><span>Matchup</span><span>Pitcher</span><span>Line</span><span>Model</span><span>Edge</span><span>Pick</span></div>`;
 
   _stageGames.forEach((g,i)=>{
@@ -2577,6 +2593,9 @@ function renderToday(rows){
         if(nStyles>=1) rowCls+=" gt-bet";
         if(nStyles===2) rowCls+=" gt-bet-both";
         else if(nStyles>=3) rowCls+=" gt-bet-tri";
+        // single-style rows get a track class so the left-edge accent bar picks up
+        // the right color (Combo=cyan, Conviction=amber, Ceiling=purple)
+        else if(nStyles===1){ rowCls += v.isCombo?" gt-row-combo" : v.isConvOver?" gt-row-conv" : v.isCeiling?" gt-row-ceil" : ""; }
         const edgeColC = r.edge>=0.05?"var(--pos)":r.edge<=-0.05?"var(--neg)":"var(--muted)";
         const px=(r.sidePrice!=null)?r.sidePrice:(r.modelSide==="Over"?r.bestOver:r.bestUnder);
         const pxStr=(px!=null)?((px>0?"+":"")+px):"";
