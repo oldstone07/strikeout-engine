@@ -5001,7 +5001,7 @@ async function watchGameInto(g, all, probList, day, season){
              homeTeam:g.homeTeam, awayTeam:g.awayTeam, _watchOnly:true};
     if(applyWatch(r)){ rec.rows.push(r); matched++; }
   });
-  const flagged=(rec.rows||[]).filter(r=>isThisGamePitcher(r.pitcher) && (r._watchCombo||r._watchConv)).length;
+  const flagged=(rec.rows||[]).filter(r=>isThisGamePitcher(r.pitcher) && (r._watchCombo||r._watchConv||r._watchCeil)).length;
   return {matched, flagged};
 }
 
@@ -5038,7 +5038,7 @@ async function watchOneGame(g){
     else setStatus("Watch failed: "+m);
   }
 }
-function clearWatch(r){ delete r._watchLine; delete r._watchOver; delete r._watchUnder; delete r._watchLive; delete r._watchEK; delete r._watchSide; delete r._watchEdge; delete r._watchCombo; delete r._watchConv; }
+function clearWatch(r){ delete r._watchLine; delete r._watchOver; delete r._watchUnder; delete r._watchLive; delete r._watchEK; delete r._watchSide; delete r._watchEdge; delete r._watchCombo; delete r._watchConv; delete r._watchCeil; }
 
 // ---- Intraday watch (SharpAPI, read-only, free, nothing saved) ----
 // Fetches live DK/FD strikeout lines from SharpAPI and shows them next to the
@@ -5105,7 +5105,7 @@ async function runIntradayWatch(){
     }
     const rec=loadDay(day);
     renderToday(rec?rec.rows:[]);
-    setStatus(`Intraday watch done — ${withLine} live line(s) across the slate, ${flagged} would-be Value/Conviction. Free, nothing saved.`,1);
+    setStatus(`Intraday watch done — ${withLine} live line(s) across the slate, ${flagged} would-be Value/Conviction/Overpower. Free, nothing saved.`,1);
   }catch(e){
     const m=e.message||String(e);
     if(m.includes("401")||m.includes("invalid_api_key")){
