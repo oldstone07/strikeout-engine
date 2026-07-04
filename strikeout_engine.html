@@ -630,6 +630,13 @@ button:active{transform:translateY(1px)}
 .ss-cell:last-child{border-right:none}
 .ss-n{font-size:15px;font-weight:700;line-height:1;font-variant-numeric:tabular-nums}
 .ss-l{font-size:9.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-top:0}
+/* Phone: the compact inline pill overflows a narrow viewport (4th cell runs off
+   the right edge). Span full width with four equal cells that shrink to fit. */
+@media(max-width:560px){
+  .statstrip{display:flex;width:100%}
+  .ss-cell{flex:1 1 0;min-width:0;padding:6px 6px;gap:4px;justify-content:center}
+  .ss-l{letter-spacing:.04em}
+}
 .toppicks{margin-bottom:22px}
 .tp-head{font-size:12px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);font-family:var(--sans);margin-bottom:10px}
 .pickcards{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px}
