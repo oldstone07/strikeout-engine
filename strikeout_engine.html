@@ -193,6 +193,9 @@ button:active{transform:translateY(1px)}
 .mb-sb .h{font-size:10px;letter-spacing:.1em;text-transform:uppercase;font-weight:700}
 .mb-sb .v{font:800 17px/1 var(--mono,ui-monospace,Menlo,monospace);margin-top:6px}
 .mb-sb .s{font-size:11px;color:var(--muted);margin-top:4px}
+.mb-sb-click{cursor:pointer;transition:background .12s,border-color .12s}
+.mb-sb-click:hover{background:var(--bg2)}
+.mb-sb-active{background:var(--bg2)}
 .mb-tag{font-size:9px;font-weight:800;padding:2px 5px;border-radius:4px;border:1px solid currentColor;margin-left:6px;vertical-align:middle}
 .bm-actions{display:flex;gap:10px;justify-content:flex-end;margin-top:18px}
 .actionbar button{padding:9px 10px;font-size:12.5px;white-space:nowrap}
@@ -6190,6 +6193,14 @@ function styleTag(s){
   const d=STYLE_DEFS.find(x=>x[0]===s); if(!d) return "";
   return `<span class="mb-tag" style="color:${d[2]}">${d[1].slice(0,4).toUpperCase()}</span>`;
 }
+// click-to-filter state for the My Bets list. null = show all; otherwise one of
+// "combo" | "conv" | "ceil" | "__untagged__" (untagged = no style). In-memory only.
+let _mbStyleFilter=null;
+function mbFilterMatch(b){
+  if(_mbStyleFilter==null) return true;
+  const key=b.style||null;
+  return _mbStyleFilter==="__untagged__" ? key===null : key===_mbStyleFilter;
+}
 function renderMyBetsStyleBreak(bets){
   const el=$("mbStyleBreak"); if(!el) return;
   const groups=[["combo","Value","var(--bet)"],["conv","Conviction","var(--accent)"],["ceil","Overpower","var(--ceiling)"],[null,"Untagged","var(--muted)"]];
@@ -6201,10 +6212,18 @@ function renderMyBetsStyleBreak(bets){
     const staked=settled.reduce((s,b)=>s+Number(b.stake||0),0);
     const roi=staked?net/staked*100:0;
     const nCol=net>0?"var(--pos)":net<0?"var(--neg)":"var(--muted)";
-    return `<div class="mb-sb"><div class="h" style="color:${col}">${label}</div>`+
+    const fval=key||"__untagged__";
+    const active=_mbStyleFilter===fval;
+    return `<div class="mb-sb mb-sb-click${active?" mb-sb-active":""}" data-mbf="${fval}"${active?` style="border-color:${col}"`:""} title="${active?"Showing only "+label+" bets — click to clear":"Show only "+label+" bets"}">`+
+      `<div class="h" style="color:${col}">${label}</div>`+
       `<div class="v" style="color:${nCol}">${g.length?((net>=0?"+":"")+net.toFixed(2)+"u"):"—"}</div>`+
       `<div class="s">${g.length?`${w}-${l} · ${(roi>=0?"+":"")+roi.toFixed(0)}% ROI`:"no bets"}</div></div>`;
   }).join("");
+  el.querySelectorAll("[data-mbf]").forEach(t=>t.onclick=()=>{
+    const f=t.dataset.mbf;
+    _mbStyleFilter=(_mbStyleFilter===f)?null:f;
+    renderMyBets();
+  });
 }
 function renderMyBets(){
   const el=$("myBetsList"); if(!el) return;
@@ -6222,11 +6241,19 @@ function renderMyBets(){
   if($("mbStaked")) $("mbStaked").textContent=staked.toFixed(1)+"u";
   if($("mbPending")) $("mbPending").textContent=pending;
   if($("mbCash")){ const cash=net*20; $("mbCash").textContent=(cash>=0?"+$":"-$")+Math.abs(cash).toFixed(0); $("mbCash").style.color=col(net); }
-  drawMyBetsCurve(bets.filter(b=>b.pl!=null));
   renderMyBetsStyleBreak(bets);
-  if(!bets.length){ el.innerHTML=`<div class="empty small">No bets logged yet. On the <b>Today</b> tab, click the <b>＄</b> button next to any pick to log a bet you placed — set the line, odds, and stake you actually got.</div>`; return; }
+  if(!bets.length){ drawMyBetsCurve([]); el.innerHTML=`<div class="empty small">No bets logged yet. On the <b>Today</b> tab, click the <b>＄</b> button next to any pick to log a bet you placed — set the line, odds, and stake you actually got.</div>`; return; }
+  // style filter (clicked tile) narrows the list + curve; summary cards stay global
+  const listBets=bets.filter(mbFilterMatch);
+  drawMyBetsCurve(listBets.filter(b=>b.pl!=null));
   const fmtOdds=o=>o==null?"—":(o>0?"+"+o:""+o);
-  el.innerHTML = bets.slice().sort((a,b)=>(b.date+b.loggedAt).localeCompare(a.date+a.loggedAt)).map(b=>{
+  if(!listBets.length){
+    const lbl={combo:"Value",conv:"Conviction",ceil:"Overpower",__untagged__:"Untagged"}[_mbStyleFilter]||"";
+    el.innerHTML=`<div class="empty small">No ${lbl} bets yet. <a href="#" id="mbClearFilter" style="color:var(--accent)">Show all bets</a></div>`;
+    const c=$("mbClearFilter"); if(c) c.onclick=(e)=>{ e.preventDefault(); _mbStyleFilter=null; renderMyBets(); };
+    return;
+  }
+  el.innerHTML = listBets.slice().sort((a,b)=>(b.date+b.loggedAt).localeCompare(a.date+a.loggedAt)).map(b=>{
     const resCls=b.result==="win"?"mb-win":b.result==="loss"?"mb-loss":b.result==="push"?"mb-push":"mb-pending";
     const resTxt=b.result?(b.result.toUpperCase()+(b.actualK!=null?` · ${b.actualK}K`:"")):"pending";
     const plTxt=b.pl!=null?`${b.pl>=0?"+":""}${b.pl.toFixed(2)}u`:"";
