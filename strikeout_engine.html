@@ -1261,12 +1261,12 @@ footer{margin-top:30px;color:var(--muted);font-size:11.5px;text-align:center}
           <div class="bs-col">
             <div class="bs-collabel" style="color:var(--accent)">Conviction =</div>
             <div class="bs-cell bs-comp">
-              <div class="bs-head">Over only</div>
+              <div class="bs-head">Under only</div>
               <div class="bs-big" id="bsCompOverU">—</div>
               <div class="bs-sub" id="bsCompOverS">—</div>
             </div>
             <div class="bs-cell bs-comp">
-              <div class="bs-head">≥1.0K from line only</div>
+              <div class="bs-head">≥1.5K from line only</div>
               <div class="bs-big" id="bsCompDistU">—</div>
               <div class="bs-sub" id="bsCompDistS">—</div>
             </div>
@@ -2201,7 +2201,7 @@ function renderRail(){
   };
   setComp("bsCompLine", perfRows.filter(r=>r.line!=null && r.line<=5.5));
   setComp("bsCompEdge", perfRows.filter(r=>r.edge!=null && r.edge>=0.20));
-  setComp("bsCompOver", perfRows.filter(r=>r.side==="Over"));
+  setComp("bsCompOver", perfRows.filter(r=>r.side==="Under"));
   setComp("bsCompDist", perfRows.filter(r=>r.disagree!=null && r.disagree>=CONV_DISAGREE_MIN));
   setComp("bsCompCeilOver", perfRows.filter(r=>r.side==="Over"));
   setComp("bsCompHiLine", perfRows.filter(r=>r.line!=null && r.line>=5.5));
@@ -4995,7 +4995,7 @@ async function watchGameInto(g, all, probList, day, season){
       const disagree=Math.abs(m.eK-red.line);
       r._watchSide=side; r._watchEdge=edge;
       r._watchCombo = (edge!=null) && (red.line<=EDGE_MAX_LINE) && (edge>=EDGE_STRONG_BAR);
-      r._watchConv  = (side==="Over") && (disagree>=CONV_DISAGREE_MIN);
+      r._watchConv  = (side==="Under") && (edge!=null && edge>=CONV_EDGE_MIN) && (disagree>=CONV_DISAGREE_MIN) && (red.line>=CONV_MIN_LINE);
       r._watchCeil  = (side==="Over") && (red.line>=5.5);
     } else { r._watchEK=null; r._watchCombo=false; r._watchConv=false; r._watchCeil=false; r._watchEdge=null; }
     cacheWatch(day, r);
@@ -5334,7 +5334,7 @@ function renderCLVInto(el){
 }
 
 // Two-bet summary at the top of the Scoreboard. Respects the active window chip.
-// Value (Strong + ≤5.5) = the bet. Over&Conviction = the lead candidate.
+// Value (Strong + ≤5.5) = the bet. Conviction (Under, high line) = a candidate.
 function renderBetSummary(){
   const el=$("betSummary"); if(!el) return;
   const rows=collectScorecardRows();   // already window-filtered via _perfWindow
@@ -5368,7 +5368,7 @@ function renderBetSummary(){
   };
   el.innerHTML =
     card("Value (Strong + ≤5.5)","THE BET",combo,"var(--bet)")+
-    card("Over &amp; Conviction","CANDIDATE",conv,"var(--accent)")+
+    card("Conviction (Under + line ≥5.5)","CANDIDATE",conv,"var(--accent)")+
     card("Overpower (Over + line ≥5.5)","CANDIDATE",ceil,"var(--ceiling)");
 }
 
