@@ -550,6 +550,8 @@ button:active{transform:translateY(1px)}
 .why-chk{font-size:11.5px;line-height:1.6;letter-spacing:.01em}
 .why-chk.ok{color:var(--pos)}
 .why-chk.no{color:var(--muted)}
+.why-data{font-size:11.5px;line-height:1.5;color:var(--muted);margin-bottom:9px}
+.why-data b{color:var(--text)}
 .gt-muted{color:var(--muted)}
 .gt-num{font-family:var(--mono);font-variant-numeric:tabular-nums;text-align:right}
 .gt-num small{color:var(--muted);font-size:10px}
@@ -6193,6 +6195,32 @@ function styleTag(s){
   const d=STYLE_DEFS.find(x=>x[0]===s); if(!d) return "";
   return `<span class="mb-tag" style="color:${d[2]}">${d[1].slice(0,4).toUpperCase()}</span>`;
 }
+// "Why this was a pick" for a logged bet: look up the model snapshot from the day
+// record (by pitcher) and show the numbers + the gate checks it cleared.
+function myBetWhyInner(b){
+  const day=loadDay(b.date);
+  const r=(day&&Array.isArray(day.rows)) ? day.rows.find(x=>norm(x.pitcher||"")===norm(b.pitcher||"")) : null;
+  if(!r || r.eK==null || r.line==null){
+    const lbl=(STYLE_DEFS.find(s=>s[0]===b.style)||[,null])[1];
+    return `<div class="why-sum">No model snapshot for this bet.</div>`+
+      `<div class="why-data">The model's numbers at pick time weren't saved — this bet wasn't captured from an Official pull.${lbl?` It was tagged <b>${lbl}</b>.`:""}</div>`;
+  }
+  const wf=whyFlag(r);
+  const eK=r.eK, line=r.line, edge=r.edge, dk=eK-line;
+  const sgn=v=>(v>=0?"+":"")+v.toFixed(1);
+  const tr=r.traits||{};
+  const extras=[tr.kTier, (tr.workload?tr.workload+" outing":null)].filter(Boolean).join(", ");
+  const checkRow=(c)=>`<div class="why-chk ${c.pass?'ok':'no'}">${c.pass?'✓':'✗'} ${c.label}</div>`;
+  let inner=`<div class="why-sum">${wf.summary}</div>`;
+  inner+=`<div class="why-data"><b>Model ${eK.toFixed(1)}K</b> vs line ${line} · <b>${sgn(dk)}K</b> vs line`+
+    `${edge!=null?` · edge ${(edge*100).toFixed(0)}%`:""}${extras?`<br>${extras}`:""}</div>`;
+  if(wf.comboChecks){
+    inner+=`<div class="why-grp"><div class="why-grp-h" style="color:var(--bet)">VALUE needs both</div>${wf.comboChecks.map(checkRow).join("")}</div>`;
+    inner+=`<div class="why-grp"><div class="why-grp-h" style="color:var(--accent)">CONVICTION needs both</div>${wf.convChecks.map(checkRow).join("")}</div>`;
+    if(wf.ceilChecks) inner+=`<div class="why-grp"><div class="why-grp-h" style="color:var(--ceiling)">OVERPOWER needs both</div>${wf.ceilChecks.map(checkRow).join("")}</div>`;
+  }
+  return inner;
+}
 // click-to-filter state for the My Bets list. null = show all; otherwise one of
 // "combo" | "conv" | "ceil" | "__untagged__" (untagged = no style). In-memory only.
 let _mbStyleFilter=null;
@@ -6260,7 +6288,7 @@ function renderMyBets(){
     const plCls=b.pl>0?"mb-win":b.pl<0?"mb-loss":"";
     return `<div class="mb-row">`+
       `<div class="mb-c mb-date">${b.date}</div>`+
-      `<div class="mb-c mb-pitch">${b.pitcher}${styleTag(b.style)}</div>`+
+      `<div class="mb-c mb-pitch">${b.pitcher}${styleTag(b.style)}<span class="why-wrap"><button class="why-i" type="button" title="Why this was a pick">i</button><span class="why-pop">${myBetWhyInner(b)}</span></span></div>`+
       `<div class="mb-c">${b.side} ${b.line}</div>`+
       `<div class="mb-c">${fmtOdds(b.odds)}</div>`+
       `<div class="mb-c">${Number(b.stake).toFixed(2)}u</div>`+
@@ -6269,6 +6297,26 @@ function renderMyBets(){
       `<div class="mb-c"><button class="mb-del" data-del="${b.id}" title="Delete this bet">×</button></div>`+
     `</div>`;
   }).join("");
+  el.querySelectorAll(".why-i").forEach(btn=>btn.onclick=(e)=>{
+    e.stopPropagation();
+    const pop=btn.parentElement.querySelector(".why-pop");
+    if(!pop) return;
+    const wasOpen=pop.classList.contains("open");
+    document.querySelectorAll(".why-pop.open").forEach(p=>p.classList.remove("open"));
+    if(!wasOpen){
+      // fixed-position + clamp so a bottom-of-list popover isn't clipped by the card
+      pop.classList.add("open");
+      const rc=btn.getBoundingClientRect();
+      const popW=pop.offsetWidth||248, popH=pop.offsetHeight||260;
+      let top=rc.bottom+6;
+      if(top+popH>window.innerHeight-8) top=Math.max(8, rc.top-popH-6);
+      let left=rc.right-popW;
+      if(left<8) left=8;
+      if(left+popW>window.innerWidth-8) left=window.innerWidth-8-popW;
+      pop.style.position="fixed"; pop.style.left=left+"px"; pop.style.top=top+"px";
+      pop.style.right="auto"; pop.style.bottom="auto";
+    }
+  });
   el.querySelectorAll("[data-del]").forEach(btn=>btn.onclick=()=>{
     if(!confirm("Delete this logged bet? (Doesn't affect anything else.)")) return;
     // Soft-delete: mark a tombstone (kept in storage/sync) instead of dropping the
