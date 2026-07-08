@@ -3839,6 +3839,7 @@ async function gradeHistory(){
       // ungraded — that old flag was the bug that made "Update results" do nothing.
       const needsGrading=(rec.rows||[]).some(r=>{
         if(r.skipped) return false;                 // bullpen/opener: never graded
+        if(r.voided) return false;                  // scratched / no-show: terminal, never re-grade
         if(r.actualK!=null) return false;           // already has a result
         return (r.resolved || r.tiers);             // gradeable but no result yet
       });
@@ -3863,6 +3864,10 @@ async function gradeHistory(){
               }}}}catch{}
       }
       if(finalGames>0)anyFinalsFound=true;
+      // A day 2+ days old has all its games long final. Combined with a successful
+      // schedule fetch (finalGames>0), that lets us retire no-show picks that carry
+      // no gamePk (older backfill rows) — otherwise their day re-fetches forever.
+      const dayLongOver = rec.date < new Date(Date.now()-2*864e5).toISOString().slice(0,10);
       rec.rows.forEach(row=>{
         if(!row.resolved && !row.tiers)return;
         // ID-first grading: pid (stored at pull time) beats any name spelling.
@@ -3888,10 +3893,11 @@ async function gradeHistory(){
           // final so it stops hanging on "in progress", and void the pick — never
           // grade a no-show. Only fires on schedule-confirmed-Final games, so a
           // pitcher who simply hasn't thrown yet in a live game is left pending.
-          if(row.gamePk!=null && finalGamePks.has(row.gamePk)){
+          const gameFinalById = (row.gamePk!=null && finalGamePks.has(row.gamePk));
+          if(gameFinalById || (finalGames>0 && dayLongOver)){
             row.gameFinal=true;
             row.voided=true;
-            row.voidReason="did not appear (scratched / start changed)";
+            row.voidReason = gameFinalById ? "did not appear (scratched / start changed)" : "no result — games final, pitcher not in box score";
             row.actualK=null; row.hit=null;
             if(row.tiers){ for(const tn of ["t0","t1"]){ const t=row.tiers[tn]; if(t){ t.hit=null; t.units=null; } } }
           }
