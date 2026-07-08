@@ -1752,15 +1752,22 @@ async function lineup(gp,side){try{const r=await jget(`${MLB}/game/${gp}/boxscor
 // For each confirmed-lineup batter, blend their vs-hand split (shrunk) into the sum.
 // Falls back to overall per-batter if pHand unknown, then team avg if no lineup.
 async function opponentKRate(gp,oppSide,oppTid,s,pHand){const lo=await lineup(gp,oppSide);
-  if(lo&&lo.length){let k=0,pa=0;
-    for(const pid of lo){
+  if(lo&&lo.length){
+    // Fetch every batter's rate CONCURRENTLY. The result is a plain sum over the
+    // lineup, so order doesn't matter — this is identical to the old sequential
+    // loop but collapses ~18 serial round-trips into one parallel wave (the single
+    // biggest speedup for a pull; batter fetches are the bulk of the wall time).
+    const parts=await Promise.all(lo.map(async pid=>{
       const [k0,pa0]=await batterKRate(pid,s);
       if(pHand && pa0>0){
         const [ks,pas]=await batterKRateVsHand(pid,s,pHand);
         const [ek,epa]=shrinkSplit(k0,pa0,ks,pas);
-        k+=ek; pa+=epa;
-      } else { k+=k0; pa+=pa0; }
-    }
+        return [ek,epa];
+      }
+      return [k0,pa0];
+    }));
+    let k=0,pa=0;
+    for(const [ek,epa] of parts){ k+=ek; pa+=epa; }
     if(pa>0)return[k,pa, pHand?"lineup+hand":"lineup"];}
   const[k,pa]=await teamKRate(oppTid,s);return[k,pa,"team"];}
 
@@ -3162,7 +3169,7 @@ async function scoreOneEvent(ev, probList, key, season){
 }
 
 // per-game line pull — spends ~1 credit for THIS game only, then merges into today
-async function pullOneGame(g){
+async function pullOneGame(g, pre){
   const key=getKey();
   if(!key){ setStatus("Set your Odds API key first (in setup)."); return; }
   const day = _loadedDate || todayISO();
@@ -3170,13 +3177,13 @@ async function pullOneGame(g){
   _longRunActive=setStatus;
   try{
     setStatus(`Pulling lines for ${g.awayTeam} @ ${g.homeTeam}…`,0.3);
-    const events=await jget(`${ODDS}/sports/baseball_mlb/events?apiKey=${key}`);
+    const events=(pre&&pre.events)?pre.events:await jget(`${ODDS}/sports/baseball_mlb/events?apiKey=${key}`);
     const ev=events.find(e=>{
       const eh=norm(e.home_team),ea=norm(e.away_team),gh=norm(g.homeTeam),ga=norm(g.awayTeam);
       return (eh===gh&&ea===ga)||(eh===ga&&ea===gh);
     });
     if(!ev){ setStatus(`No posted lines yet for ${g.awayTeam} @ ${g.homeTeam}. Try again closer to game time.`); return; }
-    const probList=await fetchProbables(day);
+    const probList=(pre&&pre.probList)?pre.probList:await fetchProbables(day);
     const {rows,remaining,matched}=await scoreOneEvent(ev,probList,key,season);
     if(remaining!=null) setCredits(remaining);
     if(!rows.length){ setStatus(`No strikeout props posted yet for that game.`); return; }
@@ -3191,7 +3198,10 @@ async function pullOneGame(g){
     // Capture the free SharpAPI line for just this game's pitchers at the same
     // moment, so every official pull AND re-pull stores free-vs-paid on identical
     // rows. Scoped to this game's pitchers so a re-pull refreshes only those.
-    try{ await captureFreeLines(day, rows.map(r=>r.pitcher)); }catch(e){ console.warn("free-line capture (per-game) skipped:",e.message||e); }
+    // In a Pull All batch the final whole-day sweep captures every game's free lines
+    // once, so skip the per-game capture here — it re-fetches the entire SharpAPI feed
+    // and doing that once per game was a big chunk of the batch's wall time.
+    if(!_pullBatch){ try{ await captureFreeLines(day, rows.map(r=>r.pitcher)); }catch(e){ console.warn("free-line capture (per-game) skipped:",e.message||e); } }
   }catch(e){ setStatus("Per-game pull error: "+e.message); }
   finally{ _longRunActive=null; }
 }
@@ -3208,10 +3218,17 @@ async function pullAllStaged(){
   if(!confirm(`Pull lines for ${todo.length} game(s)? ~${todo.length} credits.`)) return;
   const pa=$("runBtn"); if(pa) pa.disabled=true;
   SS.removeItem(UNDO_PULL_K); _pullBatch=true;  // accumulate this whole batch into one undo
+  // Fetch the batch-wide inputs ONCE up front: the Odds events list and the day's
+  // probable pitchers are identical for every game, so re-fetching them per game
+  // (as pullOneGame does when called standalone) was pure waste in a Pull All.
+  const key=getKey();
+  let preEvents=null, preProb=null;
+  try{ preEvents=await jget(`${ODDS}/sports/baseball_mlb/events?apiKey=${key}`); }catch(e){ console.warn("batch events prefetch skipped:",e.message||e); }
+  try{ preProb=await fetchProbables(day); }catch(e){ console.warn("batch probables prefetch skipped:",e.message||e); }
   try{
     for(let i=0;i<todo.length;i++){
       setStatus(`Pulling all… ${i+1} of ${todo.length}`, i/todo.length);
-      await pullOneGame(todo[i]);
+      await pullOneGame(todo[i], {events:preEvents, probList:preProb});
     }
   } finally { _pullBatch=false; }
   if(pa) pa.disabled=false;
