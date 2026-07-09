@@ -1427,11 +1427,45 @@ const SS = (function(){
     }catch(e){}
     try{ if(window.localStorage){ for(const k in map){ try{ window.localStorage.setItem(k,map[k]); }catch{} } } }catch(e){}
   }
-  function flushCloud(){
+  // ROOT GUARD against cross-device clobbering. Before overwriting a cloud key we
+  // confirm our copy isn't OLDER than what's already there. If the cloud row is
+  // newer (another device — e.g. a phone pull while you're out — wrote it more
+  // recently, or our own quit-flush is racing an update), we ADOPT the cloud value
+  // instead of clobbering it. Timestamps are compared by parsed epoch so the "+00:00"
+  // (cloud) vs "Z" (local) formats compare correctly. Fail-safe: any fetch error
+  // falls through to the original unconditional push, so offline still saves up.
+  const _tsEpoch=s=>{ const t=Date.parse(s||""); return isNaN(t)?0:t; };
+  async function flushCloud(){
     const ups=[...dirty]; dirty.clear();
     const dels=[...deleted]; deleted.clear();
-    if(ups.length){ sbUpsert(META_TS_KEY, map[META_TS_KEY]); } // keep cloud timestamps fresh
-    for(const k of ups){ if(k in map) sbUpsert(k,map[k]); }
+    if(!ups.length && !dels.length) return;
+    const skip=new Set();
+    if(ups.length && typeof fetch==="function"){
+      try{
+        const res=await fetch(sbUrl(SB_TABLE+"?select=key,updated_at"), { headers:sbHeaders });
+        if(res.ok){
+          const cts={}; for(const r of await res.json()){ cts[String(r.key)]=r.updated_at||""; }
+          const newer=ups.filter(k=> cts[k] && _tsEpoch(cts[k])>_tsEpoch(metaTs[k]));
+          if(newer.length){
+            // pull the actual newer VALUES (only for the few affected keys) and adopt
+            // them; se_mybets merges by id (never a plain overwrite), so it re-pushes.
+            const inList=newer.map(k=>'"'+String(k).replace(/"/g,"")+'"').join(",");
+            const r2=await fetch(sbUrl(SB_TABLE+"?select=key,value,updated_at&key=in.("+encodeURIComponent(inList)+")"), { headers:sbHeaders });
+            if(r2.ok){
+              for(const r of await r2.json()){
+                const k=String(r.key), v=(r.value==null?"":String(r.value));
+                if(k===MYBETS_KEY_NAME){ map[k]=mergeMyBets(map[k], v); metaTs[k]=new Date().toISOString(); }
+                else { map[k]=v; metaTs[k]=new Date(_tsEpoch(r.updated_at)||Date.now()).toISOString(); skip.add(k); }
+              }
+              map[META_TS_KEY]=JSON.stringify(metaTs); flushLocal();
+            } else { for(const k of newer){ if(k!==MYBETS_KEY_NAME) skip.add(k); } } // couldn't read values — still don't clobber
+          }
+        }
+      }catch(e){ try{ console.warn("[SS] flush guard skipped:",e.message); }catch{} }
+    }
+    const push=ups.filter(k=>!skip.has(k));
+    if(push.length){ sbUpsert(META_TS_KEY, map[META_TS_KEY]); } // keep cloud timestamps fresh
+    for(const k of push){ if(k in map) sbUpsert(k,map[k]); }
     for(const k of dels){ if(!(k in map)) sbDelete(k); }
   }
   function flush(){ flushLocal(); flushCloud(); }
