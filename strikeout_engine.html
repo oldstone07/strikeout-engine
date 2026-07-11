@@ -53,7 +53,10 @@ header{display:flex;gap:18px;align-items:center;margin-bottom:0;padding:12px 22p
 .hm-l{font-size:9px;letter-spacing:.13em;text-transform:uppercase;color:var(--muted)}
 .hm-v{font-size:14px;font-weight:700;color:var(--text);font-variant-numeric:tabular-nums}
 /* three-column app shell */
-.appgrid{display:grid;grid-template-columns:minmax(0,1fr) 312px;gap:18px;padding:14px 22px 0;align-items:start}
+.appgrid{display:grid;grid-template-columns:1fr;gap:18px;padding:14px 22px 0;align-items:start}
+#rail{display:none}
+.appgrid.rail-on #rail{display:flex}
+@media(min-width:641px){.appgrid.rail-on{grid-template-columns:minmax(0,1fr) 312px}}
 .topnav{display:flex;align-items:center;gap:4px;align-self:stretch}
 .tnav-mobile{display:none} /* phone-only Tracked tab */
 .tnav{background:transparent;color:var(--muted);border:none;border-bottom:2px solid transparent;border-radius:0;
@@ -915,7 +918,6 @@ footer{margin-top:30px;color:var(--muted);font-size:11.5px;text-align:center}
     <button class="tnav on" data-tab="Today">▤ Today</button>
     <button class="tnav tnav-mobile" data-tab="Tracked">◱ Tracked</button>
     <button class="tnav" data-tab="Perf">▥ Scoreboard</button>
-    <button class="tnav" data-tab="Hist">◷ History</button>
     <button class="tnav" data-tab="Data">▦ Data</button>
     <button class="tnav" data-tab="Bets">＄ My Bets</button>
     <button class="tnav" data-tab="Watch">◉ Watchdog</button>
@@ -2138,7 +2140,7 @@ async function syncNow(){
       const active=(document.querySelector(".tnav.on")||{}).dataset;
       const which=(active&&active.tab)|| ($("tabToday")&&$("tabToday").classList.contains("on")?"Today":"Today");
       showTab(which);
-      if(which==="Perf"){ try{renderPerf();}catch(e){console.error(e);} }
+      if(which==="Perf"){ try{renderPerf();}catch(e){console.error(e);} try{renderHistory();}catch(e){console.error(e);} }
       else if(which==="Hist"){ try{renderHistory();}catch(e){console.error(e);} }
       else if(which==="Data"){ try{renderData();}catch(e){console.error(e);} }
       else if(which==="Bets"){ try{renderMyBets();}catch(e){console.error(e);} }
@@ -2252,16 +2254,19 @@ function renderRail(){
 }
 
 function showTab(which){
-  for(const[t,c] of [["tabToday","todayCard"],["tabPerf","perfCard"],["tabHist","histCard"],["tabData","dataCard"],["tabBets","myBetsCard"],["tabWatch","watchdogCard"],["tabSettings","settingsCard"]]){
+  for(const[t,c] of [["tabToday","todayCard"],["tabPerf","perfCard"],["tabData","dataCard"],["tabBets","myBetsCard"],["tabWatch","watchdogCard"],["tabSettings","settingsCard"]]){
     const on=(t==="tab"+which);
     const tb=$(t); if(tb) tb.classList.toggle("on",on);
     const cc=$(c); if(cc) cc.classList.toggle("hidden",!on);
   }
+  // History folded into Scoreboard: histCard visible only on the Perf tab
+  { const hc=$("histCard"); if(hc) hc.classList.toggle("hidden", which!=="Perf"); }
   // "Tracked" is a phone-only tab that surfaces the existing rail (#rail). It is
   // not a card — it toggles a class the phone CSS uses to show the rail full-width
   // and hide the Today card. Desktop never reaches this branch (tab is hidden).
   const railEl=$("rail");
   if(railEl) railEl.classList.toggle("rail-astab", which==="Tracked");
+  { const _ag=document.querySelector(".appgrid"); if(_ag) _ag.classList.toggle("rail-on", which==="Today"); }
   if(which==="Tracked"){ const tc=$("todayCard"); if(tc) tc.classList.add("hidden"); }
   // sync top nav highlight
   document.querySelectorAll(".tnav").forEach(b=>{
@@ -2278,8 +2283,7 @@ document.querySelectorAll(".tnav").forEach(b=>{
     document.querySelectorAll(".tnav").forEach(x=>x.classList.remove("on"));
     b.classList.add("on");
     showTab(w);
-    if(w==="Perf"){try{renderPerf();}catch(e){console.error(e);}}
-    if(w==="Hist"){try{renderHistory();}catch(e){console.error(e);}}
+    if(w==="Perf"){try{renderPerf();}catch(e){console.error(e);}try{renderHistory();}catch(e){console.error(e);}}
     if(w==="Data"){try{renderData();}catch(e){console.error(e);}}
     if(w==="Bets"){try{renderMyBets();}catch(e){console.error(e);}}
     if(w==="Watch"){try{renderWatch();}catch(e){console.error(e);}}
@@ -2293,7 +2297,6 @@ $("actionMenuToggle") && ($("actionMenuToggle").onclick=function(){
   this.setAttribute("aria-expanded", open?"true":"false");
 });
 $("tabPerf") && ($("tabPerf").onclick=()=>{showTab("Perf");try{renderPerf();}catch(e){console.error(e);}});
-$("tabHist") && ($("tabHist").onclick=()=>{showTab("Hist");try{renderHistory();}catch(e){console.error(e);}});
 $("tabData") && ($("tabData").onclick=()=>{showTab("Data");try{renderData();}catch(e){console.error("renderData failed:",e);}});
 // rail Season Performance time-window filter
 document.querySelectorAll("#perfWin button").forEach(b=>{
