@@ -918,6 +918,7 @@ footer{margin-top:30px;color:var(--muted);font-size:11.5px;text-align:center}
     <button class="tnav" data-tab="Hist">◷ History</button>
     <button class="tnav" data-tab="Data">▦ Data</button>
     <button class="tnav" data-tab="Bets">＄ My Bets</button>
+    <button class="tnav" data-tab="Watch">◉ Watchdog</button>
     <button class="tnav" data-tab="Settings">⚙ Settings</button>
   </nav>
   <div class="headmeta">
@@ -1192,6 +1193,8 @@ footer{margin-top:30px;color:var(--muted);font-size:11.5px;text-align:center}
       <div class="bm-actions"><button class="ghost" id="bmCancel">Cancel</button><button class="primary" id="bmSave">Save bet</button></div>
     </div>
   </div>
+
+    <div id="watchdogCard" class="card hidden" style="background:transparent;border:0;padding:14px 0 0"></div>
 
     </div><!-- /.appcontent -->
 
@@ -2249,7 +2252,7 @@ function renderRail(){
 }
 
 function showTab(which){
-  for(const[t,c] of [["tabToday","todayCard"],["tabPerf","perfCard"],["tabHist","histCard"],["tabData","dataCard"],["tabBets","myBetsCard"],["tabSettings","settingsCard"]]){
+  for(const[t,c] of [["tabToday","todayCard"],["tabPerf","perfCard"],["tabHist","histCard"],["tabData","dataCard"],["tabBets","myBetsCard"],["tabWatch","watchdogCard"],["tabSettings","settingsCard"]]){
     const on=(t==="tab"+which);
     const tb=$(t); if(tb) tb.classList.toggle("on",on);
     const cc=$(c); if(cc) cc.classList.toggle("hidden",!on);
@@ -2279,6 +2282,7 @@ document.querySelectorAll(".tnav").forEach(b=>{
     if(w==="Hist"){try{renderHistory();}catch(e){console.error(e);}}
     if(w==="Data"){try{renderData();}catch(e){console.error(e);}}
     if(w==="Bets"){try{renderMyBets();}catch(e){console.error(e);}}
+    if(w==="Watch"){try{renderWatch();}catch(e){console.error(e);}}
   };
 });
 $("tabToday") && ($("tabToday").onclick=()=>showTab("Today"));
@@ -6417,6 +6421,327 @@ $("bmCancel") && ($("bmCancel").onclick=closeBetModal);
 $("bmSave") && ($("bmSave").onclick=saveBetFromModal);
 $("betModal") && $("betModal").addEventListener("click",(e)=>{ if(e.target.id==="betModal") closeBetModal(); });
 document.addEventListener("keydown",(e)=>{ if(e.key==="Escape" && !$("betModal").classList.contains("hidden")) closeBetModal(); });
+</script>
+<!-- ===== Decay Watchdog module (additive; reads allDays()) ===== -->
+<script>
+/* ============================================================================
+ * Decay Watchdog — live module for strikeout_engine.html
+ * Self-contained. No dependencies. Browser + Node.
+ *
+ * Reads the engine's existing `days[]` (same shape as an Export backup) and
+ * mounts a live cockpit into a container element. Recompute by calling
+ * Watchdog.mount(days, el) again after each grading/sync cycle.
+ *
+ * Watches four tracks: Value, Conviction, Overpower, and Portfolio (the union
+ * of all three, deduped per game — your actual bankroll exposure).
+ *
+ * Engine: one-sided CUSUM (trip-wire) + decayed Beta posterior (readout).
+ * Rates (p0) are read from the data (provisional until the forward test passes;
+ * at that point pass opts.p0 to pin the validated rate instead).
+ * ==========================================================================*/
+(function (root) {
+  "use strict";
+
+  var FLOOR = 0.55, BE = 0.524, LAM = 0.94;
+  var COL = { Value:"#36c5d8", Conviction:"#e6a94a", Overpower:"#b07cff", Portfolio:"#e2ecef" };
+  var STCOL = { OK:"#3fc66b", WATCH:"#e6a94a", TRIPPED:"#ec5b52" };
+  var DESC = {
+    Value:"Strong (edge ≥ 20%) · line ≤ 5.5",
+    Conviction:"Under · edge ≥ 20% · ≥1.5 from line · line ≥ 5.5",
+    Overpower:"Over · line ≥ 5.5",
+    Portfolio:"Every pick you place · any signal fires · deduped per game"
+  };
+  var ORDER = ["Value","Conviction","Overpower"];
+
+  // ---- deterministic RNG (mulberry32) so tuned h is stable across reloads ---
+  function rng(seed){ return function(){ seed|=0; seed=seed+0x6D2B79F5|0;
+    var t=Math.imul(seed^seed>>>15,1|seed); t=t+Math.imul(t^t>>>7,61|t)^t;
+    return ((t^t>>>14)>>>0)/4294967296; }; }
+
+  // ---- regularized incomplete beta -> Beta CDF (Numerical Recipes) ----------
+  function betacf(a,b,x){
+    var MAXIT=200,EPS=3e-12,FPMIN=1e-300;
+    var qab=a+b,qap=a+1,qam=a-1,c=1,d=1-qab*x/qap;
+    if(Math.abs(d)<FPMIN)d=FPMIN; d=1/d; var h=d;
+    for(var m=1;m<=MAXIT;m++){ var m2=2*m;
+      var aa=m*(b-m)*x/((qam+m2)*(a+m2)); d=1+aa*d; if(Math.abs(d)<FPMIN)d=FPMIN;
+      c=1+aa/c; if(Math.abs(c)<FPMIN)c=FPMIN; d=1/d; h*=d*c;
+      aa=-(a+m)*(qab+m)*x/((a+m2)*(qap+m2)); d=1+aa*d; if(Math.abs(d)<FPMIN)d=FPMIN;
+      c=1+aa/c; if(Math.abs(c)<FPMIN)c=FPMIN; d=1/d; var de=d*c; h*=de;
+      if(Math.abs(de-1)<EPS)break; }
+    return h;
+  }
+  function betaCdf(x,a,b){
+    if(x<=0)return 0; if(x>=1)return 1;
+    var lb=lgamma(a+b)-lgamma(a)-lgamma(b);
+    var bt=Math.exp(lb+a*Math.log(x)+b*Math.log(1-x));
+    return x<(a+1)/(a+b+2)? bt*betacf(a,b,x)/a : 1-bt*betacf(b,a,1-x)/b;
+  }
+  // Lanczos lgamma
+  function lgamma(z){
+    var g=[76.18009172947146,-86.50532032941677,24.01409824083091,
+      -1.231739572450155,0.1208650973866179e-2,-0.5395239384953e-5];
+    var x=z,y=z,tmp=x+5.5; tmp-=(x+0.5)*Math.log(tmp);
+    var ser=1.000000000190015;
+    for(var j=0;j<6;j++){ y++; ser+=g[j]/y; }
+    return -tmp+Math.log(2.5066282746310005*ser/x);
+  }
+
+  // ---- decayed Beta posterior -----------------------------------------------
+  function Beta(){ this.a=1; this.b=1; }
+  Beta.prototype.upd=function(w){
+    this.a=LAM*(this.a-1)+1+(w?1:0); this.b=LAM*(this.b-1)+1+(w?0:1); };
+  Beta.prototype.mean=function(){ return this.a/(this.a+this.b); };
+  Beta.prototype.pbelow=function(f){ return betaCdf(f,this.a,this.b); };
+  Beta.prototype.ci=function(){
+    var self=this;
+    function inv(q){ var lo=1e-6,hi=1-1e-6,m;
+      for(var i=0;i<50;i++){ m=(lo+hi)/2; if(betaCdf(m,self.a,self.b)<q)lo=m; else hi=m; }
+      return (lo+hi)/2; }
+    return [inv(0.025),inv(0.975)];
+  };
+
+  function incs(p0,fl){ return [Math.log(fl/p0), Math.log((1-fl)/(1-p0))]; }
+
+  // ---- CUSUM threshold tuning (deterministic MC) ----------------------------
+  function inControlARL(p0,fl,h,trials,horizon){
+    trials=trials||300; horizon=horizon||1500;
+    var iw=incs(p0,fl)[0], il=incs(p0,fl)[1], tot=0;
+    for(var t=0;t<trials;t++){ var r=rng(9000+t), S=0, fired=horizon;
+      for(var i=0;i<horizon;i++){ S=Math.max(0,S+(r()<p0?iw:il)); if(S>=h){fired=i;break;} }
+      tot+=fired; }
+    return tot/trials;
+  }
+  function tuneH(p0,fl,target){
+    target=target||750; var lo=1.2,hi=7.0,m;
+    for(var i=0;i<12;i++){ m=(lo+hi)/2; if(inControlARL(p0,fl,m)<target)lo=m; else hi=m; }
+    return hi;
+  }
+
+  // ---- grading --------------------------------------------------------------
+  function payout(p){ if(p==null)return null; return p>0? p/100 : 100/Math.abs(p); }
+  function signalsFor(r){
+    var out=[], ms=r.modelSide, line=r.line, edge=r.edge, eK=r.eK;
+    if(line==null)return out;
+    if(edge!=null && line<=5.5 && edge>=0.20) out.push("Value");
+    if(ms==="Over" && line>=5.5) out.push("Overpower");
+    if(ms==="Under" && line>=5.5 && edge!=null && edge>=0.20 && eK!=null && Math.abs(eK-line)>=1.5)
+      out.push("Conviction");
+    return out;
+  }
+  function collect(days){
+    var sig={Value:[],Conviction:[],Overpower:[],Portfolio:[]};
+    (days||[]).forEach(function(day){
+      var dd=day.date;
+      (day.rows||[]).forEach(function(r){
+        if(!r.gameFinal)return;
+        if(r.actualK==null)return;
+        var ms=r.modelSide; if(ms!=="Over"&&ms!=="Under")return;
+        if(r.skipped)return;
+        var line=r.line; if(line==null)return;
+        var s=signalsFor(r); if(!s.length)return;
+        var price=(r.sidePrice!=null?r.sidePrice:(ms==="Over"?r.bestOver:r.bestUnder));
+        var ak=r.actualK, oc;
+        if(ak===line)oc="push";
+        else if((ms==="Over"&&ak>line)||(ms==="Under"&&ak<line))oc="win";
+        else oc="loss";
+        var live=(r.histBackfill!==true);
+        var rec={date:dd,oc:oc,price:price,live:live,stake:s.length};
+        s.forEach(function(nm){ sig[nm].push(rec); });
+        sig.Portfolio.push(rec);
+      });
+    });
+    Object.keys(sig).forEach(function(k){
+      sig[k].sort(function(a,b){
+        var da=(a.date||"0000"), db=(b.date||"0000");
+        if(da<db)return -1; if(da>db)return 1;
+        return (a.live?1:0)-(b.live?1:0);
+      });
+    });
+    return sig;
+  }
+
+  // ---- compute one track ----------------------------------------------------
+  function track(recs, pinnedP0){
+    var dec=recs.filter(function(r){return r.oc!=="push";});
+    var n=dec.length, wins=0; dec.forEach(function(r){ if(r.oc==="win")wins++; });
+    var p0 = pinnedP0!=null ? pinnedP0 : Math.max(n?wins/n:0.6, FLOOR+0.02);
+    var h=tuneH(p0,FLOOR), arl=inControlARL(p0,FLOOR,h,600,3000);
+    var iv=incs(p0,FLOOR), iw=iv[0], il=iv[1];
+    var cu=0, bt=new Beta(), series=[], liveStart=null;
+    recs.forEach(function(r){
+      if(r.oc==="push")return;
+      var w=(r.oc==="win"); cu=Math.max(0,cu+(w?iw:il)); bt.upd(w);
+      if(r.live && liveStart==null) liveStart=series.length;
+      var c=bt.ci(), pb=bt.pbelow(FLOOR);
+      var st = cu>=h ? "TRIPPED" : ((pb>0.5||cu>0.5*h)?"WATCH":"OK");
+      series.push({i:series.length,est:bt.mean(),lo:c[0],hi:c[1],pb:pb,cu:cu,st:st,live:r.live});
+    });
+    var rp=dec.filter(function(r){return r.price!=null;});
+    var units=0, swWon=0, swStk=0, multi=0;
+    rp.forEach(function(r){
+      units += r.oc==="win"? payout(r.price) : -1;
+      swWon += r.oc==="win"? r.stake*payout(r.price) : -r.stake;
+      swStk += r.stake;
+    });
+    dec.forEach(function(r){ if(r.stake>1)multi++; });
+    var liveDec=dec.filter(function(r){return r.live;});
+    var lw=0; liveDec.forEach(function(r){ if(r.oc==="win")lw++; });
+    return {
+      p0:p0,h:h,arl:Math.round(arl),n:n,wins:wins,losses:n-wins,
+      hit:n?wins/n:null, roi:rp.length?units/rp.length:null,
+      roiSw:swStk?swWon/swStk:null, multi:multi,
+      nLive:liveDec.length, liveWins:lw, liveLosses:liveDec.length-lw,
+      liveStart:liveStart, cur:series.length?series[series.length-1]:null, series:series
+    };
+  }
+
+  // ---- public compute -------------------------------------------------------
+  function compute(days, opts){
+    opts=opts||{}; var pins=opts.p0||{};
+    var sig=collect(days), out={floor:FLOOR,be:BE,signals:{}};
+    ["Value","Conviction","Overpower","Portfolio"].forEach(function(nm){
+      out.signals[nm]=track(sig[nm], pins[nm]);
+    });
+    return out;
+  }
+
+  // ---- SVG chart ------------------------------------------------------------
+  function chart(sig,color,floor,be){
+    var ser=sig.series, n=ser.length, W=720,H=150,PL=8,PR=8,PT=10,PB=18;
+    var iw=W-PL-PR, ih=H-PT-PB, ymin=0.30,ymax=0.95;
+    function X(i){ return PL+(n>1? iw*(i/(n-1)) : 0); }
+    function Y(v){ v=Math.max(ymin,Math.min(ymax,v)); return PT+ih*(1-(v-ymin)/(ymax-ymin)); }
+    var s="";
+    [[sig.p0,"#5f6f78","4 3","p0 "+Math.round(sig.p0*100)+"%"],
+     [floor,"#ec5b52","2 4","floor "+Math.round(floor*100)+"%"],
+     [be,"#3a464d","1 4","break-even "+(be*100).toFixed(1)+"%"]].forEach(function(r){
+      var y=Y(r[0]);
+      s+='<line x1="'+PL+'" y1="'+y.toFixed(1)+'" x2="'+(W-PR)+'" y2="'+y.toFixed(1)+
+         '" stroke="'+r[1]+'" stroke-width="1" stroke-dasharray="'+r[2]+'" opacity=".7"/>';
+      s+='<text x="'+(W-PR-2)+'" y="'+(y-3).toFixed(1)+'" fill="'+r[1]+
+         '" font-size="9" text-anchor="end" font-family="JetBrains Mono,monospace" opacity=".9">'+r[3]+'</text>';
+    });
+    var top=ser.map(function(p){return X(p.i).toFixed(1)+","+Y(p.hi).toFixed(1);}).join(" ");
+    var bot=ser.slice().reverse().map(function(p){return X(p.i).toFixed(1)+","+Y(p.lo).toFixed(1);}).join(" ");
+    s+='<polygon points="'+top+' '+bot+'" fill="'+color+'" opacity=".08"/>';
+    var pts=ser.map(function(p){return X(p.i).toFixed(1)+","+Y(p.est).toFixed(1);}).join(" ");
+    s+='<polyline points="'+pts+'" fill="none" stroke="'+color+'" stroke-width="1.6"/>';
+    if(sig.liveStart!=null && sig.liveStart<n){
+      var x0=X(sig.liveStart);
+      s+='<rect x="'+x0.toFixed(1)+'" y="'+PT+'" width="'+(W-PR-x0).toFixed(1)+'" height="'+ih+
+         '" fill="#e6a94a" opacity=".05"/>';
+      s+='<line x1="'+x0.toFixed(1)+'" y1="'+PT+'" x2="'+x0.toFixed(1)+'" y2="'+(PT+ih)+
+         '" stroke="#e6a94a" stroke-width="1" stroke-dasharray="3 2" opacity=".8"/>';
+      s+='<text x="'+(x0+3).toFixed(1)+'" y="'+(PT+9)+'" fill="#e6a94a" font-size="9" font-family="JetBrains Mono,monospace">LIVE → '+sig.nLive+' picks</text>';
+    }
+    var last=ser[ser.length-1];
+    s+='<circle cx="'+X(last.i).toFixed(1)+'" cy="'+Y(last.est).toFixed(1)+'" r="3" fill="'+color+'"/>';
+    s+='<text x="'+PL+'" y="'+(H-4)+'" fill="#3a464d" font-size="9" font-family="JetBrains Mono,monospace">oldest backfill</text>';
+    s+='<text x="'+(W-PR)+'" y="'+(H-4)+'" fill="#3a464d" font-size="9" text-anchor="end" font-family="JetBrains Mono,monospace">now</text>';
+    return '<svg viewBox="0 0 '+W+' '+H+'" width="100%" style="display:block">'+s+'</svg>';
+  }
+
+  function pct(x,d){ return x==null? "—" : (x*100).toFixed(d||0)+"%"; }
+  function sroi(x){ return x==null? "—" : (x>=0?"+":"")+(x*100).toFixed(1)+"%"; }
+
+  function card(name,sig,floor,be,headline){
+    var c=COL[name], cur=sig.cur, st=cur.st, sc=STCOL[st];
+    var cug=Math.min(1,cur.cu/sig.h);
+    var cubar = cug>=1?STCOL.TRIPPED:(cug>0.5?STCOL.WATCH:c);
+    var bstyle = name==="Portfolio"
+      ? "border-left:3px solid transparent;border-image:linear-gradient(180deg,#36c5d8,#e6a94a,#b07cff) 1"
+      : "border-left:3px solid "+c;
+    var extra="";
+    if(name==="Portfolio"){
+      extra='<div class="wd-pnote">Stake-weighted ROI <b style="color:#3fc66b">'+sroi(sig.roiSw)+
+        '</b> (N units when N signals agree) · '+sig.multi+' multi-signal games · largest live sample</div>';
+    }
+    return '<div class="wd-card'+(headline?" wd-headline":"")+'" style="'+bstyle+'">'+
+      '<div class="wd-chead"><div><span class="wd-cname" style="color:'+c+'">'+name+'</span>'+
+        '<span class="wd-cdesc">'+DESC[name]+'</span></div>'+
+        '<div class="wd-pill" style="color:'+sc+';border-color:'+sc+'">'+st+'</div></div>'+
+      '<div class="wd-crow"><div class="wd-big"><span style="color:'+c+'">'+pct(cur.est)+'</span>'+
+        '<span class="wd-band">est · 95% band '+pct(cur.lo)+'–'+pct(cur.hi)+'</span></div>'+
+        '<div class="wd-stats">'+
+          '<div class="wd-stat"><div class="v">'+pct(cur.pb)+'</div><div class="l">P(&lt; floor)</div></div>'+
+          '<div class="wd-stat"><div class="v">'+sig.n+'</div><div class="l">picks graded</div></div>'+
+          '<div class="wd-stat"><div class="v">'+sig.wins+'–'+sig.losses+'</div><div class="l">record</div></div>'+
+          '<div class="wd-stat"><div class="v">'+pct(sig.hit,1)+'</div><div class="l">hit rate</div></div>'+
+          '<div class="wd-stat"><div class="v">'+sroi(sig.roi)+'</div><div class="l">ROI / unit</div></div>'+
+          '<div class="wd-stat"><div class="v">'+sig.liveWins+'–'+sig.liveLosses+'</div><div class="l">live only</div></div>'+
+        '</div></div>'+extra+
+      '<div class="wd-cugauge"><div class="wd-cul"><span>CUSUM trip pressure</span><span>'+
+        cur.cu.toFixed(2)+' / '+sig.h.toFixed(2)+'</span></div>'+
+        '<div class="wd-cutrack"><i style="width:'+(cug*100).toFixed(0)+'%;background:'+cubar+'"></i></div></div>'+
+      chart(sig,c,floor,be)+'</div>';
+  }
+
+  var STYLE = '.wd-wrap{font-family:JetBrains Mono,ui-monospace,monospace;color:#d7e0e4}'+
+    '.wd-note{color:#e6a94a;font-size:12px;line-height:1.5;background:rgba(230,169,74,.08);border:1px solid rgba(230,169,74,.28);border-radius:9px;padding:10px 13px;margin:0 0 4px}'+
+    '.wd-card{background:#0d1114;border:1px solid #1c2329;border-radius:6px;padding:16px 18px;margin-top:14px}'+
+    '.wd-headline{background:#0f1418;box-shadow:0 0 24px rgba(54,197,216,.06)}'+
+    '.wd-divider{margin:24px 0 2px;color:#5f6f78;font-size:10px;letter-spacing:.14em;text-transform:uppercase;border-top:1px solid #1c2329;padding-top:14px}'+
+    '.wd-chead{display:flex;justify-content:space-between;align-items:flex-start;gap:10px}'+
+    '.wd-cname{font-weight:800;font-size:15px;letter-spacing:.03em}'+
+    '.wd-cdesc{color:#5f6f78;font-size:11px;margin-left:8px}'+
+    '.wd-pill{font-size:11px;font-weight:800;letter-spacing:.1em;border:1px solid;border-radius:5px;padding:3px 9px;white-space:nowrap}'+
+    '.wd-crow{display:flex;justify-content:space-between;align-items:flex-end;gap:16px;margin:14px 0 10px;flex-wrap:wrap}'+
+    '.wd-big{font-size:40px;font-weight:800;line-height:1;font-variant-numeric:tabular-nums}'+
+    '.wd-big .wd-band{display:block;font-size:10.5px;font-weight:500;color:#5f6f78;letter-spacing:.04em;margin-top:5px}'+
+    '.wd-stats{display:grid;grid-template-columns:repeat(6,auto);gap:14px}'+
+    '.wd-stat .v{font-size:15px;font-weight:700;font-variant-numeric:tabular-nums}'+
+    '.wd-stat .l{font-size:9px;letter-spacing:.08em;text-transform:uppercase;color:#5f6f78;margin-top:3px}'+
+    '.wd-pnote{font-size:11.5px;color:#8fa0a8;background:#0b0f12;border:1px solid #1c2329;border-radius:7px;padding:8px 11px;margin:2px 0 10px;line-height:1.5}'+
+    '.wd-cugauge{margin:6px 0 12px}'+
+    '.wd-cul{display:flex;justify-content:space-between;font-size:10px;letter-spacing:.06em;text-transform:uppercase;color:#5f6f78;margin-bottom:4px}'+
+    '.wd-cutrack{height:5px;background:#0f1316;border:1px solid #1c2329;border-radius:4px;overflow:hidden}'+
+    '.wd-cutrack i{display:block;height:100%;border-radius:3px}';
+
+  function render(model){
+    var s='<div class="wd-wrap"><style>'+STYLE+'</style>'+
+      '<div class="wd-note"><b>Provisional.</b> Rates (p0) come from every graded pick — '+
+      'backfill (in-sample) + live — not a passed forward test. The amber LIVE zone is where '+
+      'real monitoring begins. Pass validated rates via opts.p0 once the forward test clears.</div>';
+    s+=card("Portfolio",model.signals.Portfolio,model.floor,model.be,true);
+    s+='<div class="wd-divider">Components — the three signals that feed the portfolio</div>';
+    ORDER.forEach(function(nm){ s+=card(nm,model.signals[nm],model.floor,model.be,false); });
+    s+='</div>';
+    return s;
+  }
+
+  function mount(days, el, opts){
+    var model=compute(days,opts);
+    if(el){ el.innerHTML = render(model); }
+    return model;
+  }
+
+  var API={compute:compute, render:render, mount:mount, FLOOR:FLOOR, BE:BE};
+  if(typeof module!=="undefined" && module.exports){ module.exports=API; }
+  root.Watchdog=API;
+
+  // ---- Node self-test -------------------------------------------------------
+  if(typeof require!=="undefined" && require.main===module){
+    var fs=require("fs"), path=process.argv[2];
+    if(!path){ console.log("usage: node watchdog_live.js <backup.json>"); process.exit(1); }
+    var days=JSON.parse(fs.readFileSync(path,"utf8")).days;
+    var m=compute(days);
+    ["Portfolio","Value","Conviction","Overpower"].forEach(function(nm){
+      var s=m.signals[nm], c=s.cur;
+      console.log(
+        nm.padEnd(11)+" n="+String(s.n).padEnd(4)+"("+s.wins+"-"+s.losses+")"+
+        " hit="+(s.hit*100).toFixed(1)+"% p0="+s.p0.toFixed(3)+" h="+s.h.toFixed(2)+
+        " live="+s.nLive+"("+s.liveWins+"-"+s.liveLosses+")"+
+        " ROI/u="+sroi(s.roi)+" swROI="+sroi(s.roiSw)+
+        "  NOW est="+(c.est*100).toFixed(1)+"% cu="+c.cu.toFixed(2)+" -> "+c.st);
+    });
+  }
+})(typeof window!=="undefined"? window : globalThis);
+
+</script>
+<script>
+function renderWatch(){ try{ Watchdog.mount(allDays(), document.getElementById("watchdogCard")); }
+  catch(e){ console.error("watchdog render failed:", e); } }
 </script>
 </body>
 </html>
