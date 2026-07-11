@@ -5503,7 +5503,7 @@ function renderBetGraph(){
     return;
   }
   const val=p=> roiMode ? (p.n? p.u/p.n*100 : 0) : (units?p.u:p.wr);
-  const W=720,H=240,padL=44,padR=14,padT=14,padB=34;
+  const W=960,H=300,padL=44,padR=14,padT=14,padB=34;
   const x=i=>padL+(allWeeks.length<=1?0:i/(allWeeks.length-1))*(W-padL-padR);
 
   // y-domain adapts to the DRAWN points (weeks with >=3 picks). Include the combined
@@ -5587,7 +5587,7 @@ function renderBetGraph(){
     drawn+=line(combined, TC[fl], {width:3});
     legendItems = `<span><i style="background:${TC[fl]}"></i> ${TN[fl]}</span>`;
   }
-  const svg=`<svg viewBox="0 0 ${W} ${H}" width="100%" style="max-width:760px">`+
+  const svg=`<svg viewBox="0 0 ${W} ${H}" width="100%" style="display:block">`+
     grid+refLine+ drawn + xlabels+`</svg>`;
   const legend=`<div class="graphlegend">`+
     legendItems+
