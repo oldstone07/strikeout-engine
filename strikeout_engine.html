@@ -2785,7 +2785,7 @@ function renderToday(rows){
         `<span class="gt-num" data-mlabel="Model">${modelCell}</span>`+
         `<span class="gt-num" data-mlabel="Edge">${edgeCell}</span>`+
         `</span>`+
-        `<span class="gt-pickcell">${pickCell}${whyIcon}${(r && r.resolved && r.modelSide && !r.skipped)?(()=>{const _lg=betIsLogged(_logged,_tDate,r.pitcher);return `<button class="gt-logbet${_lg?' logged':''}" title="${_lg?'Bet already logged for this pitcher — click to add another':'Log a bet you placed on this pitcher'}" data-bd="${_tDate}" data-bp="${(r.pitcher||'').replace(/"/g,'&quot;')}" data-bs="${r.modelSide}" data-bl="${r.line!=null?r.line:''}" data-bpr="${(r.sidePrice!=null?r.sidePrice:(r.modelSide==='Over'?r.bestOver:r.bestUnder))??''}" data-bcombo="${(r._verdict&&r._verdict.isCombo)?1:0}" data-bconv="${(r._verdict&&r._verdict.isConvOver)?1:0}" data-bceil="${(r._verdict&&r._verdict.isCeiling)?1:0}">${_lg?'✓＄':'＄'}</button>`;})():""}</span></div>`+
+        `<span class="gt-pickcell">${pickCell}${whyIcon}${(r && r.resolved && r.modelSide && !r.skipped)?(()=>{const _lg=betIsLogged(_logged,_tDate,r.pitcher);return `<button class="gt-logbet${_lg?' logged':''}" title="${_lg?'Bet already logged for this pitcher — click to add another':'Log a bet you placed on this pitcher'}" data-bd="${_tDate}" data-bp="${(r.pitcher||'').replace(/"/g,'&quot;')}" data-bs="${r.modelSide}" data-bl="${r.line!=null?r.line:''}" data-bpr="${(r.sidePrice!=null?r.sidePrice:(r.modelSide==='Over'?r.bestOver:r.bestUnder))??''}" data-bcombo="${(r._verdict&&r._verdict.isCombo)?1:0}" data-bconv="${(r._verdict&&r._verdict.isConvOver)?1:0}" data-bceil="${(r._verdict&&r._verdict.isCeiling)?1:0}" data-bek="${r.eK!=null?r.eK:''}" data-bedge="${r.edge!=null?r.edge:''}" data-bopp="${r.oppSource||''}" data-bkt="${(r.traits&&r.traits.kTier)||''}" data-bwl="${(r.traits&&r.traits.workload)||''}">${_lg?'✓＄':'＄'}</button>`;})():""}</span></div>`+
         booksPanel;
     });
   });
@@ -2815,7 +2815,8 @@ function renderToday(rows){
     openBetModal({ pitcher:btn.dataset.bp, date:(_loadedDate||todayISO()),
       side:btn.dataset.bs, line:(btn.dataset.bl!==""?parseFloat(btn.dataset.bl):null),
       price:(btn.dataset.bpr!==""?parseInt(btn.dataset.bpr,10):null),
-      styles:{combo:btn.dataset.bcombo==="1",conv:btn.dataset.bconv==="1",ceil:btn.dataset.bceil==="1"} });
+      styles:{combo:btn.dataset.bcombo==="1",conv:btn.dataset.bconv==="1",ceil:btn.dataset.bceil==="1"},
+      snap:betSnapFromBtn(btn) });
   });
   board.querySelectorAll(".why-i").forEach(btn=>btn.onclick=(e)=>{
     e.stopPropagation();
@@ -4263,7 +4264,8 @@ function renderHistory(){
     openBetModal({ pitcher:btn.dataset.bp, date:btn.dataset.bd, side:btn.dataset.bs,
       line:(btn.dataset.bl!==""?parseFloat(btn.dataset.bl):null),
       price:(btn.dataset.bpr!==""?parseInt(btn.dataset.bpr,10):null),
-      styles:{combo:btn.dataset.bcombo==="1",conv:btn.dataset.bconv==="1",ceil:btn.dataset.bceil==="1"} });
+      styles:{combo:btn.dataset.bcombo==="1",conv:btn.dataset.bconv==="1",ceil:btn.dataset.bceil==="1"},
+      snap:betSnapFromBtn(btn) });
   });
 }
 
@@ -4307,7 +4309,7 @@ function histDetailHTML(rec){
        `<span>${pickCell}</span>`+
        `<span class="mono">${edgeCell}</span>`+
        `<span class="mono">${actualCell}</span>`+
-       `<span>${resultCell}${(!res.skipped && !r.voided && !res.nopick && r.modelSide)?(()=>{const _lg=betIsLogged(_logged,rec.date,r.pitcher);return `<button class="gt-logbet hist-logbet${_lg?' logged':''}" title="${_lg?'Bet already logged for this pitcher — click to add another':'Log a bet you placed on this pitcher'}" data-bp="${(r.pitcher||'').replace(/"/g,'&quot;')}" data-bd="${rec.date}" data-bs="${r.modelSide}" data-bl="${r.line!=null?r.line:''}" data-bpr="${res.price!=null?res.price:''}" data-bcombo="${isCombo?1:0}" data-bconv="${isConv?1:0}" data-bceil="${isCeiling?1:0}">${_lg?'✓＄':'＄'}</button>`;})():""}</span></div>`;
+       `<span>${resultCell}${(!res.skipped && !r.voided && !res.nopick && r.modelSide)?(()=>{const _lg=betIsLogged(_logged,rec.date,r.pitcher);return `<button class="gt-logbet hist-logbet${_lg?' logged':''}" title="${_lg?'Bet already logged for this pitcher — click to add another':'Log a bet you placed on this pitcher'}" data-bp="${(r.pitcher||'').replace(/"/g,'&quot;')}" data-bd="${rec.date}" data-bs="${r.modelSide}" data-bl="${r.line!=null?r.line:''}" data-bpr="${res.price!=null?res.price:''}" data-bcombo="${isCombo?1:0}" data-bconv="${isConv?1:0}" data-bceil="${isCeiling?1:0}" data-bek="${r.eK!=null?r.eK:''}" data-bedge="${r.edge!=null?r.edge:''}" data-bopp="${r.oppSource||''}" data-bkt="${(r.traits&&r.traits.kTier)||''}" data-bwl="${(r.traits&&r.traits.workload)||''}">${_lg?'✓＄':'＄'}</button>`;})():""}</span></div>`;
   });
   return h;
 }
@@ -6172,6 +6174,16 @@ function gradeMyBets(){
 }
 
 let _betCtx=null, _betSide="Over", _betCovered=[];
+// Read the model snapshot the ＄ button carries — the projection/edge/etc. AS THEY
+// WERE the moment you're logging the bet. Locked onto the bet so its "why" reflects
+// what you saw when you bet, independent of any later pull, re-model, or sync.
+function betSnapFromBtn(btn){
+  const n=v=>(v!==""&&v!=null)?Number(v):null;
+  const eK=n(btn.dataset.bek);
+  if(eK==null) return null;
+  return { eK, edge:n(btn.dataset.bedge), oppSource:btn.dataset.bopp||null,
+    kTier:btn.dataset.bkt||null, workload:btn.dataset.bwl||null, at:new Date().toISOString() };
+}
 function updateBetNote(){
   const note=$("bmNote"); if(!note) return;
   if(_betCovered.length<2){ note.style.display="none"; return; }
@@ -6218,7 +6230,7 @@ function saveBetFromModal(){
   const bets=loadMyBets(); const now=Date.now();
   styles.forEach((s,i)=>{
     bets.push({ id:"b"+now+"_"+i+Math.floor(Math.random()*1e4), date:_betCtx.date||todayISO(), pitcher:_betCtx.pitcher||"?",
-      side:_betSide, line, odds:isNaN(odds)?null:odds, stake, style:s||null, loggedAt:new Date().toISOString(), result:null, pl:null, actualK:null });
+      side:_betSide, line, odds:isNaN(odds)?null:odds, stake, style:s||null, loggedAt:new Date().toISOString(), result:null, pl:null, actualK:null, snap:(_betCtx.snap||null) });
   });
   saveMyBets(bets);
   const p=_betCtx.pitcher, nB=styles.length, bd=_betCtx.date||todayISO();
@@ -6259,12 +6271,22 @@ function styleTag(s){
 // "Why this was a pick" for a logged bet: look up the model snapshot from the day
 // record (by pitcher) and show the numbers + the gate checks it cleared.
 function myBetWhyInner(b){
-  const day=loadDay(b.date);
-  const r=(day&&Array.isArray(day.rows)) ? day.rows.find(x=>norm(x.pitcher||"")===norm(b.pitcher||"")) : null;
+  // Prefer the snapshot LOCKED onto the bet at log time — the model's numbers exactly
+  // as you saw them when you placed it, immune to later pulls/re-models/sync. Fall back
+  // to the day-record pull only for older bets logged before snapshots were captured.
+  let r=null, atBet=false;
+  if(b.snap && b.snap.eK!=null && b.line!=null){
+    r={eK:b.snap.eK, line:b.line, edge:(b.snap.edge!=null?b.snap.edge:null), modelSide:b.side,
+       oppSource:b.snap.oppSource, traits:{kTier:b.snap.kTier, workload:b.snap.workload}};
+    atBet=true;
+  } else {
+    const day=loadDay(b.date);
+    r=(day&&Array.isArray(day.rows)) ? day.rows.find(x=>norm(x.pitcher||"")===norm(b.pitcher||"")) : null;
+  }
   if(!r || r.eK==null || r.line==null){
     const lbl=(STYLE_DEFS.find(s=>s[0]===b.style)||[,null])[1];
     return `<div class="why-sum">No model snapshot for this bet.</div>`+
-      `<div class="why-data">The model's numbers at pick time weren't saved — this bet wasn't captured from an Official pull.${lbl?` It was tagged <b>${lbl}</b>.`:""}</div>`;
+      `<div class="why-data">The model's numbers at bet time weren't saved (logged before snapshots, and no matching pull found).${lbl?` It was tagged <b>${lbl}</b>.`:""}</div>`;
   }
   const wf=whyFlag(r);
   const eK=r.eK, line=r.line, edge=r.edge, dk=eK-line;
@@ -6272,7 +6294,7 @@ function myBetWhyInner(b){
   const tr=r.traits||{};
   const extras=[tr.kTier, (tr.workload?tr.workload+" outing":null)].filter(Boolean).join(", ");
   const checkRow=(c)=>`<div class="why-chk ${c.pass?'ok':'no'}">${c.pass?'✓':'✗'} ${c.label}</div>`;
-  let inner=`<div class="why-sum">${wf.summary}</div>`;
+  let inner=`<div class="why-sum">${wf.summary}${atBet?` <span style="color:var(--pos);font-weight:700;font-size:10px">🔒 locked at bet</span>`:``}</div>`;
   inner+=`<div class="why-data"><b>Model ${eK.toFixed(1)}K</b> vs line ${line} · <b>${sgn(dk)}K</b> vs line`+
     `${edge!=null?` · edge ${(edge*100).toFixed(0)}%`:""}${extras?`<br>${extras}`:""}</div>`;
   if(wf.comboChecks){
