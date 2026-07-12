@@ -60,7 +60,7 @@ header{display:flex;gap:18px;align-items:center;margin-bottom:0;padding:12px 22p
 .topnav{display:flex;align-items:center;gap:4px;align-self:stretch}
 .tnav-mobile{display:none} /* phone-only Tracked tab */
 .tnav{background:transparent;color:var(--muted);border:none;border-bottom:2px solid transparent;border-radius:0;
-  padding:12px 16px;font:600 14px/1 var(--mono,ui-monospace,Menlo,monospace);letter-spacing:.02em;cursor:pointer;margin-bottom:-13px}
+  padding:12px 16px;font:600 14px/1 var(--mono,ui-monospace,Menlo,monospace);letter-spacing:.02em;cursor:pointer;margin-bottom:-13px;white-space:nowrap}
 .tnav:hover{color:var(--text)}
 .tnav.on{color:var(--bet);border-bottom-color:var(--bet)}
 .tnav-status{margin-left:auto;display:flex;align-items:center;gap:7px;font:600 11px/1 var(--mono,ui-monospace,Menlo,monospace);
@@ -392,15 +392,15 @@ button:active{transform:translateY(1px)}
 .edgewr{font-family:var(--mono);font-size:15px;font-weight:600}
 .edgen{font-size:12px;color:var(--muted)}
 /* Forward test: three track cards side by side, compacted to fit */
-.fwd3{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;align-items:start}
-.fwd3 .edgebox{flex-direction:column;align-items:stretch;gap:8px;padding:13px 14px}
-.fwd3 .edgebig{font-size:24px}
-.fwd3 .edgebig .edgen{font-size:.46em}
-.fwd3 .edgemeta{gap:10px}
+.fwd3{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;align-items:stretch}
+.fwd3 .edgebox{flex-direction:column;align-items:stretch;gap:7px;padding:15px 16px}
+.fwd3 .edgebig{font-size:28px}
+.fwd3 .edgelabel{font-size:12.5px;font-weight:700;line-height:1.35;color:var(--text);letter-spacing:.01em;min-height:34px}
+.fwd3 .edgemeta{gap:10px;align-items:baseline}
 .fwd3 .edgewl{font-size:13px}
 .fwd3 .edgewr{font-size:12.5px}
 .fwd3 .edgen{font-size:11px}
-.fwd3 .fine{font-size:11px;line-height:1.45}
+.fwd3 .fine{font-size:11px;line-height:1.45;margin-top:auto;padding-top:2px}
 @media(max-width:900px){ .fwd3{grid-template-columns:1fr} }
 .scunits{font-size:13px;font-weight:700;margin-bottom:2px}
 .perfstatus{background:rgba(46,160,67,.10);border:1px solid rgba(46,160,67,.28);
@@ -5774,8 +5774,11 @@ function renderForwardTest(){
     const roi=n?(u/n*100):null;   // profit per unit risked (each forward pick = 1u here)
     if(!n){
       return `<div class="edgebox" style="border-color:${idColor}">`+
-        `<div class="edgemeta"><span class="edgen"><b>${label}</b> — 0 / ${need}. ${sub} `+
-        `No forward picks logged yet; bar is ROI ≥ +${roiBar}% over ${need}.</span></div></div>`;
+        `<div class="edgebig" style="color:var(--muted)">—</div>`+
+        `<div class="edgelabel">${label}</div>`+
+        `<div class="edgemeta"><span class="edgen">0 / ${need}</span></div>`+
+        `<div class="statusbar" style="margin-top:8px"><div class="statusfill" style="width:0%"></div></div>`+
+        `<p class="fine">${sub} No forward picks logged yet; bar is ROI ≥ +${roiBar}% over ${need}.</p></div>`;
     }
     const pct=Math.round(wr*100);
     const roiCol=roi>=roiBar?"var(--pos)":roi>=0?"var(--accent)":"var(--neg)";
@@ -5787,7 +5790,8 @@ function renderForwardTest(){
     else if(roi>=roiBar) verdict=`<span style="color:var(--pos)">✓ CLEARED — ${roiStr} ROI over ${n} (${pct}% win), beating the +${roiBar}% bar. Earns real money. Start small.</span>`;
     else verdict=`<span style="color:var(--neg)">✗ Missed — ${roiStr} ROI over ${n} (${pct}% win), below +${roiBar}%. Backfill edge didn't survive live. Do not bet.</span>`;
     return `<div class="edgebox" style="border-color:${roiCol}">`+
-      `<div class="edgebig" style="color:${roiCol}">${roiStr} <span class="edgen" style="font-size:.5em;font-weight:600">${label}</span></div>`+
+      `<div class="edgebig" style="color:${roiCol}">${roiStr}</div>`+
+      `<div class="edgelabel">${label}</div>`+
       `<div class="edgemeta"><span class="edgewl">${w}W–${n-w}L · ${pct}%</span>`+
       `<span class="edgewr" style="color:${uCol}">${(u>=0?"+":"")+u.toFixed(2)}u</span>`+
       `<span class="edgen">${n}/${need}</span></div>`+
