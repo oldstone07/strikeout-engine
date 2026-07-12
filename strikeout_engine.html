@@ -2118,9 +2118,10 @@ function safeRenderLab(){ try{ renderLab(); }catch(e){ console.error("renderLab 
 // se_mybets merges by id), then repaint whatever is on screen so changes made on
 // the other device appear here. No credits, no API pulls.
 let _syncing=false;
+let _lastSyncAt=Date.now();   // throttle stamp for auto-sync-on-focus (init now so boot's own hydrate doesn't trigger a duplicate)
 async function syncNow(){
   if(_syncing) return;
-  _syncing=true;
+  _syncing=true; _lastSyncAt=Date.now();
   const btn=$("syncBtn"); const label=btn?btn.textContent:"";
   if(btn){ btn.disabled=true; btn.textContent="⟳ Syncing…"; }
   try{
@@ -2287,6 +2288,16 @@ document.querySelectorAll(".tnav").forEach(b=>{
 });
 $("tabToday") && ($("tabToday").onclick=()=>showTab("Today"));
 $("syncBtn") && ($("syncBtn").onclick=syncNow);
+// Auto-sync when the app regains focus — e.g. you switch back to the Mac after
+// pulling or logging a bet on your phone. Throttled to once / 20s so rapid focus
+// flips can't spam the cloud; the ⟳ button stays as a manual force-refresh.
+function _autoSyncOnFocus(){
+  if(document.hidden || _syncing) return;
+  if(Date.now()-_lastSyncAt < 20000) return;
+  syncNow();
+}
+window.addEventListener("focus", _autoSyncOnFocus);
+document.addEventListener("visibilitychange", _autoSyncOnFocus);
 $("actionMenuToggle") && ($("actionMenuToggle").onclick=function(){
   const m=$("actionMenu"); if(!m) return;
   const open=m.classList.toggle("open");
