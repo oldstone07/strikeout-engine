@@ -5194,7 +5194,13 @@ async function runIntradayWatch(){
     }
     const rec=loadDay(day);
     renderToday(rec?rec.rows:[]);
-    setStatus(`Intraday watch done — ${withLine} live line(s) across the slate, ${flagged} would-be Value/Conviction/Overpower. Free, nothing saved.`,1);
+    // Name WHICH pitchers are the would-be flags. Live-only flags (your official
+    // pull said PASS, the live line now qualifies) render as a subtle "✱ live: now X"
+    // note that's easy to miss — so list them here, count and names from one source.
+    const wb=(rec&&rec.rows?rec.rows:[]).filter(r=>r._watchCombo||r._watchConv||r._watchCeil);
+    const wbNames=wb.map(r=>`${r.pitcher} (${(r._watchCombo?"V":"")+(r._watchConv?"C":"")+(r._watchCeil?"O":"")})`);
+    const wbStr=wbNames.length?`: ${wbNames.slice(0,8).join(", ")}${wbNames.length>8?` +${wbNames.length-8} more`:""}`:"";
+    setStatus(`Intraday watch done — ${withLine} live line(s) across the slate, ${wb.length} would-be at the live line${wbStr}. Free, nothing saved.`,1);
   }catch(e){
     const m=e.message||String(e);
     if(m.includes("401")||m.includes("invalid_api_key")){
