@@ -18,8 +18,8 @@
   --bet-dim:rgba(54,197,216,.10);
   --ceiling:#b07cff;                         /* Overpower (high-line Over) — violet */
   --ceiling-dim:rgba(176,124,255,.12);
-  --watch:#7da0b0;                            /* Watch (live, unqualified) — slate */
-  --watch-dim:rgba(125,160,176,.14);
+  --watch:#9aa0a4;                            /* Watch (live, unqualified) — neutral grey (kept off cyan so only Value reads teal) */
+  --watch-dim:rgba(154,160,164,.16);
   --grid:rgba(54,197,216,.035);
   --mono:'JetBrains Mono','SF Mono',ui-monospace,Menlo,monospace;
   --sans:'Space Grotesk','JetBrains Mono',ui-monospace,monospace;
@@ -522,8 +522,8 @@ button:active{transform:translateY(1px)}
 .gt-pullbtns{display:flex;flex-direction:row;flex-wrap:wrap;gap:6px;margin-top:6px;align-items:center}
 .gt-pulltoggle{display:none}
 .gt-official,.gt-watch1{border-radius:4px;padding:3px 9px;font-family:var(--mono);font-size:10px;cursor:pointer;letter-spacing:.02em;white-space:nowrap}
-.gt-official{background:rgba(88,165,180,.12);border:1px solid var(--bet);color:var(--bet)}
-.gt-official:hover{background:var(--bet);color:var(--bg)}
+.gt-official{background:transparent;border:1px solid var(--line2);color:var(--text)}
+.gt-official:hover{background:var(--bg2);color:var(--text);border-color:var(--muted)}
 .gt-watch1{background:transparent;border:1px solid var(--line2);color:var(--muted)}
 .gt-watch1:hover{color:var(--watch);border-color:var(--watch)}
 .gt-okcheck{color:var(--pos);font-weight:700;font-size:12px;margin-left:4px}
