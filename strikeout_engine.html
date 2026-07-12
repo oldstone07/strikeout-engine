@@ -5075,14 +5075,21 @@ async function watchGameInto(g, all, probList, day, season){
     return true;
   };
 
+  // De-dupe by a punctuation-stripped canonical key. norm() lowercases but KEEPS
+  // periods, so the SharpAPI spelling "JR. Ritchie" (norm→"jr. ritchie") didn't
+  // match the official "JR Ritchie" (norm→"jr ritchie") and a phantom second
+  // watch-only row got pushed. canon() collapses those so one pitcher = one row.
+  const canon=s=>norm(s).replace(/[^a-z0-9]+/g," ").trim();
   const existingNames=new Set();
   (rec.rows||[]).forEach(r=>{
     if(!isThisGamePitcher(r.pitcher)) return;
-    existingNames.add(norm(r.pitcher||""));
+    existingNames.add(canon(r.pitcher));
     if(applyWatch(r)) matched++; else clearWatch(r);
   });
   gamePitcherNames.forEach(pname=>{
-    if(existingNames.has(pname)) return;
+    const key=canon(pname);
+    if(existingNames.has(key)) return;
+    existingNames.add(key);   // also collapse two spellings within gamePitcherNames
     let display=pname;
     if(g.homeName && norm(g.homeName)===pname) display=g.homeName;
     else if(g.awayName && norm(g.awayName)===pname) display=g.awayName;
