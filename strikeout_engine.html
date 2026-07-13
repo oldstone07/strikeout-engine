@@ -402,6 +402,19 @@ button:active{transform:translateY(1px)}
 .fwd3 .edgen{font-size:11px}
 .fwd3 .fine{font-size:11px;line-height:1.45;margin-top:auto;padding-top:2px}
 @media(max-width:900px){ .fwd3{grid-template-columns:1fr} }
+.recal{display:flex;flex-direction:column;gap:12px}
+.recal-track{background:var(--card);border:1px solid var(--line);border-left:3px solid var(--line);border-radius:10px;padding:14px 16px}
+.recal-th{display:flex;align-items:baseline;gap:10px;margin-bottom:12px;flex-wrap:wrap}
+.recal-tn{font-weight:800;font-size:15px;letter-spacing:.03em}
+.recal-td{font-size:11px;color:var(--muted)}
+.recal-lenses{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.recal-cell{background:var(--bg2);border:1px solid var(--line);border-radius:8px;padding:11px 12px}
+.recal-cl{font-size:9.5px;letter-spacing:.07em;text-transform:uppercase;color:var(--muted);margin-bottom:7px;display:flex;justify-content:space-between;gap:6px;align-items:baseline}
+.recal-roi{font-family:var(--mono);font-size:24px;font-weight:800;line-height:1;font-variant-numeric:tabular-nums}
+.recal-rec{font-size:12px;color:var(--text);margin-top:5px;font-variant-numeric:tabular-nums}
+.recal-sub{font-size:10.5px;color:var(--muted);margin-top:3px;line-height:1.35}
+.recal-warn{color:var(--accent);font-weight:700}
+@media(max-width:760px){ .recal-lenses{grid-template-columns:1fr} }
 .scunits{font-size:13px;font-weight:700;margin-bottom:2px}
 .perfstatus{background:rgba(46,160,67,.10);border:1px solid rgba(46,160,67,.28);
   color:var(--text);border-radius:9px;padding:10px 13px;font-size:13px;margin:0 0 6px}
@@ -980,6 +993,10 @@ footer{margin-top:30px;color:var(--muted);font-size:11.5px;text-align:center}
     <p class="muted small" style="color:var(--muted)">One bet, three candidates — all logged live at real prices. Each is graded on <b>ROI</b> (price-aware, so juiced and cheap tracks compare fairly), bar <b>ROI ≥ +5%</b>. <b>Value (Strong + ≤5.5)</b> is the only thing you bet, over <b>30</b> picks. <b>Conviction</b> is a candidate over <b>40</b>. <b>Overpower (Over + line ≥5.5)</b> is a candidate over <b>40</b>. Nothing earns money until its track clears +5% ROI. Only live picks count here.</p>
     <div id="forwardTest"></div>
     <div id="freeVsPaid"></div>
+
+    <h3 style="margin-top:32px">Recalibration — three lenses on each bet</h3>
+    <p class="muted small" style="color:var(--muted)"><b>Backfill</b> is in-sample — the gate was fit on this data, so it always looks good; it is <b>not</b> proof. <b>Forward</b> is the live, out-of-sample read since the gate went live (the honest one). <b>Real ＄ wagers</b> are ground truth — what you actually bet. Watch whether the three agree as the second half fills in.</p>
+    <div id="recalCard"></div>
 
     <h3 style="margin-top:32px">Your three bets — full history</h3>
     <p class="muted small" style="color:var(--muted)">Hit rate or units on graded picks for the selected window — backfill included. Use the month chips or a custom range, then watch the weekly graph for consistency. <b>Backfill is in-sample; the forward test above is the honest read.</b></p>
@@ -5749,12 +5766,58 @@ function markPerfMonthsWithData(){
     });
   }catch(e){}
 }
+// Recalibration dashboard — each tracked bet through three lenses: backfill
+// (in-sample, fit on this data — not proof), forward (live since fwd_start — the
+// honest read), and real ＄ wagers (ground truth). Window-independent by design.
+function _recalRows(rows){ const n=rows.length, w=rows.filter(r=>r.hit).length, u=rows.reduce((s,r)=>s+(r.units||0),0);
+  return {n,w,l:n-w,hit:n?w/n:null,u,roi:n?u/n*100:null}; }
+function _recalBets(bets){ const settled=bets.filter(b=>b.result&&b.result!=="push");
+  const w=settled.filter(b=>b.result==="win").length, l=settled.filter(b=>b.result==="loss").length;
+  const net=bets.filter(b=>b.pl!=null).reduce((s,b)=>s+Number(b.pl||0),0);
+  const staked=settled.reduce((s,b)=>s+Number(b.stake||0),0);
+  return {n:w+l,w,l,hit:(w+l)?w/(w+l):null,u:net,roi:staked?net/staked*100:null}; }
+function renderRecal(){
+  const el=$("recalCard"); if(!el) return;
+  const _saved=_perfWindow; _perfWindow="alltime";
+  let rows; try{ rows=collectScorecardRows(); } finally { _perfWindow=_saved; }
+  const fwdStart=SS.getItem("se_fwd_start")||"";
+  const bets=loadMyBets().filter(b=>b&&!b.deleted);
+  const TRACKS=[
+    {k:"isCombo",   style:"combo",name:"VALUE",     col:"var(--bet)",     def:"Strong · line ≤5.5 — the one you bet", need:30},
+    {k:"isConvOver",style:"conv", name:"CONVICTION",col:"var(--accent)",  def:"Under · edge ≥20% · ≥1.5 from line · line ≥5.5", need:40},
+    {k:"isCeiling", style:"ceil", name:"OVERPOWER", col:"var(--ceiling)", def:"Over · line ≥5.5", need:40},
+  ];
+  const roiStr=g=>g.roi==null?"—":(g.roi>=0?"+":"")+g.roi.toFixed(0)+"%";
+  const roiCol=g=>g.roi==null?"var(--muted)":g.roi>=0?"var(--pos)":"var(--neg)";
+  const uStr=g=>g.u==null?"":((g.u>=0?"+":"")+g.u.toFixed(1)+"u");
+  const cell=(title,g,sub,warn)=>`<div class="recal-cell">`+
+    `<div class="recal-cl"><span>${title}</span>${warn?`<span class="recal-warn">${warn}</span>`:""}</div>`+
+    `<div class="recal-roi" style="color:${roiCol(g)}">${roiStr(g)}</div>`+
+    `<div class="recal-rec">${g.n?`${g.w}-${g.l} · ${g.hit!=null?Math.round(g.hit*100)+"%":"—"} · ${uStr(g)}`:"no data"}</div>`+
+    `<div class="recal-sub">${sub}</div></div>`;
+  el.innerHTML=`<div class="recal">`+TRACKS.map(t=>{
+    const tr=rows.filter(r=>r[t.k]);
+    const back=_recalRows(tr.filter(r=>!r.isForward));
+    const fwd =_recalRows(tr.filter(r=>r.isForward && (r.date||"")>=fwdStart));
+    const real=_recalBets(bets.filter(b=>(b.style||null)===t.style));
+    const fwdTag = fwd.n>=t.need ? `${fwd.n}/${t.need} ✓` : `${fwd.n}/${t.need}`;
+    return `<div class="recal-track" style="border-left-color:${t.col}">`+
+      `<div class="recal-th"><span class="recal-tn" style="color:${t.col}">${t.name}</span>`+
+      `<span class="recal-td">${t.def}</span></div>`+
+      `<div class="recal-lenses">`+
+        cell("Backfill · in-sample", back, `${back.n} picks — not proof`)+
+        cell("Forward · live read", fwd, `since ${fwdStart||"—"}`, fwdTag)+
+        cell("Real ＄ wagers", real, real.n?"what you actually bet":"none logged yet")+
+      `</div></div>`;
+  }).join("")+`</div>`;
+}
 function renderPerf(){
   try{ markPerfMonthsWithData(); }catch(e){}
   try{ renderBetSummary(); }catch(e){ console.error("bet summary failed:",e); }
   try{ renderBetGraph(); }catch(e){ console.error("bet graph failed:",e); }
   try{ renderFreeVsPaid(); }catch(e){ console.error("free vs paid failed:",e); }
   try{ renderFlagAgreement(); }catch(e){ console.error("flag agreement failed:",e); }
+  try{ renderRecal(); }catch(e){ console.error("recal failed:",e); }
   const picks=collectTierPicks();
   const t1=picks.t1, t0=picks.t0;
 
