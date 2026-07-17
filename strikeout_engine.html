@@ -3258,6 +3258,15 @@ async function pullOneGame(g, pre){
     rows.forEach(r=>{ r.pulledAtLocal=nowLocal; r.pulledAtISO=new Date().toISOString(); });
     // merge just this game into the loaded day (never shrinks it)
     const liveRows=savePulledDay({date:day,rows,gamesMatched:matched?1:0,gamesTotal:1,pulledAt:new Date().toISOString()});
+    // A fresh official pull supersedes any earlier intraday-watch verdict for these
+    // pitchers. Drop the cached watch read (and the row's _watch* fields) so a stale
+    // "✱ live: now V/C" from an older watch can't linger next to the new pull — the
+    // cache would otherwise re-hydrate it on the next render.
+    try{
+      const pulledNames=new Set(rows.map(r=>norm(r.pitcher||"")));
+      rows.forEach(r=>{ delete _watchCache[watchCacheKey(day, r.pitcher)]; });
+      (liveRows||[]).forEach(r=>{ if(pulledNames.has(norm(r.pitcher||""))) clearWatch(r); });
+    }catch(e){ console.warn("watch-clear on pull skipped:", e.message||e); }
     if(liveRows) renderToday(liveRows);
     updateMetaStrip();
     setStatus(`Pulled ${rows.length} pitcher line(s) for ${g.awayTeam} @ ${g.homeTeam} at ${nowLocal}.`+(remaining!=null?` ${remaining} credits left.`:""),1);
