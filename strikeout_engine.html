@@ -990,7 +990,7 @@ footer{margin-top:30px;color:var(--muted);font-size:11.5px;text-align:center}
     <div id="perfStatus" class="perfstatus hidden"></div>
 
     <h3>★ Forward test — the real one</h3>
-    <p class="muted small" style="color:var(--muted)">One bet, three candidates — all logged live at real prices. Each is graded on <b>ROI</b> (price-aware, so juiced and cheap tracks compare fairly), bar <b>ROI ≥ +5%</b>. <b>Value (Strong + ≤5.5)</b> is the only thing you bet, over <b>30</b> picks. <b>Conviction</b> is a candidate over <b>40</b>. <b>Overpower (Over + line ≥5.5)</b> is a candidate over <b>40</b>. Nothing earns money until its track clears +5% ROI. Only live picks count here.</p>
+    <p class="muted small" style="color:var(--muted)">Three bets — all logged live at real prices. Each is graded on <b>ROI</b> (price-aware, so juiced and cheap tracks compare fairly), bar <b>ROI ≥ +5%</b>. You bet all three: <b>Value (Strong + ≤5.5)</b> over <b>30</b> picks, <b>Conviction</b> over <b>40</b>, <b>Overpower (Over + line ≥5.5)</b> over <b>40</b>. A track only proves it earns money once it clears +5% ROI over its sample. Only live picks count here.</p>
     <div id="forwardTest"></div>
     <div id="freeVsPaid"></div>
 
@@ -2558,7 +2558,7 @@ function renderToday(rows){
   rows.forEach(r=>{ if(r._verdict && (r._verdict.isCombo||r._verdict.isConvOver||r._verdict.isCeiling)) flaggedNames.add(r.pitcher); });
   const passCount = Math.max(0, modeledCount - flaggedNames.size);
   let summary=`<div class="statstrip" id="statStrip">`+
-    `<div class="ss-cell ss-click" data-pick="combo"><div class="ss-n" style="color:var(--bet)">${comboCount}</div><div class="ss-l">Value${comboCount===1?" bet":" bets"}</div></div>`+
+    `<div class="ss-cell ss-click" data-pick="combo"><div class="ss-n" style="color:var(--bet)">${comboCount}</div><div class="ss-l">Value</div></div>`+
     `<div class="ss-cell ss-click" data-pick="conv"><div class="ss-n" style="color:var(--accent)">${convCount}</div><div class="ss-l">Conviction</div></div>`+
     `<div class="ss-cell ss-click" data-pick="ceil"><div class="ss-n" style="color:var(--ceiling)">${ceilCount}</div><div class="ss-l">Overpower</div></div>`+
     `<div class="ss-cell"><div class="ss-n" style="color:var(--muted)">${passCount}</div><div class="ss-l">Pass</div></div>`+
@@ -4744,8 +4744,8 @@ function whyFlag(r){
   if(flags.length===0) summary="Not flagged — sit out."+tag;
   else if(flags.length===1){
     if(isCombo) summary="Flagged as a Value bet."+tag;
-    else if(isConv) summary="Flagged as a Conviction (candidate)."+tag;
-    else summary="Flagged as a Overpower (candidate)."+tag;
+    else if(isConv) summary="Flagged as a Conviction bet."+tag;
+    else summary="Flagged as a Overpower bet."+tag;
   }
   else summary=`Flagged as ${flags.join(" + ")}.`+tag;
   return {summary, side, comboChecks, convChecks, ceilChecks, isCombo, isConv, isCeiling};
@@ -5437,7 +5437,7 @@ function renderCLVInto(el){
 }
 
 // Two-bet summary at the top of the Scoreboard. Respects the active window chip.
-// Value (Strong + ≤5.5) = the bet. Conviction (Under, high line) = a candidate.
+// All three tracks are bets you place; each proves itself on its own ROI bar.
 function renderBetSummary(){
   const el=$("betSummary"); if(!el) return;
   const rows=collectScorecardRows();   // already window-filtered via _perfWindow
@@ -5470,9 +5470,9 @@ function renderBetSummary(){
       `${Math.round(d.wr*100)}% · ROI ${(d.roi>=0?"+":"")+d.roi.toFixed(0)}%</div></div>`;
   };
   el.innerHTML =
-    card("Value (Strong + ≤5.5)","THE BET",combo,"var(--bet)")+
-    card("Conviction (Under + line ≥5.5)","CANDIDATE",conv,"var(--accent)")+
-    card("Overpower (Over + line ≥5.5)","CANDIDATE",ceil,"var(--ceiling)");
+    card("Value (Strong + ≤5.5)","BET",combo,"var(--bet)")+
+    card("Conviction (Under + line ≥5.5)","BET",conv,"var(--accent)")+
+    card("Overpower (Over + line ≥5.5)","BET",ceil,"var(--ceiling)");
 }
 
 // Weekly hit-rate graph for the two bets over the active window. Inline SVG, no
@@ -5891,9 +5891,9 @@ function renderForwardTest(){
   const ceilRows =fwdAll.filter(r=>r.isCeiling);
   el.innerHTML=
     `<div class="fwd3">`+
-    track(comboRows, 5, 30, "Value (Strong + ≤5.5) · THE BET", "Your primary bet. This is the only one you bet today.", "var(--bet)")+
-    track(convRows, 5, 40, "Conviction (Under & edge≥20% & ≥1.5 from line & line≥5.5) · TESTING", "Candidate — model takes the Under on a high line (≥5.5) with edge ≥20% and projects ≥1.5 K below the line. Bar is ROI ≥ +5%. Not a bet until it clears.", "var(--accent)")+
-    track(ceilRows, 5, 40, "Overpower (Over & line ≥5.5) · TESTING", "Candidate — model takes the Over on a high line (≥5.5). In-sample +44% ROI but found by mining; bar is ROI ≥ +5% over 40. Not a bet until it clears.", "var(--ceiling)")+
+    track(comboRows, 5, 30, "Value (Strong + ≤5.5)", "You bet this. Strong edge (≥20%) on a low line (≤5.5). Proves out on ROI ≥ +5% over 30 picks.", "var(--bet)")+
+    track(convRows, 5, 40, "Conviction (Under & edge≥20% & ≥1.5 from line & line≥5.5)", "You bet this. Model takes the Under on a high line (≥5.5) with edge ≥20%, projecting ≥1.5 K below the line. Proves out on ROI ≥ +5% over 40.", "var(--accent)")+
+    track(ceilRows, 5, 40, "Overpower (Over & line ≥5.5)", "You bet this. Model takes the Over on a high line (≥5.5). In-sample +44% ROI but found by mining, so live proof matters — ROI ≥ +5% over 40.", "var(--ceiling)")+
     `</div>`;
 }
 
