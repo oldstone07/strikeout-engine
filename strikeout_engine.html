@@ -783,6 +783,16 @@ footer{margin-top:30px;color:var(--muted);font-size:11.5px;text-align:center}
   .topnav .tnav[data-tab="Watch"],
   .topnav .tnav[data-tab="Data"]{display:none !important}
 
+  /* Settings: float it into the header's top-right corner as just the cog, so the
+     tab row is Today · Tracked · My Bets on one line (no orphaned "Settings" row). */
+  header{position:relative}
+  .topnav .tnav[data-tab="Settings"]{
+    position:absolute; top:6px; right:14px; margin:0; padding:8px;
+    border-bottom:none !important; font-size:21px; line-height:1; z-index:6;
+  }
+  .topnav .tnav[data-tab="Settings"].on{color:var(--bet)}
+  .topnav .tnav[data-tab="Settings"] .s-lbl{display:none}
+
   /* force-hide the non-Today section cards regardless of JS tab state */
   #perfCard,#histCard,#dataCard{display:none !important}
 
@@ -931,7 +941,7 @@ footer{margin-top:30px;color:var(--muted);font-size:11.5px;text-align:center}
     <button class="tnav" data-tab="Data">▦ Data</button>
     <button class="tnav" data-tab="Bets">＄ My Bets</button>
     <button class="tnav" data-tab="Watch">◉ Watchdog</button>
-    <button class="tnav" data-tab="Settings">⚙ Settings</button>
+    <button class="tnav" data-tab="Settings"><span class="s-cog">⚙</span><span class="s-lbl"> Settings</span></button>
   </nav>
   <div class="headmeta">
     <div class="hm-cell"><span class="hm-ic">◷</span><div><div class="hm-l">Credits</div><div class="hm-v" id="hmCredits">—</div></div></div>
