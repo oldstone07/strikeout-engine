@@ -204,7 +204,6 @@ button:active{transform:translateY(1px)}
 .actionbar button{padding:9px 10px;font-size:12.5px;white-space:nowrap}
 /* desktop: the collapsible wrapper is transparent — buttons sit inline as before */
 #actionMenuToggle{display:none}
-.actionmenu{display:contents}
 /* desktop keeps Stage Day first even though it now lives inside the menu wrapper */
 #stageBtn{order:-2}
 #syncBtn{order:-1}
@@ -781,6 +780,7 @@ footer{margin-top:30px;color:var(--muted);font-size:11.5px;text-align:center}
   /* only the Today tab is reachable on phone */
   .topnav .tnav[data-tab="Perf"],
   .topnav .tnav[data-tab="Hist"],
+  .topnav .tnav[data-tab="Watch"],
   .topnav .tnav[data-tab="Data"]{display:none !important}
 
   /* force-hide the non-Today section cards regardless of JS tab state */
@@ -850,16 +850,13 @@ footer{margin-top:30px;color:var(--muted);font-size:11.5px;text-align:center}
   /* collapse the secondary actions behind a menu so games/summary sit up top.
      Only Sync now stays inline; Stage Day + the rest live in ⋯ Actions
      (staging happens once, from the Mac). */
-  #actionMenuToggle{display:inline-block}
-  .actionmenu{
-    display:none;
-    flex:0 0 100%;
-    flex-direction:column;
-    gap:8px;
-    margin-top:8px;
-  }
-  .actionmenu.open{display:flex}
-  .actionmenu button{width:100%}
+  /* Phone action row: Intraday watch + Results stay inline (act-m); Sync now +
+     Stage/Pull All/Undo/Preview/Export collapse behind ⋯ Actions (act-sec).
+     Auto-sync-on-focus makes a standalone Sync button unnecessary up top. */
+  #actionMenuToggle{display:inline-block;order:2}
+  .act-m{order:1}
+  .act-sec{display:none;order:3}
+  .actionbar.actions-open .act-sec{display:flex;flex:0 0 100%;width:100%;justify-content:center;margin-top:2px}
 
   /* ── My Bets → stacked cards on phone (P/L is the anchor) ──────────────
      The desktop 8-col grid (~656px) overflows a phone. Reflow each row into
@@ -960,17 +957,15 @@ footer{margin-top:30px;color:var(--muted);font-size:11.5px;text-align:center}
 
   <div id="todayCard" class="card hidden">
     <div class="bar actionbar">
-      <button class="ghost" id="syncBtn" title="Pull the latest saved state from the cloud (picks, pulls, bets from your other device) and refresh the screen. No credits.">⟳ Sync now</button>
+      <button class="ghost act-sec" id="syncBtn" title="Pull the latest saved state from the cloud (picks, pulls, bets from your other device) and refresh the screen. No credits.">⟳ Sync now</button>
       <button class="ghost" id="actionMenuToggle" aria-expanded="false" title="Show all actions">⋯ Actions</button>
-      <div class="actionmenu" id="actionMenu">
-      <button class="primary big" id="stageBtn" title="Free — loads today's matchups, probable pitchers, and game times. Saves the current day first, then loads fresh.">Stage Day</button>
-      <button class="ghost" id="runBtn" title="Pull lines for every game on the loaded day at once (~1 credit per game).">Pull All</button>
-      <button class="ghost" id="undoPullBtn" title="Revert the most recent pull or re-pull — restores the affected pitcher(s) to their state before that pull. One level of undo. Doesn't refund credits.">↩ Undo pull</button>
-      <button class="ghost" id="watchBtn" title="Free — fetches live DraftKings/FanDuel strikeout lines from SharpAPI and shows how they compare to your model. No credits, nothing saved. Use this to watch lines move; do an official Pull All for the bet of record.">Intraday watch</button>
-      <button class="ghost" id="previewBtn" title="Free — runs the model on tonight's probable starters using MLB stats only. Shows projected K, no lines, no credits, nothing saved.">Preview</button>
-      <button class="ghost" id="gradeTodayBtn" title="Fetch final strikeout totals and fill in results inline on the games below.">Results</button>
-      <button class="ghost" id="esp32Btn" title="Downloads esp32_picks.json — only today's Value + Conviction picks with live game status and actual strikeouts, ready for the ESP32 to fetch.">Export ESP32</button>
-      </div>
+      <button class="primary big act-sec" id="stageBtn" title="Free — loads today's matchups, probable pitchers, and game times. Saves the current day first, then loads fresh.">Stage Day</button>
+      <button class="ghost act-sec" id="runBtn" title="Pull lines for every game on the loaded day at once (~1 credit per game).">Pull All</button>
+      <button class="ghost act-sec" id="undoPullBtn" title="Revert the most recent pull or re-pull — restores the affected pitcher(s) to their state before that pull. One level of undo. Doesn't refund credits.">↩ Undo pull</button>
+      <button class="ghost act-m" id="watchBtn" title="Free — fetches live DraftKings/FanDuel strikeout lines from SharpAPI and shows how they compare to your model. No credits, nothing saved. Use this to watch lines move; do an official Pull All for the bet of record.">Intraday watch</button>
+      <button class="ghost act-sec" id="previewBtn" title="Free — runs the model on tonight's probable starters using MLB stats only. Shows projected K, no lines, no credits, nothing saved.">Preview</button>
+      <button class="ghost act-m" id="gradeTodayBtn" title="Fetch final strikeout totals and fill in results inline on the games below.">Results</button>
+      <button class="ghost act-sec" id="esp32Btn" title="Downloads esp32_picks.json — only today's Value + Conviction picks with live game status and actual strikeouts, ready for the ESP32 to fetch.">Export ESP32</button>
     </div>
     <div class="metastrip" id="metaStrip">
       <span id="metaFresh">No pull yet today</span>
@@ -2316,8 +2311,8 @@ function _autoSyncOnFocus(){
 window.addEventListener("focus", _autoSyncOnFocus);
 document.addEventListener("visibilitychange", _autoSyncOnFocus);
 $("actionMenuToggle") && ($("actionMenuToggle").onclick=function(){
-  const m=$("actionMenu"); if(!m) return;
-  const open=m.classList.toggle("open");
+  const bar=this.closest(".actionbar"); if(!bar) return;
+  const open=bar.classList.toggle("actions-open");
   this.setAttribute("aria-expanded", open?"true":"false");
 });
 $("tabPerf") && ($("tabPerf").onclick=()=>{showTab("Perf");try{renderPerf();}catch(e){console.error(e);}});
