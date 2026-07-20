@@ -2685,9 +2685,9 @@ function renderToday(rows){
     };
     summary+=`<div class="toppicks hidden" id="topPicks"><div class="tp-head">Top picks <span class="tp-hint">tap a count above to show / hide</span></div>`+
       `<div class="pickcards">${flagged.map(card).join("")}</div></div>`;
-    { const dv=$("dayVerdict"); if(dv) dv.innerHTML=`<span style="color:var(--pos)">${flagged.length} tracked pick${flagged.length>1?"s":""} flagged</span> — tap a count below to see ${flagged.length>1?"them":"it"}.`; }
+    { const dv=$("dayVerdict"); if(dv) dv.innerHTML=""; }   // the count tiles below already show the picks
   } else if(anyPulled){
-    const dv=$("dayVerdict"); if(dv) dv.innerHTML=`No tracked pick tonight — no Value, Conviction, or Overpower. Sit out. <span class="muted">(That silence is the tool working.)</span>`;
+    const dv=$("dayVerdict"); if(dv) dv.innerHTML="";       // "sit out" is redundant with the 0/0/0 count tiles
   } else {
     const dv=$("dayVerdict"); if(dv) dv.innerHTML=`Nothing pulled yet. Pull games below as their lineups post.`;
   }
