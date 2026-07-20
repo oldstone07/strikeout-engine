@@ -1198,9 +1198,7 @@ footer{margin-top:30px;color:var(--muted);font-size:11.5px;text-align:center}
         </label>
       </div>
       <div class="set-row">
-        <span class="muted small" style="color:var(--muted)">Pull any un-pulled game starting within</span>
-        <input type="number" id="apWin" min="1" max="8" step="1" style="width:56px;padding:6px 8px">
-        <span class="muted small" style="color:var(--muted)">hours of when you open the app. Spends ~1 credit/game; skips games you already pulled; stops if credits get low. Pairs with the reminders above — they ping you to open it.</span>
+        <span class="muted small" style="color:var(--muted)">Pulls exactly what a reminder has flagged — each cluster of games, when you open the app after its reminder fires (same timing as the reminder lead above). Spends ~1 credit/game; skips games you already pulled; stops if credits get low.</span>
       </div>
     </div>
     <div class="set-sec">
@@ -2064,7 +2062,18 @@ function loadDay(d){const v=SS.getItem(dayKey(d));return v?JSON.parse(v):null;}
 // (skips already-pulled), credit floor, debounced, never during a manual pull.
 let _lastAutoPull=0;
 function autoPullOn(){ return SS.getItem("se_autopull_on")==="1"; }
-function autoPullWindowH(){ const v=parseFloat(SS.getItem("se_autopull_win")||""); return (v>=1&&v<=8)?v:3; }
+// Shared clustering (reminders + auto-pull MUST agree): a game joins the current
+// cluster if it starts within 90 min of that cluster's FIRST game; else a new one.
+function _gameClusters(games){
+  const sorted=(games||[]).filter(g=>g&&g.timeISO).slice().sort((a,b)=>(a.timeISO||"").localeCompare(b.timeISO||""));
+  const clusters=[];
+  for(const g of sorted){
+    const last=clusters.length?clusters[clusters.length-1]:null;
+    if(last && (new Date(g.timeISO).getTime()-new Date(last[0].timeISO).getTime())<=90*60000) last.push(g);
+    else clusters.push([g]);
+  }
+  return clusters;
+}
 async function autoPullDue(){
   if(!autoPullOn()) return;
   if(_pullBatch || _longRunActive) return;                    // don't collide with a manual pull
@@ -2077,9 +2086,15 @@ async function autoPullDue(){
   const rec=loadDay(day), rows=(rec&&rec.rows)||[];
   const isPulled=g=>{ const gk=norm(g.homeTeam)+"|"+norm(g.awayTeam);
     return rows.some(r=> (norm(r.homeName||"")+"|"+norm(r.awayName||""))===gk && r.resolved); };
-  const now=Date.now(), win=autoPullWindowH()*3600*1000;
-  const due=_stageGames.filter(g=>{ if(!g||!g.timeISO||isPulled(g)) return false;
-    const dt=new Date(g.timeISO).getTime()-now; return dt>0 && dt<=win; });
+  // Pull exactly what a reminder has fired for: any un-pulled, not-yet-started game
+  // in a cluster whose reminder time (first pitch − lead) has already passed. Same
+  // clustering + lead as the reminders, so the two can never disagree.
+  const lead=reminderLead()*60000, now=Date.now();
+  const due=[];
+  _gameClusters(_stageGames).forEach(cl=>{
+    if(now < new Date(cl[0].timeISO).getTime()-lead) return;    // this cluster's reminder hasn't fired yet
+    for(const g of cl){ if(!isPulled(g) && new Date(g.timeISO).getTime()>now) due.push(g); }
+  });
   if(!due.length) return;
   _lastAutoPull=Date.now();
   SS.removeItem(UNDO_PULL_K); _pullBatch=true;
@@ -2089,7 +2104,7 @@ async function autoPullDue(){
   try{ for(const g of due){ await pullOneGame(g, {events:preEvents, probList:preProb}); } }
   catch(e){ console.error("auto-pull error:",e); }
   finally{ _pullBatch=false; }
-  try{ setStatus(`Auto-pulled ${due.length} game${due.length>1?"s":""} starting within ${autoPullWindowH()}h — data tracked.`,1); }catch(e){}
+  try{ setStatus(`Auto-pulled ${due.length} game${due.length>1?"s":""} — data tracked.`,1); }catch(e){}
   try{ scheduleReminders(); }catch(e){}                       // pulled games drop from the reminders
 }
 window.__seAutoPull=autoPullDue;
@@ -2112,22 +2127,11 @@ function scheduleReminders(){
   if(!remindersOn()){ _remPost({action:"clear"}); return; }
   const day=_loadedDate||todayISO();
   if(day!==todayISO()){ _remPost({action:"clear"}); return; }  // only today's slate
-  const games=(_stageGames||[]).filter(g=>g&&g.timeISO).slice()
-     .sort((a,b)=>(a.timeISO||"").localeCompare(b.timeISO||""));
-  if(!games.length){ _remPost({action:"clear"}); return; }
+  const clusters=_gameClusters(_stageGames);
+  if(!clusters.length){ _remPost({action:"clear"}); return; }
   const rec=loadDay(day), rows=(rec&&rec.rows)||[];
   const isPulled=g=>{ const gk=norm(g.homeTeam)+"|"+norm(g.awayTeam);
     return rows.some(r=> (norm(r.homeName||"")+"|"+norm(r.awayName||""))===gk && r.resolved); };
-  // Cluster: a game joins the current cluster if it starts within 90 min of that
-  // cluster's FIRST game; otherwise it opens a new one. Anchoring on the first game
-  // (not chaining) stops a continuous slate collapsing into one mega-cluster that
-  // would remind you at noon for a 10pm game.
-  const clusters=[];
-  for(const g of games){
-    const last=clusters.length?clusters[clusters.length-1]:null;
-    if(last && (new Date(g.timeISO).getTime()-new Date(last[0].timeISO).getTime())<=90*60000) last.push(g);
-    else clusters.push([g]);
-  }
   const lead=reminderLead()*60000, now=Date.now(), items=[];
   clusters.forEach((cl,i)=>{
     if(cl.every(isPulled)) return;                             // whole cluster pulled -> no nag
@@ -2464,11 +2468,9 @@ if(_hasReminderBridge()){
       SS.setItem("se_reminder_lead", String(v)); try{ scheduleReminders(); }catch(e){} }; }
 }
 // Auto-pull settings (all surfaces — it runs on app open/focus, no bridge needed).
-{ const on=$("apOn"), win=$("apWin");
+{ const on=$("apOn");
   if(on){ on.checked=autoPullOn();
     on.onchange=function(){ SS.setItem("se_autopull_on", this.checked?"1":"0"); if(this.checked){ try{autoPullDue();}catch(e){} } }; }
-  if(win){ win.value=autoPullWindowH();
-    win.onchange=function(){ let v=parseInt(this.value,10); if(!(v>=1&&v<=8)) v=3; this.value=v; SS.setItem("se_autopull_win", String(v)); }; }
 }
 $("tabPerf") && ($("tabPerf").onclick=()=>{showTab("Perf");try{renderPerf();}catch(e){console.error(e);}});
 $("tabData") && ($("tabData").onclick=()=>{showTab("Data");try{renderData();}catch(e){console.error("renderData failed:",e);}});
