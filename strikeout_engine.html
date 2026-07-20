@@ -220,6 +220,17 @@ button:active{transform:translateY(1px)}
 .statusbar{margin-top:8px;height:6px;background:#0e1116;border:1px solid var(--line);
   border-radius:4px;overflow:hidden}
 .statusfill{height:100%;background:var(--accent);border-radius:3px;transition:width .3s ease}
+/* One consolidated info box: date + coverage, verdict, freshness, and the latest
+   status/update — replaces the three scattered info areas. */
+.infopanel{border:1px solid var(--line2);background:var(--card2);border-radius:12px;
+  padding:14px 16px;margin:14px 0 18px;display:flex;flex-direction:column;gap:9px}
+.infopanel .ip-top{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap}
+.infopanel .todaydate{font-size:16px;text-transform:uppercase}
+.infopanel .ip-sub{font-size:11.5px;color:var(--muted);letter-spacing:.03em}
+.infopanel .ip-verdict{font-size:13px;line-height:1.5}
+.infopanel .ip-verdict:empty{display:none}
+.infopanel .ip-fresh{font-size:11.5px;color:var(--muted)}
+.infopanel .status{border:0;background:transparent;padding:0;margin-top:0}
 .metastrip{display:flex;justify-content:space-between;align-items:center;gap:12px;
   margin-top:10px;font-size:12px;color:var(--muted);padding:0 2px}
 .metastrip .ok{color:var(--text)}
@@ -854,7 +865,10 @@ footer{margin-top:30px;color:var(--muted);font-size:11.5px;text-align:center}
   .mb-summary{grid-template-columns:1fr 1fr}
   .mb-stylebreak{grid-template-columns:1fr 1fr}
   .gt-official,.gt-watch1{padding:9px 13px;font-size:13px}
-  .actionbar button{padding:11px 14px;font-size:13.5px}
+  .actionbar button{padding:9px 10px;font-size:12px}
+  /* keep Intraday watch + Results + ⋯ Actions on ONE row */
+  .actionbar{flex-wrap:wrap}
+  .act-m, .actionbar #actionMenuToggle{white-space:nowrap}
   .gt-head{flex-wrap:wrap;gap:8px}
 
   /* collapse the secondary actions behind a menu so games/summary sit up top.
@@ -977,16 +991,14 @@ footer{margin-top:30px;color:var(--muted);font-size:11.5px;text-align:center}
       <button class="ghost act-m" id="gradeTodayBtn" title="Fetch final strikeout totals and fill in results inline on the games below.">Results</button>
       <button class="ghost act-sec" id="esp32Btn" title="Downloads esp32_picks.json — only today's Value + Conviction picks with live game status and actual strikeouts, ready for the ESP32 to fetch.">Export ESP32</button>
     </div>
-    <div class="metastrip" id="metaStrip">
-      <span id="metaFresh">No pull yet today</span>
-    </div>
-    <div class="status" id="status"></div>
-
-    <div class="todayhead">
-      <div>
-        <div class="todaydate" id="todayDate">No day loaded</div>
-        <div class="todaysub" id="todaySub">Hit Stage Day to load today's games (free).</div>
+    <div class="infopanel" id="infoPanel">
+      <div class="ip-top">
+        <span class="todaydate" id="todayDate">No day loaded</span>
+        <span class="ip-sub" id="todaySub"></span>
       </div>
+      <div class="ip-verdict" id="dayVerdict"></div>
+      <div class="ip-fresh"><span id="metaFresh">No pull yet today</span></div>
+      <div class="status" id="status"></div>
     </div>
     <div id="todayBoard"></div>
   </div>
@@ -2605,6 +2617,7 @@ function renderToday(rows){
 
   if(!_stageGames || !_stageGames.length){
     subEl.textContent="Hit Stage Day to load the games (free).";
+    { const dv=$("dayVerdict"); if(dv) dv.innerHTML=""; }
     board.innerHTML=`<div class="empty">No day staged. Hit <b>Stage Day</b> to load today's games — it's free, no credits.</div>`;
     return;
   }
@@ -2624,7 +2637,7 @@ function renderToday(rows){
   });
 
   const nPulled=_stageGames.filter(g=>rowsByGame[norm(g.homeTeam)+"|"+norm(g.awayTeam)]).length;
-  subEl.textContent=`${_stageGames.length} games · ${nPulled} pulled · pull each game when its lineup posts (~3–4pm ET for night games).`;
+  subEl.textContent=`${_stageGames.length} games · ${nPulled} pulled`;
 
   // ---- STAT STRIP: Value / Conviction / Pass ----
   const comboCount = rows.filter(r=>!r.skipped && r._verdict && r._verdict.isCombo).length;
@@ -2672,10 +2685,11 @@ function renderToday(rows){
     };
     summary+=`<div class="toppicks hidden" id="topPicks"><div class="tp-head">Top picks <span class="tp-hint">tap a count above to show / hide</span></div>`+
       `<div class="pickcards">${flagged.map(card).join("")}</div></div>`;
+    { const dv=$("dayVerdict"); if(dv) dv.innerHTML=`<span style="color:var(--pos)">${flagged.length} tracked pick${flagged.length>1?"s":""} flagged</span> — tap a count below to see ${flagged.length>1?"them":"it"}.`; }
   } else if(anyPulled){
-    summary+=`<div class="ps-quiet">No tracked pick tonight — no Value, Conviction, or Overpower. Sit out. <span class="muted">(That silence is the tool working.)</span></div>`;
+    const dv=$("dayVerdict"); if(dv) dv.innerHTML=`No tracked pick tonight — no Value, Conviction, or Overpower. Sit out. <span class="muted">(That silence is the tool working.)</span>`;
   } else {
-    summary+=`<div class="ps-quiet">Nothing pulled yet. Pull games below as their lineups post.</div>`;
+    const dv=$("dayVerdict"); if(dv) dv.innerHTML=`Nothing pulled yet. Pull games below as their lineups post.`;
   }
 
   // ---- TODAY'S GAMES TABLE ----
