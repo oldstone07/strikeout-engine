@@ -288,7 +288,7 @@ button:active{transform:translateY(1px)}
 .bm-stylechip{background:transparent;border:1px solid var(--line);color:var(--muted);border-radius:6px;padding:6px 9px;font-size:11px;font-weight:700;cursor:pointer;opacity:.5}
 .bm-stylechip.on{opacity:1}
 .bm-note{font-size:11.5px;color:var(--muted);margin:-4px 0 12px;line-height:1.4}
-.mb-stylebreak{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin:0 0 18px}
+.mb-stylebreak{display:grid;grid-template-columns:repeat(auto-fit,minmax(118px,1fr));gap:10px;margin:0 0 18px}
 .mb-sb{border:1px solid var(--line);border-radius:8px;padding:11px 12px;background:var(--card)}
 .mb-sb .h{font-size:10px;letter-spacing:.1em;text-transform:uppercase;font-weight:700}
 .mb-sb .v{font:800 17px/1 var(--mono,ui-monospace,Menlo,monospace);margin-top:6px}
@@ -1472,6 +1472,25 @@ const CONV_MIN_LINE=5.5;      // Conviction now requires line ≥5.5 (high-line 
                               // was dead weight (+6.7% Over). At ≥1.0 the bucket is
                               // 106-37 / +33% ROI and holds out-of-sample (2025 +27%,
                               // 2026 +40%). One constant feeds every Conviction gate.
+const CEIL_EDGE_MIN=0.02;     // Overpower now requires edge >=2% (added 2026-07-28).
+                              // The old gate was Over + line>=5.5 and NOTHING else, so a
+                              // -7% edge pick lit up identically to a +15% one. Edge is a
+                              // clean monotonic predictor inside the gate (both seasons,
+                              // n=317): <0% +10.9% ROI / 0-2.5% +19.7% / 2.5-5% +37.7% /
+                              // 5-10% +55.6% / >=10% +64.3%.
+                              // Threshold swept 0%..10%; the hit rate PLATEAUS at ~77%
+                              // from +2% up, so anything stricter only costs volume:
+                              //   +2%  keeps 51% of flags · 77.3% · +55.8% ROI · +91.0u
+                              //   +5%  keeps 39% of flags · 77.2% · +59.0% ROI · +72.6u
+                              // i.e. 2%->5% gains 0 hit-rate points and gives up 18.4u.
+                              // Holds out-of-sample at +2%: 2025 +52.0%, 2026 +62.5%.
+                              // A minimum distance-from-line did NOT hold out-of-sample
+                              // (+52.6% -> +36.2%, back to baseline) and was rejected.
+                              // July 2026 live money, graded AFTER the rule was set:
+                              // kept 3-1 (+1.67u), cut 3-7 (-4.96u).
+                              // TRADE-OFF on the record: unfiltered still yields the most
+                              // raw units (+106.0u at +33.4% ROI). This trades ~15u of
+                              // gross profit for ~22 points of ROI and half the variance.
 const LEAN_EDGE_MIN=0.15;     // LEAN watchlist floor — near-miss on the Value gate, NOT a bet.
                               // Measured over the full 2025+2026 backfill (6,217 graded
                               // starts). At line ≤5.5, by edge band:
@@ -2496,6 +2515,15 @@ function renderRail(){
   } else {
     const cutoff=dataWindowCutoff(_perfRailWin);
     perfRows = cutoff ? all.filter(r=>(r.date||"")>=cutoff) : all;
+    // "Test" IS the forward test, so it must use the forward test's rule — only LIVE
+    // picks count (the Scoreboard's Forward lens filters on r.isForward the same way).
+    // Filtering on date alone let backfilled rows that merely FALL inside the window
+    // count here but not there, so the two pages disagreed: Conviction read 20-9/+6.7u
+    // on the rail vs 18-9/+5.4u on the Scoreboard. Value/Overpower matched only by
+    // luck — no backfilled row happened to clear those gates in the window.
+    // Every other window (7 / month / season / all) is a plain data window and
+    // legitimately includes backfill, so this applies to "test" only.
+    if(_perfRailWin==="test") perfRows = perfRows.filter(r=>r.isForward);
   }
   if($("railMonthNav")) $("railMonthNav").style.display = _perfRailWin==="month" ? "flex" : "none";
   // tracked-only, sized: ONE bet per pitcher, staked N units = # strategies cleared.
@@ -3221,9 +3249,17 @@ function renderToday(rows){
       const _pname=(r&&r.pitcher)||slot.name||"TBD";
       const _dim=(!(r&&(r.resolved||r._watchLine!=null)))||(r&&r.skipped);
       const _acc=fV?" ts-acc-v":fC?" ts-acc-c":fO?" ts-acc-o":(callCls==="lean"?" ts-acc-l":"");
-      const _flags=`<span class="ts-flags"><span class="ts-fl v ${fV?'on':''}">V</span><span class="ts-fl c ${fC?'on':''}">C</span><span class="ts-fl o ${fO?'on':''}">O</span></span>`;
+      // Each flag names its own gate on hover, and the lit ones show the edge that
+      // cleared it — an O used to look identical at -7% edge and +15%, which is what
+      // made every Overpower flag read as the same bet.
+      const _eTip = (r && r.edge!=null) ? ` · edge ${(r.edge*100).toFixed(0)}%` : "";
+      const _flags=`<span class="ts-flags">`+
+        `<span class="ts-fl v ${fV?'on':''}" title="VALUE — line ≤${EDGE_MAX_LINE} and edge ≥${(EDGE_STRONG_BAR*100).toFixed(0)}%${fV?_eTip:""}">V</span>`+
+        `<span class="ts-fl c ${fC?'on':''}" title="CONVICTION — Under, edge ≥${(CONV_EDGE_MIN*100).toFixed(0)}%, ≥${CONV_DISAGREE_MIN.toFixed(1)}K from the line, line ≥${CONV_MIN_LINE}${fC?_eTip:""}">C</span>`+
+        `<span class="ts-fl o ${fO?'on':''}" title="OVERPOWER — Over, line ≥5.5, edge ≥${(CEIL_EDGE_MIN*100).toFixed(0)}%${fO?_eTip:""}">O</span>`+
+        `</span>`;
       const _live=(r && r.pid!=null && !r.skipped && (r.homeName||r.awayName))?`<span class="gt-live" data-pid="${r.pid}" data-home="${(r.homeName||'').replace(/"/g,'&quot;')}" data-away="${(r.awayName||'').replace(/"/g,'&quot;')}" data-line="${r.line!=null?r.line:''}" data-side="${r.modelSide||''}"></span>`:"";
-      const _dollar=(r && r.resolved && r.modelSide && !r.skipped)?(()=>{const _lg=betIsLogged(_logged,_tDate,r.pitcher);return `<button class="gt-logbet${_lg?' logged':''}" title="${_lg?'Bet already logged for this pitcher — click to add another':'Log a bet you placed on this pitcher'}" data-bd="${_tDate}" data-bp="${(r.pitcher||'').replace(/"/g,'&quot;')}" data-bs="${r.modelSide}" data-bl="${r.line!=null?r.line:''}" data-bpr="${(r.sidePrice!=null?r.sidePrice:(r.modelSide==='Over'?r.bestOver:r.bestUnder))??''}" data-bcombo="${(r._verdict&&r._verdict.isCombo)?1:0}" data-bconv="${(r._verdict&&r._verdict.isConvOver)?1:0}" data-bceil="${(r._verdict&&r._verdict.isCeiling)?1:0}" data-bek="${r.eK!=null?r.eK:''}" data-bedge="${r.edge!=null?r.edge:''}" data-bopp="${r.oppSource||''}" data-bkt="${(r.traits&&r.traits.kTier)||''}" data-bwl="${(r.traits&&r.traits.workload)||''}">${_lg?'✓＄':'＄'}</button>`;})():"";
+      const _dollar=(r && r.resolved && r.modelSide && !r.skipped)?(()=>{const _lg=betIsLogged(_logged,_tDate,r.pitcher);return `<button class="gt-logbet${_lg?' logged':''}" title="${_lg?'Bet already logged for this pitcher — click to add another':'Log a bet you placed on this pitcher'}" data-bd="${_tDate}" data-bp="${(r.pitcher||'').replace(/"/g,'&quot;')}" data-bs="${r.modelSide}" data-bl="${r.line!=null?r.line:''}" data-bpr="${(r.sidePrice!=null?r.sidePrice:(r.modelSide==='Over'?r.bestOver:r.bestUnder))??''}" data-bcombo="${(r._verdict&&r._verdict.isCombo)?1:0}" data-bconv="${(r._verdict&&r._verdict.isConvOver)?1:0}" data-bceil="${(r._verdict&&r._verdict.isCeiling)?1:0}" data-blean="${isLeanRow(r)?1:0}" data-bek="${r.eK!=null?r.eK:''}" data-bedge="${r.edge!=null?r.edge:''}" data-bopp="${r.oppSource||''}" data-bkt="${(r.traits&&r.traits.kTier)||''}" data-bwl="${(r.traits&&r.traits.workload)||''}">${_lg?'✓＄':'＄'}</button>`;})():"";
 
       tbl+=`<div class="gt-row ts-row${_acc}${_manualCls}${r?' gt-expandable':''}" data-det="${detId}">`+
         `<span class="ts-call"><span class="ts-dot${callCls==="lean"?" lean":""}" style="background:${_dotCol}"></span><span class="ts-badge" style="color:${_callCol}">${callTxt}</span></span>`+
@@ -3271,7 +3307,7 @@ function renderToday(rows){
     openBetModal({ pitcher:btn.dataset.bp, date:(_loadedDate||todayISO()),
       side:btn.dataset.bs, line:(btn.dataset.bl!==""?parseFloat(btn.dataset.bl):null),
       price:(btn.dataset.bpr!==""?parseInt(btn.dataset.bpr,10):null),
-      styles:{combo:btn.dataset.bcombo==="1",conv:btn.dataset.bconv==="1",ceil:btn.dataset.bceil==="1"},
+      styles:{combo:btn.dataset.bcombo==="1",conv:btn.dataset.bconv==="1",ceil:btn.dataset.bceil==="1",lean:btn.dataset.blean==="1"},
       snap:betSnapFromBtn(btn) });
   });
   board.querySelectorAll(".why-i").forEach(btn=>btn.onclick=(e)=>{
@@ -4774,13 +4810,23 @@ function collectScorecardRows(){
         isOver: !!(v && v.isOver),         // model says Over (candidate, not a bet)
         isConvOver: !!(v && v.isConvOver), // Under & edge≥20% & ≥1.5 from line & line≥5.5 (candidate)
         isCeiling: !!(v && v.isCeiling),   // Over & line ≥5.5 (candidate — Track 3)
+        isLean: !!(isLeanRow(r) && !(v && (v.isCombo||v.isConvOver||v.isCeiling))),  // near-miss Value, its own track
         side: r.modelSide,                 // Over / Under
         modelSide: r.modelSide,            // alias — freeVerdict/rowVerdict/free-vs-paid panels key on modelSide
         line: r.line!=null?Number(r.line):null,
         disagree,                          // |projected K − line|
         workload: r.traits&&r.traits.workload || null,  // deep/medium/short
         actualK: r.actualK,
-        isForward: !r.histBackfill,        // true = real logged pick, not backfill
+        // FORWARD = this was a real LIVE pick. `!histBackfill` alone is not enough:
+        // running a backfill over a date you already pulled live re-stamps the
+        // existing row with histBackfill=true (savePulledDay's `loggedSide` guard
+        // is READ in 3 places but never actually SET anywhere, so it never fires),
+        // silently demoting a genuine forward pick out of the forward test.
+        // pulledAtISO / freeSnapAt are written ONLY by the live pull + free-watch
+        // paths and never by scoreHistGame, so they are reliable live provenance.
+        // Today this reclaims 3 rows of 7,110 — one is 2026-07-10 Chris Sale, which
+        // has a logged, winning Conviction bet and was being dropped from the test.
+        isForward: (!r.histBackfill) || !!(r.pulledAtISO || r.freeSnapAt),
         eK: (r.eK!=null?Number(r.eK):null),                    // projected K (line-independent) — freeVerdict needs it
         freeLine: (r.freeLine!=null?Number(r.freeLine):null),  // SharpAPI free-feed line + prices, for the
         freeOver: (r.freeOver!=null?r.freeOver:null),          // free-vs-paid flag-agreement comparison
@@ -4893,7 +4939,7 @@ function renderHistory(){
       const disag=(r.eK!=null&&r.line!=null)?Math.abs(r.eK-r.line):0;
       if(r.line<=5.5 && r.edge>=0.20){ combo.n++; if(t.hit)combo.w++; combo.u+=t.units; }
       if(r.modelSide==="Under" && r.edge!=null && r.edge>=CONV_EDGE_MIN && disag>=CONV_DISAGREE_MIN && r.line!=null && r.line>=CONV_MIN_LINE){ conv.n++; if(t.hit)conv.w++; conv.u+=t.units; }
-      if(r.modelSide==="Over" && r.line!=null && r.line>=5.5){ ceil.n++; if(t.hit)ceil.w++; ceil.u+=t.units; }
+      if(r.modelSide==="Over" && r.line!=null && r.line>=5.5 && r.edge!=null && r.edge>=CEIL_EDGE_MIN){ ceil.n++; if(t.hit)ceil.w++; ceil.u+=t.units; }
     });
     return {combo,conv,ceil};
   };
@@ -4955,7 +5001,7 @@ function renderHistory(){
     openBetModal({ pitcher:btn.dataset.bp, date:btn.dataset.bd, side:btn.dataset.bs,
       line:(btn.dataset.bl!==""?parseFloat(btn.dataset.bl):null),
       price:(btn.dataset.bpr!==""?parseInt(btn.dataset.bpr,10):null),
-      styles:{combo:btn.dataset.bcombo==="1",conv:btn.dataset.bconv==="1",ceil:btn.dataset.bceil==="1"},
+      styles:{combo:btn.dataset.bcombo==="1",conv:btn.dataset.bconv==="1",ceil:btn.dataset.bceil==="1",lean:btn.dataset.blean==="1"},
       snap:betSnapFromBtn(btn) });
   });
 }
@@ -4972,7 +5018,7 @@ function histDetailHTML(rec){
       const disag=(r.eK!=null&&r.line!=null)?Math.abs(r.eK-r.line):0;
       isCombo = (r.line!=null && r.line<=5.5 && r.edge!=null && r.edge>=0.20);
       isConv  = (r.modelSide==="Under" && r.edge!=null && r.edge>=CONV_EDGE_MIN && disag>=CONV_DISAGREE_MIN && r.line!=null && r.line>=CONV_MIN_LINE);
-      isCeiling = (r.modelSide==="Over" && r.line!=null && r.line>=5.5);
+      isCeiling = (r.modelSide==="Over" && r.line!=null && r.line>=5.5 && r.edge!=null && r.edge>=CEIL_EDGE_MIN);
     }
     let betCell="";
     if(isCombo) betCell=`<span class="hbet hbet-combo" title="Value bet">⚯</span>`;
@@ -5000,7 +5046,7 @@ function histDetailHTML(rec){
        `<span>${pickCell}</span>`+
        `<span class="mono">${edgeCell}</span>`+
        `<span class="mono">${actualCell}</span>`+
-       `<span>${resultCell}${(!res.skipped && !r.voided && !res.nopick && r.modelSide)?(()=>{const _lg=betIsLogged(_logged,rec.date,r.pitcher);return `<button class="gt-logbet hist-logbet${_lg?' logged':''}" title="${_lg?'Bet already logged for this pitcher — click to add another':'Log a bet you placed on this pitcher'}" data-bp="${(r.pitcher||'').replace(/"/g,'&quot;')}" data-bd="${rec.date}" data-bs="${r.modelSide}" data-bl="${r.line!=null?r.line:''}" data-bpr="${res.price!=null?res.price:''}" data-bcombo="${isCombo?1:0}" data-bconv="${isConv?1:0}" data-bceil="${isCeiling?1:0}" data-bek="${r.eK!=null?r.eK:''}" data-bedge="${r.edge!=null?r.edge:''}" data-bopp="${r.oppSource||''}" data-bkt="${(r.traits&&r.traits.kTier)||''}" data-bwl="${(r.traits&&r.traits.workload)||''}">${_lg?'✓＄':'＄'}</button>`;})():""}</span></div>`;
+       `<span>${resultCell}${(!res.skipped && !r.voided && !res.nopick && r.modelSide)?(()=>{const _lg=betIsLogged(_logged,rec.date,r.pitcher);return `<button class="gt-logbet hist-logbet${_lg?' logged':''}" title="${_lg?'Bet already logged for this pitcher — click to add another':'Log a bet you placed on this pitcher'}" data-bp="${(r.pitcher||'').replace(/"/g,'&quot;')}" data-bd="${rec.date}" data-bs="${r.modelSide}" data-bl="${r.line!=null?r.line:''}" data-bpr="${res.price!=null?res.price:''}" data-bcombo="${isCombo?1:0}" data-bconv="${isConv?1:0}" data-bceil="${isCeiling?1:0}" data-blean="${isLeanRow(r)?1:0}" data-bek="${r.eK!=null?r.eK:''}" data-bedge="${r.edge!=null?r.edge:''}" data-bopp="${r.oppSource||''}" data-bkt="${(r.traits&&r.traits.kTier)||''}" data-bwl="${(r.traits&&r.traits.workload)||''}">${_lg?'✓＄':'＄'}</button>`;})():""}</span></div>`;
   });
   return h;
 }
@@ -5353,7 +5399,7 @@ function rowVerdict(r, provenBuckets){
   const isCombo = (r.line <= EDGE_MAX_LINE) && (r.edge >= EDGE_STRONG_BAR);
   const isOver  = (side === "Over");
   const isConvOver = (side==="Under") && (r.edge!=null && r.edge>=CONV_EDGE_MIN) && disagree>=CONV_DISAGREE_MIN && (r.line>=CONV_MIN_LINE);
-  const isCeiling = isOver && (r.line >= 5.5);   // high-line Over — candidate, not a bet
+  const isCeiling = isOver && (r.line >= 5.5) && (r.edge!=null && r.edge>=CEIL_EDGE_MIN);   // high-line Over w/ a real edge
   if(!isCombo) return {bet:false, reason:`not combo (line ${r.line}, edge ${(r.edge*100).toFixed(0)}%)`, side, isCombo:false, isOver, isConvOver, isCeiling};
   return {bet:true, side, mode:"combo", isCombo:true, isOver, isConvOver, isCeiling};
 }
@@ -5403,10 +5449,11 @@ function whyFlag(r){
     chk(line>=CONV_MIN_LINE, `Line ${line} ≥ ${CONV_MIN_LINE}`),
   ];
   const isConv=convChecks.every(c=>c.pass);
-  // Overpower requires: pick is Over AND line >= 5.5
+  // Overpower requires: pick is Over AND line >= 5.5 AND edge >= 5%
   const ceilChecks=[
     chk(side==="Over", `Pick is Over (${side})`),
     chk(line>=5.5, `Line ${line} ≥ 5.5`),
+    chk(edge>=CEIL_EDGE_MIN, `Edge ${(edge*100).toFixed(0)}% ≥ ${(CEIL_EDGE_MIN*100).toFixed(0)}%`),
   ];
   const isCeiling=ceilChecks.every(c=>c.pass);
   let summary;
@@ -5770,7 +5817,7 @@ async function watchGameInto(g, all, probList, day, season){
       r._watchSide=side; r._watchEdge=edge;
       r._watchCombo = (edge!=null) && (red.line<=EDGE_MAX_LINE) && (edge>=EDGE_STRONG_BAR);
       r._watchConv  = (side==="Under") && (edge!=null && edge>=CONV_EDGE_MIN) && (disagree>=CONV_DISAGREE_MIN) && (red.line>=CONV_MIN_LINE);
-      r._watchCeil  = (side==="Over") && (red.line>=5.5);
+      r._watchCeil  = (side==="Over") && (red.line>=5.5) && (edge!=null && edge>=CEIL_EDGE_MIN);
     } else { r._watchEK=null; r._watchCombo=false; r._watchConv=false; r._watchCeil=false; r._watchEdge=null; }
     cacheWatch(day, r);
     return true;
@@ -6494,7 +6541,8 @@ function renderRecal(){
   const TRACKS=[
     {k:"isCombo",   style:"combo",name:"VALUE",     col:"var(--bet)",     def:"Strong · line ≤5.5 — the one you bet", need:30},
     {k:"isConvOver",style:"conv", name:"CONVICTION",col:"var(--accent)",  def:"Under · edge ≥20% · ≥1.5 from line · line ≥5.5", need:40},
-    {k:"isCeiling", style:"ceil", name:"OVERPOWER", col:"var(--ceiling)", def:"Over · line ≥5.5", need:40},
+    {k:"isCeiling", style:"ceil", name:"OVERPOWER", col:"var(--ceiling)", def:"Over · line ≥5.5 · edge ≥2%", need:40},
+    {k:"isLean",    style:"lean", name:"LEAN",      col:"var(--lean)",    def:"line ≤5.5 · edge 15–20% — the Value near-miss band", need:40},
   ];
   const roiStr=g=>g.roi==null?"—":(g.roi>=0?"+":"")+g.roi.toFixed(0)+"%";
   const roiCol=g=>g.roi==null?"var(--muted)":g.roi>=0?"var(--pos)":"var(--neg)";
@@ -7062,7 +7110,7 @@ function updateBetNote(){
     : on.length===1 ? `Logs 1 bet tagged ${names[0]}.` : `No style selected — logs 1 untagged bet.`;
 }
 function setBetSide(s){ _betSide=s; const o=$("bmOver"),u=$("bmUnder"); if(o)o.classList.toggle("on",s==="Over"); if(u)u.classList.toggle("on",s==="Under"); }
-const STYLE_DEFS=[["combo","Value","var(--bet)"],["conv","Conviction","var(--accent)"],["ceil","Overpower","var(--ceiling)"]];
+const STYLE_DEFS=[["combo","Value","var(--bet)"],["conv","Conviction","var(--accent)"],["ceil","Overpower","var(--ceiling)"],["lean","Lean","var(--lean)"]];
 function openBetModal(ctx){
   _betCtx=ctx||{};
   $("bmPitcher").textContent = (ctx.pitcher||"—") + (ctx.date?`  ·  ${ctx.date}`:"");
@@ -7224,7 +7272,7 @@ function mbFilterMatch(b){
 }
 function renderMyBetsStyleBreak(bets){
   const el=$("mbStyleBreak"); if(!el) return;
-  const groups=[["combo","Value","var(--bet)"],["conv","Conviction","var(--accent)"],["ceil","Overpower","var(--ceiling)"],[null,"Untagged","var(--muted)"]];
+  const groups=[["combo","Value","var(--bet)"],["conv","Conviction","var(--accent)"],["ceil","Overpower","var(--ceiling)"],["lean","Lean","var(--lean)"],[null,"Untagged","var(--muted)"]];
   el.innerHTML=groups.map(([key,label,col])=>{
     const g=bets.filter(b=>(b.style||null)===key);
     const settled=g.filter(b=>b.result&&b.result!=="push");
@@ -7430,7 +7478,10 @@ document.addEventListener("keydown",(e)=>{ if(e.key==="Escape" && !$("betModal")
     var out=[], ms=r.modelSide, line=r.line, edge=r.edge, eK=r.eK;
     if(line==null)return out;
     if(edge!=null && line<=5.5 && edge>=0.20) out.push("Value");
-    if(ms==="Over" && line>=5.5) out.push("Overpower");
+    // This block is deliberately self-contained ES5, so it reads the shared constant
+    // defensively rather than hardcoding a copy that can silently drift out of sync.
+    var _ceilMin=(typeof CEIL_EDGE_MIN!=="undefined")?CEIL_EDGE_MIN:0.02;
+    if(ms==="Over" && line>=5.5 && edge!=null && edge>=_ceilMin) out.push("Overpower");
     if(ms==="Under" && line>=5.5 && edge!=null && edge>=0.20 && eK!=null && Math.abs(eK-line)>=1.5)
       out.push("Conviction");
     return out;
