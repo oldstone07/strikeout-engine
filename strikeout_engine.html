@@ -20,11 +20,108 @@
   --ceiling-dim:rgba(176,124,255,.12);
   --watch:#9aa0a4;                            /* Watch (live, unqualified) — neutral grey (kept off cyan so only Value reads teal) */
   --watch-dim:rgba(154,160,164,.16);
+  --lean:#d8b24a;                             /* LEAN — near-miss on Value. Gold, and the dot is a HOLLOW ring:
+                                                 "signal-shaped but not filled in". Kept off cyan (=Value flagged)
+                                                 and drawn hollow so it can't be read as Conviction amber. */
+  --lean-dim:rgba(216,178,74,.42);
   --grid:rgba(54,197,216,.035);
   --mono:'JetBrains Mono','SF Mono',ui-monospace,Menlo,monospace;
   --sans:'Space Grotesk','JetBrains Mono',ui-monospace,monospace;
 }
 @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700;800&family=Space+Grotesk:wght@500;600;700&display=swap');
+/* ============================================================
+   TODAY — "mint terminal" reskin  ·  scoped to #todayCard ONLY.
+   CSS-only refinement: retunes tokens (mint-phosphor wins, deeper
+   cool panels) and adds phosphor glow. No markup or logic changes;
+   every existing feature keeps working, and other tabs are untouched.
+   Surface-by-surface port, step 1 of the terminal direction.
+   ============================================================ */
+#todayCard{
+  --card:#0b1116; --card2:#0e161c; --bg2:#0c141a;
+  --line:#18242d; --line2:#223440;
+  --text:#d9e7ed; --muted:#6a8492; --faint:#3f5a67;
+  --pos:#35d6a4; --pos-dim:rgba(53,214,164,.14);
+  --neg:#ff5563; --neg-dim:rgba(255,85,99,.13);
+  --hover:#111c23;
+}
+#todayCard .gamestbl{
+  background:
+    radial-gradient(120% 60% at 85% -10%, rgba(53,214,164,.05), transparent 55%),
+    var(--card);
+  box-shadow: inset 0 1px 0 rgba(53,214,164,.05);
+}
+#todayCard .gt-title{ text-shadow:0 0 14px rgba(217,231,237,.18); }
+#todayCard .gt-slatemeta .gt-sig{ text-shadow:0 0 12px color-mix(in srgb,var(--bet) 55%,transparent); }
+#todayCard .gt-okcheck{ text-shadow:0 0 10px color-mix(in srgb,var(--pos) 60%,transparent); }
+#todayCard .gt-combo{ background:color-mix(in srgb,var(--bet) 12%,transparent); box-shadow:0 0 14px -4px var(--bet); }
+#todayCard .gt-conv{ background:color-mix(in srgb,var(--accent) 12%,transparent); box-shadow:0 0 14px -4px var(--accent); }
+#todayCard .gt-ceil{ background:color-mix(in srgb,var(--ceiling) 12%,transparent); box-shadow:0 0 14px -4px var(--ceiling); }
+#todayCard .gt-official-re:hover{ box-shadow:0 0 16px -4px var(--bet); }
+/* expand-on-click: caret + inline gate breakdown + recent-K sparkline */
+#todayCard .gt-row.gt-expandable{ cursor:pointer; }
+#todayCard .gt-caret{ display:inline-block; color:var(--faint); font-size:9px; margin-right:6px; transition:transform .18s,color .18s; }
+#todayCard .gt-row.gt-open .gt-caret{ transform:rotate(90deg); color:var(--bet); }
+#todayCard .gt-detail{ max-height:0; overflow:hidden; opacity:0; transition:max-height .24s ease,opacity .2s; background:#070d11; }
+#todayCard .gt-detail.open{ max-height:460px; opacity:1; border-bottom:1px solid var(--line); }
+#todayCard .gt-detin{ padding:13px 18px 16px; border-top:1px dashed var(--line2); display:flex; flex-wrap:wrap; gap:8px 24px; }
+#todayCard .gt-detin .why-sum{ flex-basis:100%; font-size:12px; color:var(--muted); margin-bottom:2px; line-height:1.5; }
+#todayCard .gt-detin .why-grp{ flex:1; min-width:150px; }
+#todayCard .gt-detin .why-grp-h{ font-size:9.5px; letter-spacing:.09em; text-transform:uppercase; font-weight:700; margin-bottom:5px; }
+#todayCard .gt-detin .why-chk{ font-size:11px; line-height:1.7; }
+#todayCard .gt-detin .why-chk.ok{ color:var(--text); }
+#todayCard .gt-detin .why-chk.no{ color:var(--faint); }
+#todayCard .gt-rowspark{ display:inline-flex; align-items:center; opacity:.9; }
+#todayCard .gt-rsslot{ display:inline-flex; line-height:0; }
+/* ---- mockup one-row-per-pitcher board ---- */
+/* All columns FIXED width — tight, and nothing shifts when a line is pulled. */
+#todayCard .ts-colhead, #todayCard .ts-row{ display:grid; grid-template-columns:92px 232px 132px 90px 62px 104px 100px 196px; align-items:center; gap:16px; padding:0 20px; }
+#todayCard .ts-colhead{ padding-top:11px; padding-bottom:10px; border-bottom:1px solid var(--line); background:var(--bg2); color:var(--faint); font-size:9px; letter-spacing:.14em; text-transform:uppercase; }
+#todayCard .ts-colhead .r{ text-align:right; }
+#todayCard .ts-row{ padding-top:13px; padding-bottom:13px; border-bottom:1px solid var(--line); position:relative; transition:background .12s; }
+#todayCard .ts-row.gt-expandable{ cursor:pointer; }
+#todayCard .ts-row:hover{ background:var(--hover); }
+#todayCard .ts-row.ts-acc-v{ box-shadow:inset 3px 0 0 var(--bet); }
+#todayCard .ts-row.ts-acc-c{ box-shadow:inset 3px 0 0 var(--accent); }
+#todayCard .ts-row.ts-acc-o{ box-shadow:inset 3px 0 0 var(--ceiling); }
+#todayCard .ts-row.ts-acc-l{ box-shadow:inset 3px 0 0 var(--lean-dim); }   /* LEAN — dimmer bar than a flagged bet */
+#todayCard .ts-call{ display:flex; align-items:center; gap:8px; min-width:0; }
+#todayCard .ts-dot{ width:8px; height:8px; border-radius:50%; flex:none; box-shadow:0 0 8px -1px currentColor; }
+/* LEAN dot = hollow gold ring (same footprint, so the Call column never shifts) */
+#todayCard .ts-dot.lean{ background:transparent !important; border:2px solid var(--lean); box-shadow:0 0 7px -2px var(--lean); }
+#todayCard .ts-badge{ font-size:10.5px; font-weight:700; letter-spacing:.05em; white-space:nowrap; }
+#todayCard .ts-pn{ min-width:0; }
+#todayCard .ts-pn .ts-nm{ font-size:13.5px; font-weight:600; display:block; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+#todayCard .ts-pn .ts-nm.dim{ color:var(--muted); font-weight:500; }
+#todayCard .ts-pn .ts-mt{ font-size:10.5px; color:var(--muted); }
+#todayCard .ts-pn .ts-mt .ts-at{ color:var(--faint); }
+#todayCard .ts-pn .ts-mt .gt-live{ display:inline; font-size:9.5px; color:var(--watch); margin-left:7px; white-space:nowrap; }
+#todayCard .ts-spark{ display:flex; align-items:center; overflow:hidden; min-width:0; }
+#todayCard .ts-model,#todayCard .ts-line,#todayCard .ts-edge{ text-align:right; font-variant-numeric:tabular-nums; font-size:13px; font-weight:600; line-height:1.25; white-space:nowrap; }
+#todayCard .ts-model small,#todayCard .ts-line small,#todayCard .ts-edge small{ display:block; font-size:9px; color:var(--muted); font-weight:400; }
+/* pull time — sits on the price sub-line, dimmer than the price so it reads as metadata */
+#todayCard .ts-line .ts-pt{ color:var(--faint); }
+#todayCard .ts-model b,#todayCard .ts-line b,#todayCard .ts-edge b{ font-weight:700; }
+#todayCard .ts-line .gt-watchdrift,#todayCard .ts-line .gt-star{ font-size:9px; margin-left:2px; }
+#todayCard .ts-flags{ display:flex; gap:4px; }
+#todayCard .ts-fl{ width:20px; height:20px; border-radius:5px; display:grid; place-items:center; font-size:10px; font-weight:800; border:1px solid; opacity:.26; }
+#todayCard .ts-fl.v{ color:var(--bet); border-color:var(--bet); }
+#todayCard .ts-fl.c{ color:var(--accent); border-color:var(--accent); }
+#todayCard .ts-fl.o{ color:var(--ceiling); border-color:var(--ceiling); }
+#todayCard .ts-fl.on{ opacity:1; }
+#todayCard .ts-fl.v.on{ background:color-mix(in srgb,var(--bet) 16%,transparent); box-shadow:0 0 10px -3px var(--bet); }
+#todayCard .ts-fl.c.on{ background:color-mix(in srgb,var(--accent) 16%,transparent); box-shadow:0 0 10px -3px var(--accent); }
+#todayCard .ts-fl.o.on{ background:color-mix(in srgb,var(--ceiling) 16%,transparent); box-shadow:0 0 10px -3px var(--ceiling); }
+#todayCard .ts-act{ display:flex; gap:6px; align-items:center; justify-content:flex-end; flex-wrap:nowrap; }
+#todayCard .ts-act .gt-trk{ display:inline-flex; align-items:center; }
+#todayCard .ts-pulled{ font-size:10px; color:var(--pos); white-space:nowrap; }
+@media (max-width:820px){
+  #todayCard .ts-colhead{ display:none; }
+  #todayCard .ts-row{ display:flex; flex-wrap:wrap; align-items:center; gap:6px 14px; }
+  #todayCard .ts-pn{ flex:1 1 150px; }
+  #todayCard .ts-spark{ display:none; }
+  #todayCard .ts-model,#todayCard .ts-line,#todayCard .ts-edge{ text-align:left; }
+}
+@media (prefers-reduced-motion:reduce){ #todayCard .gt-detail,#todayCard .gt-caret{ transition:none; } }
 *{box-sizing:border-box}
 html,body{margin:0;background:var(--bg)}
 body{max-width:1400px;margin:0 auto;padding:0 0 70px;color:var(--text);
@@ -55,8 +152,8 @@ header{display:flex;gap:18px;align-items:center;margin-bottom:0;padding:12px 22p
 /* three-column app shell */
 .appgrid{display:grid;grid-template-columns:1fr;gap:18px;padding:14px 22px 0;align-items:start}
 #rail{display:none}
-.appgrid.rail-on #rail{display:flex}
-@media(min-width:641px){.appgrid.rail-on{grid-template-columns:minmax(0,1fr) 312px}}
+/* Tracked-bets rail is now a toggled popover (full-width slate); see #railToggle */
+.appgrid.rail-open #rail{display:flex;position:fixed;top:60px;right:20px;width:346px;max-height:calc(100vh - 84px);overflow-y:auto;z-index:75;background:var(--card);border:1px solid var(--line2);border-radius:12px;padding:16px 16px 18px;box-shadow:0 30px 90px -25px rgba(0,0,0,.85)}
 .topnav{display:flex;align-items:center;gap:4px;align-self:stretch}
 .tnav-mobile{display:none} /* phone-only Tracked tab */
 .tnav{background:transparent;color:var(--muted);border:none;border-bottom:2px solid transparent;border-radius:0;
@@ -77,7 +174,7 @@ header{display:flex;gap:18px;align-items:center;margin-bottom:0;padding:12px 22p
 .sf-dot{width:7px;height:7px;border-radius:50%;background:var(--pos);box-shadow:0 0 7px var(--pos)}
 .sf-meta{font-size:10.5px;color:var(--faint);margin-top:5px}
 .appcontent{min-width:0}
-.rail{position:sticky;top:74px;display:flex;flex-direction:column;gap:14px}
+.rail{display:none;flex-direction:column;gap:14px}
 .rp-title-row{display:flex;flex-direction:column;align-items:stretch;gap:8px;margin-bottom:12px}
 .rp-seg{display:flex;border:1px solid var(--line);border-radius:4px;overflow:hidden;width:100%}
 .rp-seg button{flex:1;background:transparent;border:none;color:var(--muted);font-family:var(--mono);font-size:10.5px;font-weight:600;
@@ -463,6 +560,7 @@ button:active{transform:translateY(1px)}
 .gt-slatemeta{font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);white-space:nowrap;font-variant-numeric:tabular-nums}
 .gt-slatemeta b{color:var(--text);font-weight:700}
 .gt-slatemeta .gt-sig{color:var(--bet);font-weight:700}
+.gt-slatemeta .gt-leanct{color:var(--lean);font-weight:700}
 .gt-dayrec{display:flex;gap:8px;align-items:center;flex-wrap:wrap;justify-content:flex-end;white-space:nowrap}
 .gt-rec{font-size:11.5px;border:1px solid var(--line);border-radius:4px;padding:4px 11px;color:var(--text);font-variant-numeric:tabular-nums}
 .gt-rec b{font-weight:700;letter-spacing:.03em;margin-right:5px}
@@ -990,6 +1088,7 @@ footer{margin-top:30px;color:var(--muted);font-size:11.5px;text-align:center}
       <button class="ghost act-sec" id="previewBtn" title="Free — runs the model on tonight's probable starters using MLB stats only. Shows projected K, no lines, no credits, nothing saved.">Preview</button>
       <button class="ghost act-m" id="gradeTodayBtn" title="Fetch final strikeout totals and fill in results inline on the games below.">Results</button>
       <button class="ghost act-sec" id="esp32Btn" title="Downloads esp32_picks.json — only today's Value + Conviction picks with live game status and actual strikeouts, ready for the ESP32 to fetch.">Export ESP32</button>
+      <button class="ghost act-sec" id="railToggle" title="Show / hide your Tracked Bets panel">◱ Tracked bets</button>
     </div>
     <div class="infopanel" id="infoPanel">
       <div class="ip-top">
@@ -1006,14 +1105,10 @@ footer{margin-top:30px;color:var(--muted);font-size:11.5px;text-align:center}
   <div id="perfCard" class="card hidden">
     <div id="perfStatus" class="perfstatus hidden"></div>
 
-    <h3>★ Forward test — the real one</h3>
-    <p class="muted small" style="color:var(--muted)">Three bets — all logged live at real prices. Each is graded on <b>ROI</b> (price-aware, so juiced and cheap tracks compare fairly), bar <b>ROI ≥ +5%</b>. You bet all three: <b>Value (Strong + ≤5.5)</b> over <b>30</b> picks, <b>Conviction</b> over <b>40</b>, <b>Overpower (Over + line ≥5.5)</b> over <b>40</b>. A track only proves it earns money once it clears +5% ROI over its sample. Only live picks count here.</p>
-    <div id="forwardTest"></div>
-    <div id="freeVsPaid"></div>
-
-    <h3 style="margin-top:32px">Recalibration — three lenses on each bet</h3>
-    <p class="muted small" style="color:var(--muted)"><b>Backfill</b> is in-sample — the gate was fit on this data, so it always looks good; it is <b>not</b> proof. <b>Forward</b> is the live, out-of-sample read since the gate went live (the honest one). <b>Real ＄ wagers</b> are ground truth — what you actually bet. Watch whether the three agree as the second half fills in.</p>
+    <h3>★ Forward test — three lenses on each bet</h3>
+    <p class="muted small" style="color:var(--muted)"><b>The three bets you place</b> — Value (Strong + ≤5.5) over 30 picks, Conviction over 40, Overpower over 40 — each proves out only at <b>ROI ≥ +5%</b> over its sample (only live picks count). Read across three lenses: <b>Backfill</b> is in-sample (the gate was fit on it, so it always looks good) — <b>not</b> proof. <b>Forward</b> is the live, out-of-sample read since the gate went live — the honest one. <b>Real ＄ wagers</b> are ground truth. Watch whether the three agree as the second half fills in.</p>
     <div id="recalCard"></div>
+    <div id="freeVsPaid" style="margin-top:14px"></div>
 
     <h3 style="margin-top:32px">Your three bets — full history</h3>
     <p class="muted small" style="color:var(--muted)">Hit rate or units on graded picks for the selected window — backfill included. Use the month chips or a custom range, then watch the weekly graph for consistency. <b>Backfill is in-sample; the forward test above is the honest read.</b></p>
@@ -1055,7 +1150,6 @@ footer{margin-top:30px;color:var(--muted);font-size:11.5px;text-align:center}
     </div>
 
     <div id="betSummary" class="betsummary"></div>
-    <div id="flagAgree"></div>
 
     <h3>Weekly hit rate</h3>
     <p class="muted small" style="color:var(--muted)">Each point is one week's hit rate for the window. The flat reference line is break-even (52.4% at -110). Steadier line = more consistent edge; a saw-tooth that dips below break-even is a signal leaning on hot streaks.</p>
@@ -1090,6 +1184,14 @@ footer{margin-top:30px;color:var(--muted);font-size:11.5px;text-align:center}
       <button class="ghost small" id="histRangeBtn">Backfill month (paid)</button>
       <span class="muted small" style="color:var(--muted)">Pulls one full month of real historical lines · 10 credits/game · confirms the month, then dry-runs the cost</span>
     </div>
+    <div class="customrange" id="timingABRange" style="margin:4px 0 8px;flex-wrap:wrap;gap:8px 12px;align-items:center">
+      <label>Timing A/B <select id="histABMonth"></select></label>
+      <label>Early snapshot <input id="histABEarly" type="number" min="4" max="14" step="1" value="9" style="width:52px"> h out</label>
+      <label>Sample cap <input id="histABMax" type="number" min="5" max="600" step="5" value="30" style="width:64px"> games</label>
+      <button class="ghost small" id="histABBtn">Run timing A/B (paid)</button>
+      <span class="muted small" style="color:var(--muted)">Pulls each sampled game at TWO snapshots — 3h (backfill standard) vs your early time — grades both on the same result, compares hit%/ROI/flips. 20 credits/game · read-only (never touches the backfill) · dry-runs the cost first. Start with a 30-game pilot.</span>
+    </div>
+    <div id="timingABResult"></div>
     <div id="keyPanel" class="resetpanel hidden">
       <div class="resetmsg">Paste a new Odds API key. It replaces the one saved in this browser.</div>
       <div class="keyrow" style="margin-top:10px">
@@ -1370,6 +1472,18 @@ const CONV_MIN_LINE=5.5;      // Conviction now requires line ≥5.5 (high-line 
                               // was dead weight (+6.7% Over). At ≥1.0 the bucket is
                               // 106-37 / +33% ROI and holds out-of-sample (2025 +27%,
                               // 2026 +40%). One constant feeds every Conviction gate.
+const LEAN_EDGE_MIN=0.15;     // LEAN watchlist floor — near-miss on the Value gate, NOT a bet.
+                              // Measured over the full 2025+2026 backfill (6,217 graded
+                              // starts). At line ≤5.5, by edge band:
+                              //   ≥20% (the BET gate)  241/355 = 67.9%
+                              //   15–20% (this band)   355/568 = 62.5%
+                              //   <15%                2384/4337 = 55.0%
+                              // The 15–20% step holds independently in both seasons
+                              // (2025 61.7% n=350 / 2026 63.8% n=218), so it is a real
+                              // tier and not a slice. Surfaced as its own Call state so
+                              // the almost-rows stop being buried in the PASS pile.
+                              // Nothing about a LEAN is logged, tracked, counted as a
+                              // signal, or fed to the forward test — display only.
 const MLB="https://statsapi.mlb.com/api/v1", ODDS="https://api.the-odds-api.com/v4";
 
 // ── SS: durable, roomy replacement for localStorage ─────────────────────────
@@ -1991,18 +2105,40 @@ function undoLastPull(){
   let undo; try{ undo=JSON.parse(raw); }catch{ SS.removeItem(UNDO_PULL_K); setStatus("Nothing to undo."); return; }
   const rec=loadDay(undo.date);
   if(!rec || !(rec.rows||[]).length){ SS.removeItem(UNDO_PULL_K); setStatus("Nothing to undo for that day."); return; }
-  const restore=(undo.rows||[]).filter(u=>u.prior).length;
-  const remove =(undo.rows||[]).filter(u=>!u.prior).length;
-  if(!confirm(`Undo last pull?\n\nReverts ${undo.rows.length} pitcher row(s) to their state before the pull`
-    +(remove?` (${restore} restored, ${remove} removed)`:"")+`. The logged line goes back to what it was.\n\nThis can't be redone.`)) return;
+  // BET-OF-RECORD GUARD. If you already logged a bet against the pull being undone,
+  // reverting the row rewrites the numbers that bet was placed on — the row silently
+  // reverts to the earlier pull's eK/edge and can LOSE its V/C/O flag, so My Bets and
+  // Today disagree and the flag no longer matches the bet. That is exactly what hit
+  // Zack Wheeler on 2026-07-27: pulled 2:50pm pre-lineup (edge 19.8%, no flag),
+  // re-pulled 4:32pm once the lineup posted (edge 30.8% = CONV), bet at 4:36pm, then
+  // an undo rolled the row back to the 2:50pm snapshot and the CONV flag vanished.
+  // A bet you actually placed outranks an undo, so those rows are kept, not reverted.
+  const _betSet=_loggedBetSet();
+  const _isBet=(u)=>{
+    const nm=(u.prior && u.prior.pitcher) || (()=>{ const c=(rec.rows||[]).find(r=>rowKey(r)===u.key); return c&&c.pitcher; })();
+    return !!(nm && _betSet.has((undo.date||"")+"|"+norm(nm)));
+  };
+  const protectedRows=(undo.rows||[]).filter(_isBet);
+  const undoRows=(undo.rows||[]).filter(u=>!_isBet(u));
+  if(!undoRows.length){
+    setStatus(`Nothing undone — every row in that pull has a logged bet (${protectedRows.map(u=>(u.prior&&u.prior.pitcher)||"?").join(", ")}). The bet of record wins.`);
+    return;
+  }
+  const restore=undoRows.filter(u=>u.prior).length;
+  const remove =undoRows.filter(u=>!u.prior).length;
+  if(!confirm(`Undo last pull?\n\nReverts ${undoRows.length} pitcher row(s) to their state before the pull`
+    +(remove?` (${restore} restored, ${remove} removed)`:"")+`. The logged line goes back to what it was.`
+    +(protectedRows.length?`\n\nKEEPING ${protectedRows.length} row(s) with a logged bet — ${protectedRows.map(u=>(u.prior&&u.prior.pitcher)||"?").join(", ")}. Undoing them would change the numbers your bet was placed on.`:"")
+    +`\n\nThis can't be redone.`)) return;
   const byKey={}; (rec.rows||[]).forEach(r=>{ byKey[rowKey(r)]=r; });
-  (undo.rows||[]).forEach(u=>{ if(u.prior) byKey[u.key]=u.prior; else delete byKey[u.key]; });
+  undoRows.forEach(u=>{ if(u.prior) byKey[u.key]=u.prior; else delete byKey[u.key]; });
   rec.rows=Object.values(byKey);
   saveDay(rec);
   SS.removeItem(UNDO_PULL_K);
   try{ renderToday(rec.rows); }catch(e){}
   try{ updateMetaStrip(); }catch(e){}
-  setStatus("Last pull undone.",1);
+  setStatus(`Last pull undone — ${undoRows.length} row(s) reverted.`
+    +(protectedRows.length?` Kept ${protectedRows.length} with a logged bet (${protectedRows.map(u=>(u.prior&&u.prior.pitcher)||"?").join(", ")}).`:""),1);
 }
 
 function savePulledDay(newRec){
@@ -2061,7 +2197,10 @@ function loadDay(d){const v=SS.getItem(dayKey(d));return v?JSON.parse(v):null;}
 // reminders prompt you to open it. Guards: opt-in, in-window only, once per game
 // (skips already-pulled), credit floor, debounced, never during a manual pull.
 let _lastAutoPull=0;
-function autoPullOn(){ return SS.getItem("se_autopull_on")==="1"; }
+// Auto-pull RETIRED: it fired independently on each device's foreground, so Mac +
+// iPhone double-pulled the same game (double credit spend). Pull manually after the
+// reminder instead. Reminders/notifications are unaffected. (autoPullDue is now inert.)
+function autoPullOn(){ return false; }
 // Shared clustering (reminders + auto-pull MUST agree): a game joins the current
 // cluster if it starts within 90 min of that cluster's FIRST game; else a new one.
 function _gameClusters(games){
@@ -2236,6 +2375,13 @@ function setStatus(t,frac){
 }
 function edgeColor(e){return e==null?"var(--muted)":e>=0.05?"var(--pos)":e<=-0.05?"var(--neg)":"var(--text)";}
 
+// Rail state — MUST be declared above the top-level showMain() call below. These
+// used to live ~1100 lines further down, so the boot path (showMain →
+// updateMetaStrip → renderRail) hit them in the temporal dead zone and the rail
+// threw "Cannot access '_perfRailWin' before initialization" on every launch,
+// leaving the perf rail empty until some later re-render fixed it.
+let _perfRailWin="test";  // rail performance window: test | 7 | month | season | alltime
+let _perfRailMonth=todayISO().slice(0,7);  // "YYYY-MM" for the Month view
 function showMain(){$("setup").classList.add("hidden");$("main").classList.remove("hidden");updateMetaStrip();}
 // The phone/PWA is a view + sync + log-bets client — it never pulls odds (staging is
 // Mac-only), so it must NOT be blocked by the Odds-key setup screen. "Native Mac app"
@@ -2412,7 +2558,7 @@ function showTab(which){
   // and hide the Today card. Desktop never reaches this branch (tab is hidden).
   const railEl=$("rail");
   if(railEl) railEl.classList.toggle("rail-astab", which==="Tracked");
-  { const _ag=document.querySelector(".appgrid"); if(_ag) _ag.classList.toggle("rail-on", which==="Today"); }
+  { const _ag=document.querySelector(".appgrid"); if(_ag){ _ag.classList.toggle("rail-on", which==="Today"); if(which!=="Today") _ag.classList.remove("rail-open"); } }
   if(which==="Tracked"){ const tc=$("todayCard"); if(tc) tc.classList.add("hidden"); }
   // sync top nav highlight
   document.querySelectorAll(".tnav").forEach(b=>{
@@ -2422,6 +2568,19 @@ function showTab(which){
   try{ if(which==="Today"){ startLiveUpdates(); refreshLiveStatus(); } else { stopLiveUpdates(); } }catch(e){}
   try{ renderRail(); }catch(e){ console.error("rail failed:",e); }
 }
+// Tracked-bets popover toggle — full-width slate; the rail shows as an overlay on demand.
+(function(){
+  const btn=$("railToggle"); if(!btn) return;
+  const ag=document.querySelector(".appgrid");
+  btn.onclick=(e)=>{ e.stopPropagation(); if(!ag) return;
+    const open=ag.classList.toggle("rail-open");
+    if(open){ try{ renderRail(); }catch(_){} } };
+  document.addEventListener("click",(e)=>{
+    if(!ag || !ag.classList.contains("rail-open")) return;
+    if(e.target.closest("#rail") || e.target.closest("#railToggle")) return;
+    ag.classList.remove("rail-open");
+  });
+})();
 // top nav buttons
 document.querySelectorAll(".tnav").forEach(b=>{
   b.onclick=()=>{
@@ -2469,8 +2628,8 @@ if(_hasReminderBridge()){
 }
 // Auto-pull settings (all surfaces — it runs on app open/focus, no bridge needed).
 { const on=$("apOn");
-  if(on){ on.checked=autoPullOn();
-    on.onchange=function(){ SS.setItem("se_autopull_on", this.checked?"1":"0"); if(this.checked){ try{autoPullDue();}catch(e){} } }; }
+  if(on){ on.checked=false; on.disabled=true; SS.setItem("se_autopull_on","0");
+    on.title="Auto-pull retired — it double-pulled across Mac + iPhone. Pull manually after the reminder."; }
 }
 $("tabPerf") && ($("tabPerf").onclick=()=>{showTab("Perf");try{renderPerf();}catch(e){console.error(e);}});
 $("tabData") && ($("tabData").onclick=()=>{showTab("Data");try{renderData();}catch(e){console.error("renderData failed:",e);}});
@@ -2548,6 +2707,24 @@ document.querySelectorAll&&(function(){
     for(let i=0;i<24;i++){ opts+=`<option value="${y}-${String(m).padStart(2,"0")}">${nm[m-1]} ${y}</option>`; m--; if(m<1){m=12;y--;} }
     sel.innerHTML=opts;
   })($("histRangeMonth"));
+  // Timing A/B — same month picker, plus early-offset + sample-cap inputs
+  $("histABBtn") && ($("histABBtn").onclick=()=>{
+    const mv=$("histABMonth")&&$("histABMonth").value;
+    if(!mv || !/^\d{4}-\d{2}$/.test(mv)){ alert("Pick a month for the A/B."); return; }
+    const eh=parseInt($("histABEarly")&&$("histABEarly").value,10);
+    const mg=parseInt($("histABMax")&&$("histABMax").value,10);
+    if(isNaN(eh)||eh<4||eh>14){ alert("Early snapshot must be 4–14 hours before first pitch."); return; }
+    if(isNaN(mg)||mg<5||mg>600){ alert("Sample cap must be 5–600 games."); return; }
+    const [y,m]=mv.split("-").map(Number);
+    const from=`${mv}-01`, last=new Date(y,m,0).getDate(), to=`${mv}-${String(last).padStart(2,"0")}`;
+    runTimingAB(from,to,eh,mg);
+  });
+  $("histABMonth") && (function(sel){
+    const nm=["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+    let y=+todayISO().slice(0,4), m=+todayISO().slice(5,7), opts="";
+    for(let i=0;i<24;i++){ opts+=`<option value="${y}-${String(m).padStart(2,"0")}">${nm[m-1]} ${y}</option>`; m--; if(m<1){m=12;y--;} }
+    sel.innerHTML=opts;
+  })($("histABMonth"));
   const mt=$("metricToggle");
   if(mt) mt.querySelectorAll("[data-metric]").forEach(b=>b.onclick=()=>{
     _perfMetric=b.dataset.metric;
@@ -2657,6 +2834,40 @@ function startLiveUpdates(){
 }
 function stopLiveUpdates(){ if(_liveTimer){ clearInterval(_liveTimer); _liveTimer=null; } }
 
+// Recent-K sparkline for the Today expand panel. Lazy + cached: fetches a pitcher's
+// game log (free MLB StatsAPI, no credits) only when a row is first opened, then draws
+// the last 8 starts' K totals with the current line as a dashed threshold.
+const _sparkCache={};
+async function loadRowSpark(box){
+  if(!box || box.dataset.loaded) return; box.dataset.loaded="1";
+  const pid=box.dataset.pid, season=box.dataset.season;
+  const line=box.dataset.line!==""?parseFloat(box.dataset.line):null;
+  const slot=box.querySelector(".gt-rsslot"); if(!slot) return;
+  try{
+    const key=pid+"|"+season;
+    let ks=_sparkCache[key];
+    if(!ks){
+      const splits=await pitcherGameLog(pid, season);
+      ks=(splits||[]).map(sp=>Number(sp.stat && sp.stat.strikeOuts)).filter(v=>!isNaN(v));
+      _sparkCache[key]=ks;
+    }
+    ks=ks.slice(-8);
+    if(ks.length) slot.innerHTML = todaySparkInline(ks,line);
+  }catch(e){ box.dataset.loaded=""; }
+}
+function todaySparkInline(ks,line){
+  const w=112,h=24,ref=(line!=null?ks.concat(line):ks);
+  const min=Math.min(...ref)-.5, max=Math.max(...ref)+.5, rng=(max-min)||1;
+  const X=i=>2+i/(Math.max(1,ks.length-1))*(w-4), Y=v=>h-3-(v-min)/rng*(h-6);
+  const poly=ks.map((v,i)=>`${X(i).toFixed(1)},${Y(v).toFixed(1)}`).join(" ");
+  let thr="";
+  if(line!=null){ const y=Y(line).toFixed(1);
+    thr=`<line x1="2" y1="${y}" x2="${w-2}" y2="${y}" stroke="var(--faint)" stroke-width="1" stroke-dasharray="2 2"/>`; }
+  const avg=ks.reduce((a,b)=>a+b,0)/ks.length;
+  const dots=ks.map((v,i)=>{ const over=line!=null? v>line : v>=avg;
+    return `<circle cx="${X(i).toFixed(1)}" cy="${Y(v).toFixed(1)}" r="1.7" fill="${over?'var(--pos)':'var(--neg)'}"><title>${v}K</title></circle>`; }).join("");
+  return `<svg viewBox="0 0 ${w} ${h}" width="${w}" height="${h}" style="display:block">${thr}<polyline points="${poly}" fill="none" stroke="var(--muted)" stroke-width="1.2" opacity=".65"/>${dots}</svg>`;
+}
 function renderToday(rows){
   rows = rows || [];
   rehydrateBooks(_loadedDate||todayISO(), rows);  // restore "books ▾" data for the session
@@ -2710,6 +2921,11 @@ function renderToday(rows){
   const flaggedNames = new Set();
   rows.forEach(r=>{ if(r._verdict && (r._verdict.isCombo||r._verdict.isConvOver||r._verdict.isCeiling)) flaggedNames.add(r.pitcher); });
   const passCount = Math.max(0, modeledCount - flaggedNames.size);
+  // LEAN = modeled, unflagged, but a near-miss on the Value edge bar. Watchlist only —
+  // deliberately NOT added to flaggedNames / passCount, so no bet count changes.
+  const leanCount = rows.filter(r=>!r.skipped && r.resolved && r.eK!=null
+    && !(r._verdict && (r._verdict.isCombo||r._verdict.isConvOver||r._verdict.isCeiling))
+    && isLeanRow(r)).length;
   let summary=`<div class="statstrip" id="statStrip">`+
     `<div class="ss-cell ss-click" data-pick="combo"><div class="ss-n" style="color:var(--bet)">${comboCount}</div><div class="ss-l">Value</div></div>`+
     `<div class="ss-cell ss-click" data-pick="conv"><div class="ss-n" style="color:var(--accent)">${convCount}</div><div class="ss-l">Conviction</div></div>`+
@@ -2775,10 +2991,11 @@ function renderToday(rows){
   // signals live = unique pitchers currently flagged Value/Conviction/Overpower.
   const nStarters = _stageGames.length * 2;
   const nSignals = flaggedNames.size;
-  const slateMeta = `<div class="gt-slatemeta"><b>${nStarters}</b> starters · <span class="gt-sig">${nSignals}</span> signal${nSignals===1?"":"s"} live</div>`;
+  const slateMeta = `<div class="gt-slatemeta"><b>${nStarters}</b> starters · <span class="gt-sig">${nSignals}</span> signal${nSignals===1?"":"s"} live`+
+    (leanCount?` · <span class="gt-leanct" title="Near-misses on the Value edge bar — watchlist, not bets.">${leanCount} lean${leanCount===1?"":"s"}</span>`:"")+`</div>`;
   let tbl=`<div class="gamestbl">`+
     `<div class="gt-head"><div class="gt-title">Tonight's Slate</div><div class="gt-headright">${slateMeta}${dayRecHTML}</div></div>`+
-    `<div class="gt-row gt-colhead"><span title="Track on ESP">●</span><span>Team</span><span>Pitcher</span><span>Line</span><span>Model</span><span>Edge</span><span>Pick</span></div>`;
+    `<div class="ts-colhead"><span>Call</span><span>Pitcher · matchup</span><span>Recent K</span><span class="r">Line</span><span class="r">Model</span><span class="r">Edge</span><span>Flags</span><span class="r">Action</span></div>`;
 
   _stageGames.forEach((g,i)=>{
     const gk=norm(g.homeTeam)+"|"+norm(g.awayTeam);
@@ -2793,22 +3010,11 @@ function renderToday(rows){
     const pulledAt = gRows[0] && gRows[0].pulledAtLocal ? gRows[0].pulledAtLocal : null;
     const anyPulledGame = gRows.some(r=>r.resolved);
 
-    // Phone-only game header: hoists time + pulled + ⋯Pull (and the Re-pull/Watch
-    // buttons it reveals) ABOVE both pitcher cards, so the two cards are uniform
-    // and the header doubles as a divider between games. Hidden on desktop, where
-    // time stays an in-row column. data-pull/data-watch wiring is unaffected —
-    // the buttons live here now instead of in the j===0 row.
-    const ghTime = `${time}${anyPulledGame?' <span class="gt-okcheck" title="Official Odds API pull logged — bet of record.">✓</span>':''}`;
-    const ghPulled = pulledAt ? `<span class="gt-gh-pulled${anyPulledGame?' gt-pulled-ok':''}">pulled ${pulledAt}</span>` : "";
-    const ghPull = !settled
-      ? `<button class="gt-pulltoggle" type="button" title="Show Re-pull / Watch">⋯ Pull</button>`+
-        `<div class="gt-pullbtns">`+
-          `<button class="gt-official${anyPulledGame?' gt-official-re':''}" data-pull="${i}" title="${anyPulledGame?'Re-pull with the Odds API — spends another credit, updates the logged line.':'Odds API — spends 1 credit, logs the bet of record, counts toward the forward test.'}">⬡ ${anyPulledGame?'Re-pull':'Official'}</button>`+
-          (!started?`<button class="gt-watch1" data-watch="${i}" title="SharpAPI — free live DK/FD line, nothing saved, not the bet of record.">✱ Watch</button>`:"")+
-        `</div>`
-      : "";
-    const ghMatch = `${(teamInfo(g.awayTeam)[0])||"?"} @ ${(teamInfo(g.homeTeam)[0])||"?"}`;
-    tbl+=`<div class="gt-gamehead"><div class="gt-gh-top"><span class="gt-gh-match">${ghMatch}</span><span class="gt-gh-time">${ghTime}</span>${ghPulled}</div>${ghPull}</div>`;
+    // Per-game action buttons (pull is per game; rendered on each starter row).
+    const gameActions = !settled
+      ? `<button class="gt-official${anyPulledGame?' gt-official-re':''}" data-pull="${i}" title="${anyPulledGame?'Re-pull with the Odds API — spends another credit, updates the logged line.':'Odds API — spends 1 credit, logs the bet of record, counts toward the forward test.'}">⬡ ${anyPulledGame?'Re-pull':'Pull'}</button>`+
+        (!started?`<button class="gt-watch1" data-watch="${i}" title="SharpAPI — free live DK/FD line, nothing saved, not the bet of record.">✱ Watch</button>`:"")
+      : (anyPulledGame?`<span class="ts-pulled" title="Official pull logged — bet of record.">✓ ${pulledAt||"pulled"}</span>`:"");
 
     // Always two slots for uniformity: away starter, then home starter.
     const slots = [
@@ -2851,7 +3057,25 @@ function renderToday(rows){
         const watchDrift = (r._watchLine!=null && r._watchLine!==r.line)
           ? ` <span class="gt-watchdrift" title="Live DK/FD line right now (your official pull was ${r.line}).">✱${r._watchLine}</span>`
           : (r._watchLine!=null ? ` <span class="gt-watchdrift" title="Live DK/FD line matches your pull.">✱=</span>` : "");
-        lineCell=`<b>${r.line}</b>${watchDrift}${pxStr?`<br><small>${pxStr}</small>`:""}`;
+        // Pull time rides on the EXISTING <small> sub-line next to the price, so it
+        // adds no new line box and cannot change row height (the Edge column already
+        // renders two lines on every pulled row, so 2-line cells are the norm here).
+        // "6:42 PM" -> "6:42p" to stay inside the 90px Line column: worst realistic
+        // case "-136 · 10:09a" is 13 mono chars ≈ 70px. Per-row, not per-game, because
+        // games really are pulled hours apart (8:11a … 3:36p on 2026-07-25).
+        // Guard the SHAPE, not just the presence: two stored rows (2026-07-10 Sonny Gray /
+        // Chris Sale) have free-text notes sitting in pulledAtLocal ("7.5 line (moved to
+        // 6.5 at bet)"), which would render 200px wide and blow the column apart. Only a
+        // literal clock time is allowed through; anything else renders nothing.
+        const _ptRaw = r.pulledAtLocal!=null ? String(r.pulledAtLocal) : "";
+        const ptShort = /^\d{1,2}:\d{2}\s*[AP]M$/i.test(_ptRaw)
+          ? _ptRaw.replace(/\s*([AP])M$/i,(m,g)=>g.toLowerCase())
+          : "";
+        const ptTag = ptShort
+          ? `<span class="ts-pt" title="Line pulled at ${r.pulledAtLocal} ET — this is the locked bet of record.">${ptShort}</span>`
+          : "";
+        const lineSub = pxStr && ptTag ? `${pxStr} · ${ptTag}` : (pxStr || ptTag);
+        lineCell=`<b>${r.line}</b>${watchDrift}${lineSub?`<br><small>${lineSub}</small>`:""}`;
         modelCell=r.eK.toFixed(1);
         edgeCell=`<span style="color:${edgeColC}"><b>${edgeK>=0?"+":""}${edgeK.toFixed(1)}</b><br><small>${fmtSigned(r.edge)}</small></span>`;
         if(r.voided) pickCell=`<span class="gt-pick gt-void">VOID</span>`;
@@ -2926,18 +3150,27 @@ function renderToday(rows){
         } else pickCell=`<span class="gt-pick gt-pass">—</span>`;
       }
 
-      // why-flagged explainer (only when there's a real modeled/skipped row to explain)
-      let whyIcon="";
+      // Click-to-expand gate breakdown (replaces the old "i" popover — same whyFlag()
+      // data, shown inline). Also holds a lazy recent-K sparkline, fetched on first
+      // open (free MLB game-log, no credits). Emitted as a panel after the row below.
+      let whyIcon="", detailHTML="", caret="", rowSpark="";
+      const detId="gtd_"+i+"_"+j;
       if(r){
         const wf=whyFlag(r);
         const checkRow=(c)=>`<div class="why-chk ${c.pass?'ok':'no'}">${c.pass?'✓':'✗'} ${c.label}</div>`;
         let inner=`<div class="why-sum">${wf.summary}</div>`;
         if(wf.comboChecks){
-          inner+=`<div class="why-grp"><div class="why-grp-h" style="color:var(--bet)">VALUE needs both</div>${wf.comboChecks.map(checkRow).join("")}</div>`;
-          inner+=`<div class="why-grp"><div class="why-grp-h" style="color:var(--accent)">CONVICTION needs all</div>${wf.convChecks.map(checkRow).join("")}</div>`;
-          if(wf.ceilChecks) inner+=`<div class="why-grp"><div class="why-grp-h" style="color:var(--ceiling)">OVERPOWER needs both</div>${wf.ceilChecks.map(checkRow).join("")}</div>`;
+          inner+=`<div class="why-grp"><div class="why-grp-h" style="color:var(--bet)">VALUE · needs both</div>${wf.comboChecks.map(checkRow).join("")}</div>`;
+          inner+=`<div class="why-grp"><div class="why-grp-h" style="color:var(--accent)">CONVICTION · needs all</div>${wf.convChecks.map(checkRow).join("")}</div>`;
+          if(wf.ceilChecks) inner+=`<div class="why-grp"><div class="why-grp-h" style="color:var(--ceiling)">OVERPOWER · needs both</div>${wf.ceilChecks.map(checkRow).join("")}</div>`;
         }
-        whyIcon=`<span class="why-wrap"><button class="why-i" type="button" title="Why flagged?">i</button><span class="why-pop">${inner}</span></span>`;
+        detailHTML=`<div class="gt-detail" id="${detId}"><div class="gt-detin">${inner}</div></div>`;
+        // inline recent-K sparkline next to the name (lazy-filled after render, cached)
+        rowSpark=(r.pid!=null && !r.skipped)
+          ? `<span class="gt-rowspark" data-pid="${r.pid}" data-line="${r.line!=null?r.line:''}" data-season="${Number((_loadedDate||todayISO()).slice(0,4))}"><span class="gt-rsslot"></span></span>`
+          : "";
+        caret=`<span class="gt-caret">▸</span>`;
+        rowCls+=" gt-expandable";
       }
       // per-book breakdown toggle (live pull only — _books not persisted)
       let booksToggle="", booksPanel="";
@@ -2948,30 +3181,60 @@ function renderToday(rows){
       }
       // ESP track checkbox — exportable rows have a pitcher + line + pid
       const _trkExportable = !!(r && !r.skipped && r.line!=null && r.pid!=null && r.modelSide);
-      let trkCell;
+      let trkCell, _manualCls="";
       if(_trkExportable){
         const tid=trackRowKey(r);
         const on=_trkSet.has(tid);
         const v0=r._verdict||{};
         const isModel=!!(v0.isCombo||v0.isConvOver);
-        if(on && !isModel) rowCls+=" gt-manual";
+        // hand-tracked row (not a model pick) — the checkbox handler toggles this
+        // same class live, so it must also be present on first render.
+        if(on && !isModel) _manualCls=" gt-manual";
         trkCell=`<span class="gt-trk"><input type="checkbox" data-trk="${tid}" ${on?"checked":""} title="Track this pitcher on the ESP"></span>`;
       } else {
         trkCell=`<span class="gt-trk"><input type="checkbox" disabled title="No line to track"></span>`;
       }
 
-      tbl+=`<div class="${rowCls}">`+
-        trkCell+
-        `<span class="gt-time gt-time-stack">${timeCell}</span>`+
-        `<span class="gt-match">${matchCell}</span>`+
-        `<span class="gt-pitch"><span class="gt-pname">${pitchCell}</span>${booksToggle}${(r && r.pid!=null && !r.skipped && (r.homeName||r.awayName))?`<span class="gt-live" data-pid="${r.pid}" data-home="${(r.homeName||'').replace(/"/g,'&quot;')}" data-away="${(r.awayName||'').replace(/"/g,'&quot;')}" data-line="${r.line!=null?r.line:''}" data-side="${r.modelSide||''}"></span>`:""}</span>`+
-        `<span class="gt-statwrap">`+
-        `<span class="gt-num" data-mlabel="Line">${lineCell}</span>`+
-        `<span class="gt-num" data-mlabel="Model">${modelCell}</span>`+
-        `<span class="gt-num" data-mlabel="Edge">${edgeCell}</span>`+
-        `</span>`+
-        `<span class="gt-pickcell">${pickCell}${whyIcon}${(r && r.resolved && r.modelSide && !r.skipped)?(()=>{const _lg=betIsLogged(_logged,_tDate,r.pitcher);return `<button class="gt-logbet${_lg?' logged':''}" title="${_lg?'Bet already logged for this pitcher — click to add another':'Log a bet you placed on this pitcher'}" data-bd="${_tDate}" data-bp="${(r.pitcher||'').replace(/"/g,'&quot;')}" data-bs="${r.modelSide}" data-bl="${r.line!=null?r.line:''}" data-bpr="${(r.sidePrice!=null?r.sidePrice:(r.modelSide==='Over'?r.bestOver:r.bestUnder))??''}" data-bcombo="${(r._verdict&&r._verdict.isCombo)?1:0}" data-bconv="${(r._verdict&&r._verdict.isConvOver)?1:0}" data-bceil="${(r._verdict&&r._verdict.isCeiling)?1:0}" data-bek="${r.eK!=null?r.eK:''}" data-bedge="${r.edge!=null?r.edge:''}" data-bopp="${r.oppSource||''}" data-bkt="${(r.traits&&r.traits.kTier)||''}" data-bwl="${(r.traits&&r.traits.workload)||''}">${_lg?'✓＄':'＄'}</button>`;})():""}</span></div>`+
-        booksPanel;
+      // ---- CALL badge + V/C/O flags, derived from the same state as above ----
+      let callTxt="—", callCls="none", fV=false,fC=false,fO=false;
+      if(r && r.skipped){ callTxt="BULLPEN"; callCls="none"; }
+      else if(r && r.resolved && r.eK!=null){
+        const v=r._verdict||{}; fV=!!v.isCombo; fC=!!v.isConvOver; fO=!!v.isCeiling;
+        if(r.voided){ callTxt="VOID"; callCls="none"; }
+        else if(r.actualK!=null){ callTxt=r.hit?`WON · ${r.actualK}K`:`LOST · ${r.actualK}K`; callCls=r.hit?"won":"lost"; }
+        else if(fV||fC||fO){ callTxt="BET"; callCls="bet"; }
+        // near-miss on the Value edge bar → watchlist, not a bet
+        else if(isLeanRow(r)){ callTxt="LEAN"; callCls="lean"; }
+        else { callTxt="PASS"; callCls="pass"; }
+      }
+      else if(r && r.resolved){ callTxt="NO MODEL"; callCls="none"; }
+      else if(r && r._watchLine!=null){ fV=!!r._watchCombo; fC=!!r._watchConv; fO=!!r._watchCeil; callTxt="WATCH"; callCls="watch"; }
+      else { callTxt = settled?"FINAL":(started?"LIVE":"—"); callCls="none"; }
+      // dot colour follows the CALL: BET green, LEAN hollow gold, PASS grey, watch grey, won/lost, else dim.
+      // PASS moved off its old faint yellow (#c9b45a) when LEAN took gold — two
+      // adjacent yellows was unreadable, and PASS is the row you should NOT look at.
+      const _dotCol={bet:"var(--pos)",lean:"var(--lean)",pass:"var(--faint)",watch:"var(--watch)",won:"var(--pos)",lost:"var(--neg)"}[callCls]||"var(--faint)";
+      const _callCol={bet:"var(--pos)",lean:"var(--lean)",pass:"var(--muted)",watch:"var(--watch)",won:"var(--pos)",lost:"var(--neg)"}[callCls]||"var(--faint)";
+      const _myAb=(teamInfo(slot.side==="away"?g.awayTeam:g.homeTeam)[0])||"";
+      const _opAb=(teamInfo(slot.side==="away"?g.homeTeam:g.awayTeam)[0])||"";
+      const _match=`${_myAb} <span class="ts-at">${slot.side==="away"?"@":"vs"}</span> ${_opAb} · ${time}`;
+      const _pname=(r&&r.pitcher)||slot.name||"TBD";
+      const _dim=(!(r&&(r.resolved||r._watchLine!=null)))||(r&&r.skipped);
+      const _acc=fV?" ts-acc-v":fC?" ts-acc-c":fO?" ts-acc-o":(callCls==="lean"?" ts-acc-l":"");
+      const _flags=`<span class="ts-flags"><span class="ts-fl v ${fV?'on':''}">V</span><span class="ts-fl c ${fC?'on':''}">C</span><span class="ts-fl o ${fO?'on':''}">O</span></span>`;
+      const _live=(r && r.pid!=null && !r.skipped && (r.homeName||r.awayName))?`<span class="gt-live" data-pid="${r.pid}" data-home="${(r.homeName||'').replace(/"/g,'&quot;')}" data-away="${(r.awayName||'').replace(/"/g,'&quot;')}" data-line="${r.line!=null?r.line:''}" data-side="${r.modelSide||''}"></span>`:"";
+      const _dollar=(r && r.resolved && r.modelSide && !r.skipped)?(()=>{const _lg=betIsLogged(_logged,_tDate,r.pitcher);return `<button class="gt-logbet${_lg?' logged':''}" title="${_lg?'Bet already logged for this pitcher — click to add another':'Log a bet you placed on this pitcher'}" data-bd="${_tDate}" data-bp="${(r.pitcher||'').replace(/"/g,'&quot;')}" data-bs="${r.modelSide}" data-bl="${r.line!=null?r.line:''}" data-bpr="${(r.sidePrice!=null?r.sidePrice:(r.modelSide==='Over'?r.bestOver:r.bestUnder))??''}" data-bcombo="${(r._verdict&&r._verdict.isCombo)?1:0}" data-bconv="${(r._verdict&&r._verdict.isConvOver)?1:0}" data-bceil="${(r._verdict&&r._verdict.isCeiling)?1:0}" data-bek="${r.eK!=null?r.eK:''}" data-bedge="${r.edge!=null?r.edge:''}" data-bopp="${r.oppSource||''}" data-bkt="${(r.traits&&r.traits.kTier)||''}" data-bwl="${(r.traits&&r.traits.workload)||''}">${_lg?'✓＄':'＄'}</button>`;})():"";
+
+      tbl+=`<div class="gt-row ts-row${_acc}${_manualCls}${r?' gt-expandable':''}" data-det="${detId}">`+
+        `<span class="ts-call"><span class="ts-dot${callCls==="lean"?" lean":""}" style="background:${_dotCol}"></span><span class="ts-badge" style="color:${_callCol}">${callTxt}</span></span>`+
+        `<span class="ts-pn">${caret}<span class="ts-nm${_dim?' dim':''}">${_pname}</span><span class="ts-mt">${_match}${_live}${booksToggle}</span></span>`+
+        `<span class="ts-spark">${rowSpark}</span>`+
+        `<span class="ts-line">${lineCell}</span>`+
+        `<span class="ts-model">${modelCell}</span>`+
+        `<span class="ts-edge">${edgeCell}</span>`+
+        _flags+
+        `<span class="ts-act">${gameActions}${_dollar}${trkCell}</span>`+
+        `</div>`+detailHTML+booksPanel;
     });
   });
   tbl+=`</div>`;
@@ -2988,6 +3251,14 @@ function renderToday(rows){
     const g=_stageGames[Number(b.dataset.watch)];
     watchOneGame(g);
   });
+  // click a pitcher row to expand its gate breakdown
+  board.querySelectorAll(".gt-row.gt-expandable").forEach(row=>row.addEventListener("click",e=>{
+    if(e.target.closest("button, input, a, label, select, .gt-books-t")) return;   // let controls do their own thing
+    const d=document.getElementById(row.dataset.det); if(!d) return;
+    const open=row.classList.toggle("gt-open"); d.classList.toggle("open",open);
+  }));
+  // fill the inline recent-K sparklines (free MLB game-log, cached, non-blocking)
+  board.querySelectorAll(".gt-rowspark").forEach(loadRowSpark);
   // per-game pull toggle (phone): reveal/hide Re-pull + Watch in the game header
   board.querySelectorAll(".gt-pulltoggle").forEach(b=>b.onclick=(e)=>{
     e.stopPropagation();
@@ -3263,8 +3534,6 @@ function renderPreview(){
 }
 
 
-let _perfRailWin="test";  // rail performance window: test | 7 | month | season | alltime
-let _perfRailMonth=todayISO().slice(0,7);  // "YYYY-MM" for the Month view
 function railMonthLabel(ym){ const [y,m]=ym.split("-").map(Number); return ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"][(m||1)-1]+" "+y; }
 function shiftRailMonth(delta){ let [y,m]=_perfRailMonth.split("-").map(Number); m+=delta; if(m<1){m=12;y--;} if(m>12){m=1;y++;} _perfRailMonth=y+"-"+String(m).padStart(2,"0"); try{ renderRail(); }catch(e){} }
 let _railMetric="units";  // right-rail metric: units | roi
@@ -3938,6 +4207,233 @@ function dl(text,name,type){
     const a=document.createElement("a"); a.href=url; a.download=name; document.body.appendChild(a);
     a.click(); a.remove(); setTimeout(()=>URL.revokeObjectURL(url),2000);
   }catch(e){ console.error("download failed",e); }
+}
+
+// ===========================================================================
+//  TIMING A/B — does WHEN you lock the line change the result?
+//  For each sampled game, pull TWO historical snapshots — the backfill standard
+//  (3h before first pitch) and an EARLY one (configurable, e.g. 9h) — score the
+//  model's pick at each, grade both on the SAME actual K total, and compare
+//  hit%, ROI, side-flips and line drift. READ-ONLY: never writes to the day
+//  store, so the validated T-3h backfill dataset stays clean. Reuses
+//  scoreHistGame() unchanged — only the snapshot timestamp differs.
+// ===========================================================================
+function histSnapISOAt(firstPitchMs, offsetMs){
+  let t=firstPitchMs-offsetMs;
+  const now=Date.now()-6*60*1000;                 // never request newer than ~6 min ago
+  if(t>now) t=now;
+  return new Date(t).toISOString().replace(/\.\d{3}Z$/,"Z");
+}
+// even-stride sample so a cap doesn't bias toward the start of the range
+function sampleEven(arr,k){
+  if(arr.length<=k) return arr.slice();
+  const out=[], step=arr.length/k;
+  for(let i=0;i<k;i++) out.push(arr[Math.floor(i*step)]);
+  return out;
+}
+const _abUnits=r=> (r.hit==null||r.sidePrice==null)?null:(r.hit?(r.sidePrice>0?r.sidePrice/100:100/(-r.sidePrice)):-1);
+const _abKey =r=> r.pid!=null ? "p"+r.pid : "n"+norm(r.pitcher);
+let _timingABRaw=[];
+async function runTimingAB(fromISO,toISO,earlyHours,maxGames){
+  const key=getKey();
+  if(!key){ alert("Set your Odds API key first (Past Days → Change key)."); return; }
+  setStatus("Counting games in range (free)…",0.1);
+  let games;
+  try{ games=await histRangeGames(fromISO,toISO); }
+  catch(e){ setStatus("Couldn't load schedule: "+e.message); return; }
+  if(!games.length){ alert("No games found in that range."); return; }
+  const picked=sampleEven(games, maxGames), earlyMs=earlyHours*3600*1000;
+  const estCredits=picked.length*2*HIST_PROP_COST, bal=Number(getCredits()||0);
+  const ok=confirm(
+    `Timing A/B — DRY RUN\n\n`+
+    `Range: ${fromISO} → ${toISO}\n`+
+    `Games in range: ${games.length}\n`+
+    `Sampled (even spread): ${picked.length}\n`+
+    `Snapshots per game: 2  (3h standard + ${earlyHours}h early)\n\n`+
+    `COST: ${picked.length} × 2 × ${HIST_PROP_COST} = ~${estCredits.toLocaleString()} credits\n`+
+    (bal?`You have: ${bal.toLocaleString()} credits\n`:``)+
+    `\nREAD-ONLY — does NOT save to Past Days / backfill.\n`+
+    `Games with no line at a snapshot are skipped for that side.\n\n`+
+    `Proceed and spend credits?`);
+  if(!ok){ setStatus("Timing A/B cancelled — no credits spent."); return; }
+
+  _timingABRaw=[];
+  const pairs=[];
+  let done=0, earlyMissing=0, stdMissing=0, lastRemaining=null;
+  const btn=$("histABBtn"); if(btn) btn.disabled=true;
+  _longRunActive=setStatus;
+  try{
+    const byDate={}; picked.forEach(g=>(byDate[g.date]=byDate[g.date]||[]).push(g));
+    for(const date of Object.keys(byDate).sort()){
+      const season=Number(date.slice(0,4));
+      let probList=[]; try{ probList=await fetchProbables(date); }catch(e){}
+      for(const hg of byDate[date]){
+        done++;
+        setStatus(`A/B ${date} — ${hg.away} @ ${hg.home} (${done}/${picked.length})`, done/picked.length);
+        if(done>1) await sleep(250);
+        const fpMs=new Date(hg.firstPitchISO).getTime();
+        const earlyHg={...hg, snapISO:histSnapISOAt(fpMs, earlyMs)};
+        let stdRes, earlyRes;
+        try{ stdRes=await scoreHistGame(key, hg, probList, season); }catch(e){ continue; }
+        if(stdRes.remaining!=null){ lastRemaining=stdRes.remaining; setCredits(stdRes.remaining); }
+        await sleep(250);
+        try{ earlyRes=await scoreHistGame(key, earlyHg, probList, season); }catch(e){ earlyRes={rows:[]}; }
+        if(earlyRes.remaining!=null){ lastRemaining=earlyRes.remaining; setCredits(earlyRes.remaining); }
+        const stdMap={}, earlyMap={};
+        (stdRes.rows||[]).forEach(r=>{ if(r.modelSide) stdMap[_abKey(r)]=r; });
+        (earlyRes.rows||[]).forEach(r=>{ if(r.modelSide) earlyMap[_abKey(r)]=r; });
+        new Set([...Object.keys(stdMap),...Object.keys(earlyMap)]).forEach(k=>{
+          const s=stdMap[k], e=earlyMap[k];
+          if(s && !e) earlyMissing++;
+          else if(e && !s) stdMissing++;
+          else if(s && e && s.actualK!=null) pairs.push({date, pitcher:s.pitcher, actualK:s.actualK, std:s, early:e});
+        });
+        _timingABRaw.push({date, game:`${hg.away} @ ${hg.home}`,
+          stdSnap:hg.snapISO, earlySnap:earlyHg.snapISO, std:(stdRes.rows||[]), early:(earlyRes.rows||[])});
+      }
+    }
+    renderTimingAB(pairs, {fromISO,toISO,earlyHours,sampled:picked.length,earlyMissing,stdMissing,lastRemaining});
+    setStatus(`Timing A/B done — ${pairs.length} paired graded picks.`+(lastRemaining!=null?` ${Number(lastRemaining).toLocaleString()} credits left.`:""),1);
+    try{ exportTimingAB(fromISO,toISO,earlyHours); }catch(e){}
+  }catch(e){ setStatus("Timing A/B error: "+e.message); const el=$("timingABResult"); if(el) el.innerHTML=`<div class="empty small">A/B error: ${e.message}</div>`; }
+  finally{ if(btn) btn.disabled=false; _longRunActive=null; }
+}
+function renderTimingAB(pairs, meta){
+  const el=$("timingABResult"); if(!el) return;
+  const graded=pairs.filter(p=>p.std.hit!=null && p.early.hit!=null);
+  if(!graded.length){
+    el.innerHTML=`<div class="empty small">No paired graded picks. `+
+      (meta.earlyMissing?`${meta.earlyMissing} pick(s) had a 3h line but NO ${meta.earlyHours}h line (not posted that early) — that alone is a finding: you often can't get an early line.`:``)+`</div>`;
+    return;
+  }
+  const agg=arr=>{ const n=arr.length, w=arr.filter(x=>x.hit).length, u=arr.reduce((s,x)=>s+(_abUnits(x)||0),0);
+    return {n,w,l:n-w,hit:n?w/n:null,u,roi:n?u/n*100:null}; };
+  const std=agg(graded.map(p=>p.std)), early=agg(graded.map(p=>p.early));
+  const flips=graded.filter(p=>p.std.modelSide!==p.early.modelSide);
+  const sameLine=graded.filter(p=>p.std.line===p.early.line).length;
+  const moves=graded.map(p=>(p.early.line!=null&&p.std.line!=null)?(p.early.line-p.std.line):null).filter(x=>x!=null);
+  const avgMove=moves.length?moves.reduce((s,x)=>s+x,0)/moves.length:0;
+  const avgAbs=moves.length?moves.reduce((s,x)=>s+Math.abs(x),0)/moves.length:0;
+  const flipStdW=flips.filter(p=>p.std.hit).length, flipEarlyW=flips.filter(p=>p.early.hit).length;
+  const roiStr=g=>g.roi==null?"—":(g.roi>=0?"+":"")+g.roi.toFixed(1)+"%";
+  const roiCol=g=>g.roi==null?"var(--muted)":g.roi>=0?"var(--pos)":"var(--neg)";
+  const col2=(title,g,sub)=>`<div class="edgebox" style="flex:1;min-width:200px">`+
+    `<div class="edgebig" style="color:${roiCol(g)}">${roiStr(g)}</div>`+
+    `<div class="edgelabel">${title}</div>`+
+    `<div class="edgemeta"><span class="edgewl">${g.w}-${g.l} · ${g.hit!=null?Math.round(g.hit*100):"—"}%</span>`+
+    `<span class="edgewr" style="color:${g.u>=0?'var(--pos)':'var(--neg)'}">${(g.u>=0?"+":"")+g.u.toFixed(2)}u</span></div>`+
+    `<p class="fine">${sub}</p></div>`;
+  const flag=(r,which)=>{ const v=rowVerdict({skipped:false,eK:r.eK,line:r.line,edge:r.edge,modelSide:r.modelSide}, null);
+    return which==="value"?v.isCombo:which==="conv"?v.isConvOver:v.isCeiling; };
+  const trackRow=(label,which,color)=>{
+    const sub=graded.filter(p=>flag(p.std,which));
+    if(!sub.length) return `<tr><td style="color:${color}">${label}</td><td colspan="4" style="color:var(--muted)">no picks</td></tr>`;
+    const s=agg(sub.map(p=>p.std)), e=agg(sub.map(p=>p.early)), fl=sub.filter(p=>p.std.modelSide!==p.early.modelSide).length;
+    return `<tr><td style="color:${color};font-weight:700">${label}</td>`+
+      `<td>${s.w}-${s.l} · ${Math.round(s.hit*100)}% · <span style="color:${roiCol(s)}">${roiStr(s)}</span></td>`+
+      `<td>${e.w}-${e.l} · ${Math.round(e.hit*100)}% · <span style="color:${roiCol(e)}">${roiStr(e)}</span></td>`+
+      `<td>${sub.length}</td><td>${fl}</td></tr>`;
+  };
+  // FALSE-FLAG CHECK — the real question: a gate that FIRES at the early snapshot,
+  // is it still there at 3h, or does it evaporate? Membership recomputed at EACH
+  // snapshot from that snapshot's own line/edge — so an early "Value" that only
+  // cleared 20% on the soft early line, and drops below at 3h, shows as evaporated.
+  const flagAt=(r,which)=>{ const v=rowVerdict({skipped:false,eK:r.eK,line:r.line,edge:r.edge,modelSide:r.modelSide},null);
+    return which==="value"?v.isCombo:which==="conv"?v.isConvOver:v.isCeiling; };
+  const anyFlag=r=> flagAt(r,"value")||flagAt(r,"conv")||flagAt(r,"ceil");
+  const ffCell=g=>g.n?`${g.w}-${g.l} · <span style="color:${roiCol(g)}">${roiStr(g)}</span> <span style="color:var(--muted)">(${g.n})</span>`:`<span style="color:var(--muted)">0</span>`;
+  const ffRow=(label,pred,color)=>{
+    const early=graded.filter(p=>pred(p.early));                 // bets you'd place at the early snapshot
+    if(!early.length) return `<tr><td style="color:${color}">${label}</td><td colspan="4" style="color:var(--muted)">none flagged at ${meta.earlyHours}h</td></tr>`;
+    const conf=early.filter(p=>pred(p.std));                     // still flagged at 3h — real
+    const evap=early.filter(p=>!pred(p.std));                    // gone by 3h — FALSE flag
+    const missed=graded.filter(p=>pred(p.std)&&!pred(p.early));  // flag only at 3h — you'd skip early
+    const gE=agg(early.map(p=>p.early)), gC=agg(conf.map(p=>p.early)), gV=agg(evap.map(p=>p.early)), gM=agg(missed.map(p=>p.std));
+    return `<tr><td style="color:${color};font-weight:700">${label}</td>`+
+      `<td>${ffCell(gE)}</td><td>${ffCell(gC)}</td>`+
+      `<td>${gV.n?`<b style="color:${gV.roi!=null&&gV.roi<0?'var(--neg)':'var(--text)'}">${ffCell(gV)}</b>`:`<span style="color:var(--pos)">0</span>`}</td>`+
+      `<td>${ffCell(gM)}</td></tr>`;
+  };
+  const allEarly=graded.filter(p=>anyFlag(p.early)), allEvap=allEarly.filter(p=>!anyFlag(p.std)), allConf=allEarly.filter(p=>anyFlag(p.std));
+  const gEvapAll=agg(allEvap.map(p=>p.early)), gConfAll=agg(allConf.map(p=>p.early));
+  // "COST" requires the evaporated flags to ACTUALLY LOSE money (roi<0) on a real
+  // sample (≥FF_MIN) AND trail the confirmed set — not merely to earn less. A
+  // profitable-but-lower evaporated bucket is NOT a false-flag penalty.
+  let ffVerdict, ffcol; const FF_MIN=12;
+  const evR=gEvapAll.roi, cfR=gConfAll.roi, evWL=`${gEvapAll.w}-${gEvapAll.l}`;
+  if(!allEarly.length){ ffcol="var(--muted)"; ffVerdict=`No bets flagged at the ${meta.earlyHours}h snapshot in this sample.`; }
+  else if(allEvap.length<FF_MIN){ ffcol=(evR!=null&&evR>=0)?"var(--pos)":"var(--accent)"; ffVerdict=`Only ${allEvap.length} of ${allEarly.length} early flags evaporate by 3h — too few to call a penalty. So far they ${evR!=null&&evR>=0?`PROFIT (${evWL}, ${roiStr(gEvapAll)})`:`return ${evWL}, ${roiStr(gEvapAll)}`} — no sign early flags are false losers. Grow the sample to lock it.`; }
+  else if(evR!=null && evR<0 && cfR!=null && evR<cfR-10){ ffcol="var(--neg)"; ffVerdict=`False flags COST — the ${allEvap.length} early flags that evaporate by 3h actually LOSE (${evWL}, ${roiStr(gEvapAll)}) vs ${roiStr(gConfAll)} for the confirmed ones. Waiting to 3h filters out losing bets — the case against betting early.`; }
+  else { ffcol="var(--pos)"; ffVerdict=`No false-flag penalty — the ${allEvap.length} early flags that evaporate by 3h return ${evWL}, ${roiStr(gEvapAll)} (vs ${roiStr(gConfAll)} confirmed). Betting early isn't manufacturing losing bets.`; }
+  const dRoi=(early.roi||0)-(std.roi||0), flipPct=Math.round(flips.length/graded.length*100);
+  // The timing question only lives in picks that actually DIFFER between the two
+  // snapshots (side flipped or line moved). With ~90% identical lines, the total
+  // paired count wildly overstates the real evidence — gate the verdict on the
+  // informative subset, not on graded.length.
+  const informative = graded.filter(p=> p.std.modelSide!==p.early.modelSide || p.std.line!==p.early.line).length;
+  const INFO_MIN=30, identPct=Math.round(sameLine/graded.length*100);
+  let verdict, vcol;
+  if(graded.length<40){
+    vcol="var(--accent)"; verdict=`Pilot sample — ${graded.length} paired picks (${meta.earlyMissing} had no ${meta.earlyHours}h line). Confirms availability; too few to judge the ROI gap. Scale up.`;
+  } else if(informative<INFO_MIN){
+    vcol="var(--accent)"; verdict=`Market barely moved — lines are identical on ${identPct}% of picks, so only ${informative} of ${graded.length} actually differ between ${meta.earlyHours}h and 3h. Timing has almost no room to matter, and the ${(dRoi>=0?"+":"")+dRoi.toFixed(1)}-pt ROI gap rests on those ~${informative} picks — noise, not a verdict. Leaning NEUTRAL; grow the sample to lock it.`;
+  } else if(Math.abs(dRoi)<5){
+    vcol="var(--pos)"; verdict=`Timing is NEUTRAL — across ${informative} picks that actually differ (${identPct}% of lines identical), the ${meta.earlyHours}h line is within ${Math.abs(dRoi).toFixed(1)} pts ROI of the 3h standard. Your entry time is not the leak. Eliminate it as a concern.`;
+  } else if(dRoi<=-5){
+    vcol="var(--neg)"; verdict=`Early entry COSTS you — on ${informative} divergent picks the ${meta.earlyHours}h line returns ${dRoi.toFixed(1)} pts worse ROI (${flipPct}% flip sides). A real leak — lock lines ~3h out to match the validated backfill.`;
+  } else {
+    vcol="var(--accent)"; verdict=`Early looks BETTER by +${dRoi.toFixed(1)} pts on ${informative} divergent picks — surprising; grow the sample before trusting it.`;
+  }
+  el.innerHTML=
+    `<style>#timingABResult .abtable td,#timingABResult .abtable th{padding:5px 9px;border-bottom:1px solid var(--line);text-align:left}</style>`+
+    `<div class="card" style="margin:12px 0 4px;background:var(--panel)">`+
+    `<h3 style="margin:0 0 2px">Timing A/B — 3h standard vs ${meta.earlyHours}h early</h3>`+
+    `<p class="muted small" style="color:var(--muted);margin:0 0 10px">${meta.fromISO} → ${meta.toISO} · ${meta.sampled} games sampled · <b>${graded.length}</b> paired graded picks · ${meta.earlyMissing} had no early line (skipped)</p>`+
+    `<div style="display:flex;gap:12px;flex-wrap:wrap">`+
+      col2(`Standard · 3h before`, std, `The backfill's snapshot — apples-to-apples with every validated month.`)+
+      col2(`Early · ${meta.earlyHours}h before`, early, `Your habit — the line as posted hours earlier, same games.`)+
+    `</div>`+
+    `<div class="scoreboard" style="grid-template-columns:repeat(4,1fr);margin-top:12px">`+
+      `<div class="scell"><div class="sclabel">Identical line</div><div class="scpct">${Math.round(sameLine/graded.length*100)}%</div><div class="scsub">${sameLine}/${graded.length}</div></div>`+
+      `<div class="scell"><div class="sclabel">Pick flipped side</div><div class="scpct" style="color:${flips.length?'var(--accent)':'var(--pos)'}">${flipPct}%</div><div class="scsub">${flips.length} picks · early ${flipEarlyW}W vs 3h ${flipStdW}W</div></div>`+
+      `<div class="scell"><div class="sclabel">Avg line move</div><div class="scpct">${(avgMove>=0?"+":"")+avgMove.toFixed(2)}</div><div class="scsub">|Δ| ${avgAbs.toFixed(2)} · early−3h</div></div>`+
+      `<div class="scell"><div class="sclabel">No early line</div><div class="scpct">${meta.earlyMissing}</div><div class="scsub">not posted ${meta.earlyHours}h out</div></div>`+
+    `</div>`+
+    `<table class="abtable" style="width:100%;margin-top:12px;border-collapse:collapse;font-size:12.5px">`+
+      `<tr style="color:var(--muted)"><th>Track (by 3h flag)</th><th>3h standard</th><th>${meta.earlyHours}h early</th><th>n</th><th>flips</th></tr>`+
+      trackRow("Value","value","var(--bet)")+trackRow("Conviction","conv","var(--accent)")+trackRow("Overpower","ceil","var(--ceiling)")+
+    `</table>`+
+    `<div class="attrtitle" style="margin-top:16px">False-flag check — does a 9h flag survive to 3h?</div>`+
+    `<p class="fine" style="color:var(--muted);margin:2px 0 4px">Flags recomputed at each snapshot. <b>Evaporated</b> = fired at ${meta.earlyHours}h but gone by 3h (you'd have bet it early; it isn't real by close). <b>Missed</b> = only fires at 3h (you'd skip it betting early). Records are at the price you'd actually get.</p>`+
+    `<table class="abtable" style="width:100%;margin-top:4px;border-collapse:collapse;font-size:12.5px">`+
+      `<tr style="color:var(--muted)"><th>Flag</th><th>Flagged ${meta.earlyHours}h (you'd bet)</th><th>Confirmed at 3h</th><th>Evaporated (false)</th><th>Missed (3h-only)</th></tr>`+
+      ffRow("Value",r=>flagAt(r,"value"),"var(--bet)")+
+      ffRow("Conviction",r=>flagAt(r,"conv"),"var(--accent)")+
+      ffRow("Overpower",r=>flagAt(r,"ceil"),"var(--ceiling)")+
+      ffRow("Any bet",anyFlag,"var(--text)")+
+    `</table>`+
+    `<p class="fine" style="color:${ffcol};margin-top:8px;font-weight:600">${ffVerdict}</p>`+
+    `<p class="fine" style="color:${vcol};margin-top:12px;font-weight:600">${verdict}</p>`+
+    `<p class="fine" style="color:var(--muted)">Read-only diagnostic — nothing saved to Past Days. Raw JSON + paired CSV downloaded automatically. Track membership is defined by the 3h flag (the validated backfill rule), then shown at both times.</p>`+
+    `</div>`;
+}
+function exportTimingAB(fromISO,toISO,earlyHours){
+  const raw=JSON.stringify({range:[fromISO,toISO],earlyHours,capturedAt:new Date().toISOString(),games:_timingABRaw},null,2);
+  dl(raw, `timing_ab_raw_${fromISO}_to_${toISO}_${earlyHours}h.json`,"application/json");
+  const cols=["date","pitcher","actual_k","std_side","std_line","std_price","std_edge","std_hit","early_side","early_line","early_price","early_edge","early_hit","flip","line_move"];
+  const out=[cols.join(",")];
+  _timingABRaw.forEach(g=>{
+    const sm={}, em={};
+    g.std.forEach(r=>{ if(r.modelSide) sm[_abKey(r)]=r; });
+    g.early.forEach(r=>{ if(r.modelSide) em[_abKey(r)]=r; });
+    new Set([...Object.keys(sm),...Object.keys(em)]).forEach(k=>{
+      const s=sm[k], e=em[k]; if(!s||!e||s.actualK==null) return;
+      out.push([g.date,csv(s.pitcher),s.actualK,s.modelSide,s.line,s.sidePrice??"",s.edge!=null?(s.edge*100).toFixed(1):"",s.hit==null?"":(s.hit?"WIN":"LOSS"),
+        e.modelSide,e.line,e.sidePrice??"",e.edge!=null?(e.edge*100).toFixed(1):"",e.hit==null?"":(e.hit?"WIN":"LOSS"),
+        s.modelSide!==e.modelSide?"FLIP":"",(e.line!=null&&s.line!=null)?(e.line-s.line).toFixed(1):""].join(","));
+    });
+  });
+  dl(out.join("\n"), `timing_ab_paired_${fromISO}_to_${toISO}_${earlyHours}h.csv`,"text/csv");
 }
 
 // MAX_HIST_GAMES caps a single run so one click can't drain the whole budget.
@@ -4862,6 +5358,20 @@ function rowVerdict(r, provenBuckets){
   return {bet:true, side, mode:"combo", isCombo:true, isOver, isConvOver, isCeiling};
 }
 
+// LEAN — a row that MISSES the Value gate on the edge bar alone: right line
+// bucket (≤5.5), edge in the 15–20% band just under EDGE_STRONG_BAR. It is a
+// WATCHLIST state, never a bet — nothing about a LEAN row is logged, tracked,
+// counted as a signal, or fed to the forward test. It exists only so the
+// almost-qualified rows stop being buried in the PASS pile.
+// Reads the live Watch line when there's no official pull, same as whyFlag.
+function isLeanRow(r){
+  if(!r || r.skipped) return false;
+  const line = r.line!=null ? r.line : r._watchLine;
+  const edge = r.edge!=null ? r.edge : r._watchEdge;
+  if(line==null || edge==null) return false;
+  return line<=EDGE_MAX_LINE && edge>=LEAN_EDGE_MIN && edge<EDGE_STRONG_BAR;
+}
+
 // Plain-language explanation of why a pitcher did or didn't get flagged, checked
 // against the REAL gate thresholds. Returns {combo:[...checks], conv:[...checks]}.
 function whyFlag(r){
@@ -4905,7 +5415,17 @@ function whyFlag(r){
   if(isCombo) flags.push("Value");
   if(isConv) flags.push("Conviction");
   if(isCeiling) flags.push("Overpower");
-  if(flags.length===0) summary="Not flagged — sit out."+tag;
+  if(flags.length===0){
+    // Distinguish a near-miss (LEAN) from a genuine sit-out, so the expand panel
+    // says WHY the row is on the watchlist instead of just "not flagged".
+    const lean = line<=EDGE_MAX_LINE && edge>=LEAN_EDGE_MIN && edge<EDGE_STRONG_BAR;
+    summary = lean
+      ? `LEAN — watchlist, not a bet. The line (${line}) is in the Value bucket and the edge `+
+        `(${(edge*100).toFixed(0)}%) sits just under the ${(EDGE_STRONG_BAR*100).toFixed(0)}% bar. `+
+        `Across 2025+2026 this ${(LEAN_EDGE_MIN*100).toFixed(0)}–${(EDGE_STRONG_BAR*100).toFixed(0)}% band went 62.5% (n=568) — `+
+        `above the 55% noise floor but below the 68% that earns a bet. Keep an eye on it; the line may move into range.`+tag
+      : "Not flagged — sit out."+tag;
+  }
   else if(flags.length===1){
     if(isCombo) summary="Flagged as a Value bet."+tag;
     else if(isConv) summary="Flagged as a Conviction bet."+tag;
@@ -5796,38 +6316,60 @@ function renderBetGraph(){
   el.innerHTML=svg+legend;
 }
 
+// FREE-ONLY SIGNALS — the real question: the free watch flags a bet, the paid pull
+// doesn't, and you only bet PAID. Are you skipping WINNERS or dodging JUNK?
+// For each graded pick we recompute the Value/Conviction/Overpower gate on BOTH the
+// free line and the paid line, split into agree / paid-only / free-only, and GRADE
+// the disagreements. Free-only picks are graded at the FREE line+price (what you'd
+// have bet if you'd followed the free signal). Free edge is proxied by the paid edge
+// (exact only when the lines match, or for Overpower which needs no edge) — the line
+// is almost always the deciding factor, so this is close.
 function renderFreeVsPaid(){
   const el=$("freeVsPaid"); if(!el) return;
-  const rows=collectScorecardRows().filter(r=>!r.voided && r.hit!=null && r.freeLine!=null && r.line!=null && r.modelSide);
-  if(rows.length<3){ el.innerHTML=""; return; }   // nothing meaningful yet
-  const amPay=p=>p>0?p/100:100/(-p);
+  const rows=collectScorecardRows().filter(r=>!r.voided && r.actualK!=null && r.freeLine!=null && r.line!=null && r.eK!=null && r.edge!=null);
+  if(rows.length<3){ el.innerHTML=""; return; }
   const gradeSide=(line,side,aK)=>{ if(aK>line)return side==="Over"; if(aK<line)return side==="Under"; return null; };
-  let n=0, sameLine=0, paidU=0, freeU=0, paidW=0, freeW=0, flips=0;
+  const amPay=p=>p>0?p/100:100/(-p);
+  const anyFlag=v=>!!(v.isCombo||v.isConvOver||v.isCeiling);
+  let n=0, both=0, neither=0; const paidOnly=[], freeOnly=[];
   rows.forEach(r=>{
-    const aK=r.actualK; if(aK==null) return;
-    const paidHit=gradeSide(r.line,r.modelSide,aK);
-    const freeHit=gradeSide(r.freeLine,r.modelSide,aK);
-    if(paidHit==null||freeHit==null) return;   // push on one side, skip
     n++;
-    if(r.freeLine===r.line) sameLine++;
-    const paidPrice=(r.modelSide==="Over"?r.bestOver:r.bestUnder);
-    const freePrice=(r.modelSide==="Over"?r.freeOver:r.freeUnder);
-    if(paidPrice!=null){ paidU+=paidHit?amPay(paidPrice):-1; if(paidHit)paidW++; }
-    if(freePrice!=null){ freeU+=freeHit?amPay(freePrice):-1; if(freeHit)freeW++; }
-    if(paidHit!==freeHit) flips++;             // line difference flipped the W/L
+    const vp=rowVerdict({skipped:false,eK:r.eK,line:r.line,edge:r.edge},null);       // paid gate
+    const vf=rowVerdict({skipped:false,eK:r.eK,line:r.freeLine,edge:r.edge},null);    // free gate (edge proxied)
+    const p=anyFlag(vp), f=anyFlag(vf);
+    if(p&&f) both++;
+    else if(p&&!f) paidOnly.push({r,side:vp.side,line:r.line,free:false});
+    else if(f&&!p) freeOnly.push({r,side:vf.side,line:r.freeLine,free:true});
+    else neither++;
   });
-  if(!n){ el.innerHTML=""; return; }
-  const pRoi=paidU/n*100, fRoi=freeU/n*100;
-  const col=v=>v>=0?"var(--pos)":"var(--neg)";
+  const grade=arr=>{ let w=0,l=0,u=0,g=0;
+    arr.forEach(({r,side,line,free})=>{
+      const hit=gradeSide(line,side,r.actualK); if(hit==null) return;   // push
+      const price=side==="Over" ? (free?r.freeOver:r.bestOver) : (free?r.freeUnder:r.bestUnder);
+      g++; if(hit){ w++; u+=price!=null?amPay(price):0.91; } else { l++; u-=1; }
+    });
+    return {g,w,l,u,roi:g?u/g*100:null};
+  };
+  const fo=grade(freeOnly), po=grade(paidOnly);
+  const roiStr=x=>x==null?"—":(x>=0?"+":"")+x.toFixed(0)+"%";
+  const roiCol=x=>x==null?"var(--muted)":x>=0?"var(--pos)":"var(--neg)";
+  const cell=(lbl,g,note)=>`<div class="fvp-cell"><div class="fvp-l">${lbl}</div>`+
+    `<div class="fvp-v" style="color:${g.g?roiCol(g.roi):'var(--muted)'}">${g.g?`${g.w}-${g.l}`:'0'}</div>`+
+    `<div class="fvp-n">${g.g?`${roiStr(g.roi)} · ${note}`:note}</div></div>`;
+  let verdict;
+  if(fo.g<8) verdict=`Only ${fo.g} free-only signal${fo.g===1?'':'s'} so far — too few to judge. Betting paid-only is fine until this fills in.`;
+  else if(fo.roi>=5) verdict=`<span style="color:var(--neg)">You may be leaving money on the table</span> — the ${fo.g} bets the free watch flagged but paid didn't went ${fo.w}-${fo.l} (${roiStr(fo.roi)}). Worth a look at whether to trust the free signal.`;
+  else if(fo.roi<0) verdict=`<span style="color:var(--pos)">Betting paid-only is protecting you</span> — the ${fo.g} free-only signals you skipped went ${fo.w}-${fo.l} (${roiStr(fo.roi)}). The paid pull is correctly filtering junk.`;
+  else verdict=`Free-only signals are roughly break-even (${fo.w}-${fo.l}, ${roiStr(fo.roi)}) — no clear cost to betting paid-only. Keep watching.`;
   el.innerHTML=
-    `<div class="fvp"><div class="fvp-h">Free vs paid lines <span class="fvp-sub">SharpAPI (free) snapshot vs Odds API (paid) on the same graded picks — is the free feed good enough to trust?</span></div>`+
-    `<div class="fvp-grid">`+
-      `<div class="fvp-cell"><div class="fvp-l">Identical line</div><div class="fvp-v">${Math.round(sameLine/n*100)}%</div><div class="fvp-n">${sameLine}/${n} picks</div></div>`+
-      `<div class="fvp-cell"><div class="fvp-l">Grade flipped</div><div class="fvp-v" style="color:${flips? "var(--accent)":"var(--pos)"}">${flips}</div><div class="fvp-n">diff line changed W/L</div></div>`+
-      `<div class="fvp-cell"><div class="fvp-l">Paid ROI</div><div class="fvp-v" style="color:${col(pRoi)}">${(pRoi>=0?"+":"")+pRoi.toFixed(0)}%</div><div class="fvp-n">${paidW}-${n-paidW}</div></div>`+
-      `<div class="fvp-cell"><div class="fvp-l">Free ROI</div><div class="fvp-v" style="color:${col(fRoi)}">${(fRoi>=0?"+":"")+fRoi.toFixed(0)}%</div><div class="fvp-n">${freeW}-${n-freeW}</div></div>`+
+    `<div class="fvp"><div class="fvp-h">Free-only signals — miss or dodge? <span class="fvp-sub">When the free watch flags a bet the paid pull doesn't (and you bet paid) — do those skipped picks win or lose?</span></div>`+
+    `<div class="fvp-grid" style="grid-template-columns:repeat(3,1fr)">`+
+      cell("Free-only (you skip)", fo, "graded at the free line")+
+      cell("Paid-only (you bet)", po, "paid flagged, free didn't")+
+      `<div class="fvp-cell"><div class="fvp-l">Both agree</div><div class="fvp-v">${both}</div><div class="fvp-n">of ${n} graded picks</div></div>`+
     `</div>`+
-    `<p class="fine" style="color:var(--muted)">If identical-line % is high and the ROIs track each other, the free feed is a viable stand-in for the paid one. A big gap means the free lines drift enough to matter. ${n} graded pairs so far — read nothing until this is deep.</p></div>`;
+    `<p class="fine" style="color:var(--muted)">${verdict}</p>`+
+    `<p class="fine" style="color:var(--muted)">Note: this compares the free vs paid line captured near your pull. A signal you saw on a live <b>Intraday Watch</b> hours earlier can also differ from timing drift, not just the feed.</p></div>`;
 }
 
 // FLAG AGREEMENT — the credits question, answered with data. For every pick that
@@ -5942,6 +6484,9 @@ function _recalBets(bets){ const settled=bets.filter(b=>b.result&&b.result!=="pu
   return {n:w+l,w,l,hit:(w+l)?w/(w+l):null,u:net,roi:staked?net/staked*100:null}; }
 function renderRecal(){
   const el=$("recalCard"); if(!el) return;
+  // Own the forward-test start stamp (moved here from the retired Forward Test card).
+  if(SS.getItem("se_fwd_reset_v2")!=="1"){ SS.setItem("se_fwd_start", todayISO()); SS.setItem("se_fwd_reset_v2","1"); }
+  if(!SS.getItem("se_fwd_start")) SS.setItem("se_fwd_start", todayISO());
   const _saved=_perfWindow; _perfWindow="alltime";
   let rows; try{ rows=collectScorecardRows(); } finally { _perfWindow=_saved; }
   const fwdStart=SS.getItem("se_fwd_start")||"";
@@ -5954,23 +6499,46 @@ function renderRecal(){
   const roiStr=g=>g.roi==null?"—":(g.roi>=0?"+":"")+g.roi.toFixed(0)+"%";
   const roiCol=g=>g.roi==null?"var(--muted)":g.roi>=0?"var(--pos)":"var(--neg)";
   const uStr=g=>g.u==null?"":((g.u>=0?"+":"")+g.u.toFixed(1)+"u");
-  const cell=(title,g,sub,warn)=>`<div class="recal-cell">`+
+  // pace + noise micro-lines — same logic as the Forward Test, compact for the
+  // forward lens only (roiBar is +5% for every track). `rows` = that track's fwd rows.
+  const _wil=(w,n)=>{ if(!n) return [0,1]; const z=1.96,p=w/n,z2=z*z,d=1+z2/n;
+    const c=(p+z2/(2*n))/d, h=(z*Math.sqrt(p*(1-p)/n+z2/(4*n*n)))/d;
+    return [Math.max(0,c-h),Math.min(1,c+h)]; };
+  const pace=(g,rows,need,roiBar=5)=>{
+    const rem=need-g.n; if(rem<=0) return "";
+    const targetU=roiBar/100*need;
+    const winU=rows.filter(r=>r.hit).reduce((s,r)=>s+(r.units||0),0);
+    const avgWin=g.w>0?winU/g.w:0.909;
+    if(g.u-rem>=targetU) return `<span style="color:var(--pos)">pace: clinched</span>`;
+    if(g.u+rem*avgWin<targetU) return `<span style="color:var(--neg)">pace: out of reach</span>`;
+    const Wn=Math.max(0,Math.ceil((targetU-g.u+rem)/(avgWin+1))), wr=Math.round(Wn/rem*100);
+    const c=wr<=52?"var(--pos)":wr<=70?"var(--accent)":"var(--neg)";
+    return `<span style="color:${c}">pace: ~${Wn}-${rem-Wn} (${wr}%) of last ${rem}</span>`; };
+  const noise=g=>{ if(!g.n) return "";
+    const wi=_wil(g.w,g.n), BE=0.524, p2=x=>Math.round(x*100);
+    if(wi[0]>BE) return `<span style="color:var(--pos)">signal: CI ${p2(wi[0])}–${p2(wi[1])}% — real</span>`;
+    if(wi[1]<BE) return `<span style="color:var(--neg)">signal: CI ${p2(wi[0])}–${p2(wi[1])}% — losing</span>`;
+    return `<span style="color:var(--muted)">signal: CI ${p2(wi[0])}–${p2(wi[1])}% straddles be — noise</span>`; };
+  const cell=(title,g,sub,warn,extra)=>`<div class="recal-cell">`+
     `<div class="recal-cl"><span>${title}</span>${warn?`<span class="recal-warn">${warn}</span>`:""}</div>`+
     `<div class="recal-roi" style="color:${roiCol(g)}">${roiStr(g)}</div>`+
     `<div class="recal-rec">${g.n?`${g.w}-${g.l} · ${g.hit!=null?Math.round(g.hit*100)+"%":"—"} · ${uStr(g)}`:"no data"}</div>`+
-    `<div class="recal-sub">${sub}</div></div>`;
+    `<div class="recal-sub">${sub}</div>${extra||""}</div>`;
   el.innerHTML=`<div class="recal">`+TRACKS.map(t=>{
     const tr=rows.filter(r=>r[t.k]);
+    const fwdRows=tr.filter(r=>r.isForward && (r.date||"")>=fwdStart);
     const back=_recalRows(tr.filter(r=>!r.isForward));
-    const fwd =_recalRows(tr.filter(r=>r.isForward && (r.date||"")>=fwdStart));
+    const fwd =_recalRows(fwdRows);
     const real=_recalBets(bets.filter(b=>(b.style||null)===t.style));
     const fwdTag = fwd.n>=t.need ? `${fwd.n}/${t.need} ✓` : `${fwd.n}/${t.need}`;
+    const p=pace(fwd,fwdRows,t.need), sg=noise(fwd);
+    const fwdExtra = fwd.n?`${p?`<div class="recal-sub" style="margin-top:4px">${p}</div>`:""}<div class="recal-sub" style="margin-top:2px">${sg}</div>`:"";
     return `<div class="recal-track" style="border-left-color:${t.col}">`+
       `<div class="recal-th"><span class="recal-tn" style="color:${t.col}">${t.name}</span>`+
       `<span class="recal-td">${t.def}</span></div>`+
       `<div class="recal-lenses">`+
         cell("Backfill · in-sample", back, `${back.n} picks — not proof`)+
-        cell("Forward · live read", fwd, `since ${fwdStart||"—"}`, fwdTag)+
+        cell("Forward · live read", fwd, `since ${fwdStart||"—"}`, fwdTag, fwdExtra)+
         cell("Real ＄ wagers", real, real.n?"what you actually bet":"none logged yet")+
       `</div></div>`;
   }).join("")+`</div>`;
@@ -5980,7 +6548,6 @@ function renderPerf(){
   try{ renderBetSummary(); }catch(e){ console.error("bet summary failed:",e); }
   try{ renderBetGraph(); }catch(e){ console.error("bet graph failed:",e); }
   try{ renderFreeVsPaid(); }catch(e){ console.error("free vs paid failed:",e); }
-  try{ renderFlagAgreement(); }catch(e){ console.error("flag agreement failed:",e); }
   try{ renderRecal(); }catch(e){ console.error("recal failed:",e); }
   const picks=collectTierPicks();
   const t1=picks.t1, t0=picks.t0;
@@ -5990,10 +6557,9 @@ function renderPerf(){
   const winsOf=arr=>arr.filter(p=>p.hit).length;
   const wrOf=arr=>arr.length?winsOf(arr)/arr.length:null;
 
-  // --- HEADLINE removed: bet totals live in the forward test and bet-style panels ---
+  // Forward-test cards retired — the Recalibration section (renderRecal) is now the
+  // single forward view; renderForwardTest/renderFlagAgreement/freeVerdict are unused.
 
-
-  try{ renderForwardTest(); }catch(e){ console.error("forward test failed:",e); }
   try{ renderBucketSummary(); }catch(e){ console.error("bucket summary failed:",e); }
 }
 
@@ -6014,6 +6580,16 @@ function renderForwardTest(){
   const _saved=_perfWindow; _perfWindow="alltime";
   const all=collectScorecardRows(); _perfWindow=_saved;
   const fwdAll=all.filter(r=>r.isForward && (r.date||"")>=startDate);
+
+  // Wilson score interval on a win rate — the honest "is this separable from a
+  // coin flip yet" band. No dependency; mirrors the Watchdog's break-even logic.
+  const _wilson=(w,n,z)=>{
+    if(!n) return [0,1];
+    const p=w/n, z2=z*z, d=1+z2/n;
+    const c=(p+z2/(2*n))/d;
+    const h=(z*Math.sqrt(p*(1-p)/n+z2/(4*n*n)))/d;
+    return [Math.max(0,c-h),Math.min(1,c+h)];
+  };
 
   // Three independent pre-committed tracks. Graded on ROI (price-aware), since a
   // flat win-rate bar punishes juiced tracks and flatters cheap ones. Bar = ROI
@@ -6036,6 +6612,37 @@ function renderForwardTest(){
     const uCol=u>0?"var(--pos)":u<0?"var(--neg)":"var(--muted)";
     const progress=Math.min(100,Math.round(n/need*100));
     const roiStr=(roi>=0?"+":"")+roi.toFixed(0)+"%";
+
+    // --- PACE TO CLEAR — deterministic given the bar. What record from here still
+    //     lands the FULL sample above +roiBar% ROI. Answers "what do I need now."
+    const targetU = roiBar/100*need;          // net units required at completion
+    const rem = need - n;                     // picks left in the sample
+    let paceLine="";
+    if(rem>0){
+      const winU = rows.filter(r=>r.hit).reduce((s,r)=>s+r.units,0);
+      const avgWin = w>0 ? winU/w : 0.909;    // realized $/win (≈-110 fallback)
+      const bestCase = u + rem*avgWin;        // win out
+      const worstCase = u - rem;              // lose out (each loss = -1u)
+      if(worstCase>=targetU){
+        paceLine=`<span style="color:var(--pos)">Pace — clinched: clears +${roiBar}% even if you lose the last ${rem}.</span>`;
+      } else if(bestCase<targetU){
+        paceLine=`<span style="color:var(--neg)">Pace — out of reach: even ${rem}-0 can't lift this to +${roiBar}% now.</span>`;
+      } else {
+        const Wneed=Math.max(0,Math.ceil((targetU - u + rem)/(avgWin+1)));
+        const wrNeed=Math.round(Wneed/rem*100);
+        const pcol = wrNeed<=52 ? "var(--pos)" : wrNeed<=70 ? "var(--accent)" : "var(--neg)";
+        paceLine=`<span style="color:${pcol}">Pace to clear: ~${Wneed}-${rem-Wneed} (${wrNeed}%) over the last ${rem}.</span>`;
+      }
+    }
+
+    // --- NOISE BAND — is the win rate yet separable from a coin flip? 95% Wilson
+    //     CI vs break-even (52.4%). Fights the "reading variance as a verdict" trap.
+    const [wlo,whi]=_wilson(w,n,1.96), BE=0.524, p2=x=>Math.round(x*100);
+    let noiseLine;
+    if(wlo>BE) noiseLine=`<span style="color:var(--pos)">Signal: 95% CI ${p2(wlo)}–${p2(whi)}% — clear of break-even, this is real.</span>`;
+    else if(whi<BE) noiseLine=`<span style="color:var(--neg)">Signal: 95% CI ${p2(wlo)}–${p2(whi)}% — below break-even; losing, not just variance.</span>`;
+    else noiseLine=`<span style="color:var(--muted)">Signal: 95% CI ${p2(wlo)}–${p2(whi)}% straddles break-even (52.4%) — can't yet tell edge from noise.</span>`;
+
     let verdict;
     if(n<need) verdict=`<span style="color:var(--accent)">${n}/${need} logged — keep going. ${roiStr} ROI so far (${pct}% win), but incomplete until ${need} picks.</span>`;
     else if(roi>=roiBar) verdict=`<span style="color:var(--pos)">✓ CLEARED — ${roiStr} ROI over ${n} (${pct}% win), beating the +${roiBar}% bar. Earns real money. Start small.</span>`;
@@ -6047,7 +6654,9 @@ function renderForwardTest(){
       `<span class="edgewr" style="color:${uCol}">${(u>=0?"+":"")+u.toFixed(2)}u</span>`+
       `<span class="edgen">${n}/${need}</span></div>`+
       `<div class="statusbar" style="margin-top:8px"><div class="statusfill" style="width:${progress}%"></div></div>`+
-      `<p class="fine">${verdict}</p></div>`;
+      `<p class="fine">${verdict}</p>`+
+      (paceLine?`<p class="fine" style="margin-top:3px">${paceLine}</p>`:"")+
+      `<p class="fine" style="margin-top:3px">${noiseLine}</p></div>`;
   }
 
   const comboRows=fwdAll.filter(r=>r.isCombo);
@@ -6510,17 +7119,59 @@ function drawMyBetsCurve(graded){
   const el=$("mbCurve"); if(!el) return;
   if(graded.length<2){ el.innerHTML=`<div class="muted small" style="color:var(--muted)">Cumulative units — appears once you have 2+ graded bets.</div>`; return; }
   const sorted=graded.slice().sort((a,b)=>(a.date+a.loggedAt).localeCompare(b.date+b.loggedAt));
-  let cum=0; const pts=sorted.map(b=>{ cum+=Number(b.pl||0); return cum; });
-  const W=560,H=120,pad=10;
-  const min=Math.min(0,...pts), max=Math.max(0,...pts), range=(max-min)||1;
-  const x=i=>pad+(pts.length<2?0:(i/(pts.length-1))*(W-2*pad));
-  const y=v=>H-pad-((v-min)/range)*(H-2*pad);
-  const d=pts.map((v,i)=>`${i?'L':'M'}${x(i).toFixed(1)},${y(v).toFixed(1)}`).join(" ");
-  const col=pts[pts.length-1]>=0?"var(--pos)":"var(--neg)";
-  el.innerHTML=`<svg viewBox="0 0 ${W} ${H}" width="100%" height="${H}" preserveAspectRatio="none">`+
-    `<line x1="${pad}" y1="${y(0).toFixed(1)}" x2="${W-pad}" y2="${y(0).toFixed(1)}" stroke="var(--line)" stroke-dasharray="3 3"/>`+
-    `<path d="${d}" fill="none" stroke="${col}" stroke-width="2"/></svg>`+
-    `<div class="muted small" style="color:var(--muted);margin-top:4px">Cumulative units over your graded bets (dashed = break-even)</div>`;
+  let cum=0, peak=0;
+  const pts=sorted.map(b=>{ cum+=Number(b.pl||0); peak=Math.max(peak,cum);
+    return {cum, peak, date:b.date||"", pitcher:b.pitcher||"?", side:b.side||"", line:b.line, pl:Number(b.pl||0), win:b.result==="win"}; });
+  const cur=pts[pts.length-1];
+  const hiIdx=pts.reduce((bi,p,i)=>p.cum>pts[bi].cum?i:bi,0);
+  const dd=cur.cum-pts[hiIdx].cum;                 // ≤0 : drawdown from the high-water mark
+  const W=760,H=210,padL=46,padR=58,padT=16,padB=28;
+  const vals=pts.map(p=>p.cum);
+  let lo=Math.min(0,...vals), hi=Math.max(0,...vals);
+  if(hi===lo){ hi+=1; lo-=1; }
+  const padv=(hi-lo)*0.12; hi+=padv; lo-=padv;
+  const x=i=>padL+(pts.length<2?0:(i/(pts.length-1))*(W-padL-padR));
+  const y=v=>padT+(1-(v-lo)/(hi-lo))*(H-padT-padB);
+  // nice-stepped unit gridlines
+  const raw=(hi-lo)/4, mag=Math.pow(10,Math.floor(Math.log10(raw))), nu=raw/mag;
+  const step=(nu<1.5?1:nu<3?2:nu<7?5:10)*mag;
+  const MF="ui-monospace,Menlo,monospace";
+  let grid="";
+  for(let v=Math.ceil(lo/step)*step; v<=hi+1e-9; v+=step){
+    const yy=y(v).toFixed(1), lbl=(v>=0?"+":"")+(Math.abs(v)<10?v.toFixed(1):v.toFixed(0))+"u";
+    grid+=`<line x1="${padL}" y1="${yy}" x2="${W-padR}" y2="${yy}" stroke="var(--line)" stroke-width="1" opacity=".5"/>`+
+      `<text x="${padL-6}" y="${(+yy+3).toFixed(1)}" text-anchor="end" font-size="9.5" fill="var(--muted)" font-family="${MF}">${lbl}</text>`;
+  }
+  const y0=y(0).toFixed(1);
+  const be=`<line x1="${padL}" y1="${y0}" x2="${W-padR}" y2="${y0}" stroke="var(--muted)" stroke-width="1.3" stroke-dasharray="4 3"/>`;
+  // high-water mark (running peak) as a faint staircase
+  const peakLine=`<path d="${pts.map((p,i)=>`${i?'L':'M'}${x(i).toFixed(1)},${y(p.peak).toFixed(1)}`).join(" ")}" fill="none" stroke="var(--muted)" stroke-width="1" stroke-dasharray="2 3" opacity=".55"/>`;
+  const lineCol=cur.cum>=0?"var(--pos)":"var(--neg)";   // current-position color (marker + label)
+  const POS="var(--pos)", NEG="var(--neg)";
+  // segment-colored line: GREEN above break-even, RED below, split exactly at each 0-crossing
+  let segs="";
+  for(let i=0;i<pts.length-1;i++){
+    const x0=x(i), ya=y(pts[i].cum), x1=x(i+1), yb=y(pts[i+1].cum), c0=pts[i].cum, c1=pts[i+1].cum;
+    if((c0>=0)===(c1>=0)){
+      segs+=`<path d="M${x0.toFixed(1)},${ya.toFixed(1)} L${x1.toFixed(1)},${yb.toFixed(1)}" fill="none" stroke="${c0>=0?POS:NEG}" stroke-width="2" stroke-linecap="round"/>`;
+    } else {
+      const t=c0/(c0-c1), xm=x0+t*(x1-x0), ym=y(0);
+      segs+=`<path d="M${x0.toFixed(1)},${ya.toFixed(1)} L${xm.toFixed(1)},${ym.toFixed(1)}" fill="none" stroke="${c0>=0?POS:NEG}" stroke-width="2" stroke-linecap="round"/>`;
+      segs+=`<path d="M${xm.toFixed(1)},${ym.toFixed(1)} L${x1.toFixed(1)},${yb.toFixed(1)}" fill="none" stroke="${c1>=0?POS:NEG}" stroke-width="2" stroke-linecap="round"/>`;
+    }
+  }
+  const area=`M${x(0).toFixed(1)},${y0} `+pts.map((p,i)=>`L${x(i).toFixed(1)},${y(p.cum).toFixed(1)}`).join(" ")+` L${x(pts.length-1).toFixed(1)},${y0} Z`;
+  const dots=pts.map((p,i)=>`<circle cx="${x(i).toFixed(1)}" cy="${y(p.cum).toFixed(1)}" r="2.4" fill="${p.win?'var(--pos)':'var(--neg)'}" opacity=".85"><title>${p.date} · ${p.pitcher} ${p.side} ${p.line} · ${p.pl>=0?'+':''}${p.pl.toFixed(2)}u → ${p.cum>=0?'+':''}${p.cum.toFixed(2)}u</title></circle>`).join("");
+  const peakMk=`<circle cx="${x(hiIdx).toFixed(1)}" cy="${y(pts[hiIdx].cum).toFixed(1)}" r="3.4" fill="none" stroke="var(--muted)" stroke-width="1.4"><title>high-water mark: +${pts[hiIdx].cum.toFixed(2)}u</title></circle>`;
+  const curMk=`<circle cx="${x(pts.length-1).toFixed(1)}" cy="${y(cur.cum).toFixed(1)}" r="4" fill="${lineCol}"/>`+
+    `<text x="${W-padR+3}" y="${(y(cur.cum)+3).toFixed(1)}" font-size="10.5" font-weight="700" fill="${lineCol}" font-family="${MF}">${cur.cum>=0?'+':''}${cur.cum.toFixed(1)}u</text>`;
+  const di=[0,Math.floor((pts.length-1)/2),pts.length-1].filter((v,i,a)=>a.indexOf(v)===i);
+  const xlab=di.map(i=>`<text x="${x(i).toFixed(1)}" y="${H-8}" text-anchor="${i===0?'start':i===pts.length-1?'end':'middle'}" font-size="9.5" fill="var(--muted)" font-family="${MF}">${(pts[i].date||"").slice(5)}</text>`).join("");
+  const ddTxt = dd<-0.005 ? `<span style="color:var(--neg)">${dd.toFixed(2)}u below peak</span>` : `<span style="color:var(--pos)">at high-water mark</span>`;
+  el.innerHTML=`<svg viewBox="0 0 ${W} ${H}" width="100%" style="display:block">`+
+    grid+`<path d="${area}" fill="var(--text)" opacity=".05"/>`+be+peakLine+
+    segs+dots+peakMk+curMk+xlab+`</svg>`+
+    `<div class="muted small" style="color:var(--muted);margin-top:4px">Cumulative units per bet · line <span style="color:var(--pos)">green</span>/<span style="color:var(--neg)">red</span> = above/below break-even · dots = win/loss · dotted = high-water mark · now ${cur.cum>=0?'+':''}${cur.cum.toFixed(2)}u (${ddTxt})</div>`;
 }
 
 function styleTag(s){
