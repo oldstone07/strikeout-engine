@@ -515,13 +515,15 @@ button:active{transform:translateY(1px)}
 .recal-tn{font-weight:800;font-size:15px;letter-spacing:.03em}
 .recal-td{font-size:11px;color:var(--muted)}
 .recal-lenses{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.recal-lenses-4{grid-template-columns:repeat(4,1fr)}
 .recal-cell{background:var(--bg2);border:1px solid var(--line);border-radius:8px;padding:11px 12px}
 .recal-cl{font-size:9.5px;letter-spacing:.07em;text-transform:uppercase;color:var(--muted);margin-bottom:7px;display:flex;justify-content:space-between;gap:6px;align-items:baseline}
 .recal-roi{font-family:var(--mono);font-size:24px;font-weight:800;line-height:1;font-variant-numeric:tabular-nums}
 .recal-rec{font-size:12px;color:var(--text);margin-top:5px;font-variant-numeric:tabular-nums}
 .recal-sub{font-size:10.5px;color:var(--muted);margin-top:3px;line-height:1.35}
 .recal-warn{color:var(--accent);font-weight:700}
-@media(max-width:760px){ .recal-lenses{grid-template-columns:1fr} }
+@media(max-width:1100px){ .recal-lenses-4{grid-template-columns:repeat(2,1fr)} }
+@media(max-width:760px){ .recal-lenses,.recal-lenses-4{grid-template-columns:1fr} }
 .scunits{font-size:13px;font-weight:700;margin-bottom:2px}
 .perfstatus{background:rgba(46,160,67,.10);border:1px solid rgba(46,160,67,.28);
   color:var(--text);border-radius:9px;padding:10px 13px;font-size:13px;margin:0 0 6px}
@@ -3695,6 +3697,23 @@ async function scoreOneEvent(ev, probList, key, season){
 }
 
 // per-game line pull — spends ~1 credit for THIS game only, then merges into today
+// ---- LINEUP PRE-FLIGHT (free — MLB StatsAPI, spends NO Odds credit) ----------
+// The model projects each starter against the OPPOSING lineup. If that lineup
+// has not posted yet, opponentKRate() silently falls back to the team's season
+// average (oppSource "team") and the projection is built on strictly less
+// information. That is not a hypothetical: 65% of live-pulled rows in the store
+// are "team" against 0% of the backfill the gates were validated on — before
+// 11am only 5% of pulls get lineup data, after 2pm 72% do. So an early pull is
+// not the same model the backtest measured. Checked BEFORE the odds call so a
+// cancel costs nothing.
+async function lineupsPosted(g, probList){
+  try{
+    const gm=matchGame(probList||[], g.homeTeam, g.awayTeam);
+    if(!gm || gm.gamePk==null) return {known:false, home:false, away:false};
+    const [h,a]=await Promise.all([lineup(gm.gamePk,"home"), lineup(gm.gamePk,"away")]);
+    return {known:true, home:!!(h&&h.length), away:!!(a&&a.length)};
+  }catch(e){ return {known:false, home:false, away:false}; }
+}
 async function pullOneGame(g, pre){
   const key=getKey();
   if(!key){ setStatus("Set your Odds API key first (in setup)."); return; }
@@ -3710,6 +3729,22 @@ async function pullOneGame(g, pre){
     });
     if(!ev){ setStatus(`No posted lines yet for ${g.awayTeam} @ ${g.homeTeam}. Try again closer to game time.`); return; }
     const probList=(pre&&pre.probList)?pre.probList:await fetchProbables(day);
+    // Warn BEFORE spending the credit if the lineups aren't up yet.
+    if(!(pre&&pre.skipLineupCheck)){
+      setStatus(`Checking lineups for ${g.awayTeam} @ ${g.homeTeam}… (free)`,0.15);
+      const lp=await lineupsPosted(g, probList);
+      if(lp.known && !(lp.home&&lp.away)){
+        const which = (!lp.home&&!lp.away) ? "Neither lineup is" : (lp.home?"The away lineup is not":"The home lineup is not");
+        const ok=confirm(
+          `${which} posted yet for ${g.awayTeam} @ ${g.homeTeam}.\n\n`+
+          `Pulling now means the model uses the opponent's SEASON AVERAGE instead of the actual lineup `+
+          `(oppSource "team"). Every backtest number was computed on lineup-based projections, so an early `+
+          `pull is not the same model — and it still costs a credit.\n\n`+
+          `Lineups usually post ~2-3h before first pitch.\n\n`+
+          `Pull anyway?`);
+        if(!ok){ setStatus(`Pull cancelled — no credit spent. Re-pull once lineups post.`); return; }
+      }
+    }
     const {rows,remaining,matched}=await scoreOneEvent(ev,probList,key,season);
     if(remaining!=null) setCredits(remaining);
     if(!rows.length){ setStatus(`No strikeout props posted yet for that game.`); return; }
@@ -3760,10 +3795,30 @@ async function pullAllStaged(){
   let preEvents=null, preProb=null;
   try{ preEvents=await jget(`${ODDS}/sports/baseball_mlb/events?apiKey=${key}`); }catch(e){ console.warn("batch events prefetch skipped:",e.message||e); }
   try{ preProb=await fetchProbables(day); }catch(e){ console.warn("batch probables prefetch skipped:",e.message||e); }
+  // ONE batched lineup pre-flight for the whole run (free) instead of a dialog per
+  // game. Games without a posted lineup get modeled on team season averages, which
+  // is not what any backtest number was computed on — so surface it once, up front.
+  let _skipLC=true;
+  if(preProb){
+    setStatus("Checking which lineups have posted… (free)",0.05);
+    const flags=await Promise.all(todo.map(g=>lineupsPosted(g,preProb)));
+    const missing=todo.filter((g,i)=>flags[i].known && !(flags[i].home&&flags[i].away));
+    if(missing.length){
+      const names=missing.slice(0,6).map(g=>`${g.awayTeam} @ ${g.homeTeam}`).join("\n  ");
+      const more=missing.length>6?`\n  …and ${missing.length-6} more`:"";
+      const ok=confirm(
+        `${missing.length} of ${todo.length} game(s) have no posted lineup yet:\n  ${names}${more}\n\n`+
+        `Those will be modeled on the opponent's SEASON AVERAGE instead of the real lineup `+
+        `(oppSource "team") — a weaker projection than every backtest number is based on, and `+
+        `they still cost a credit each.\n\n`+
+        `Pull all ${todo.length} anyway?  (Cancel = pull nothing; re-run after lineups post.)`);
+      if(!ok){ if(pa) pa.disabled=false; _pullBatch=false; setStatus("Pull All cancelled — no credits spent."); return; }
+    }
+  } else { _skipLC=false; }   // no probables prefetch → let each pull check for itself
   try{
     for(let i=0;i<todo.length;i++){
       setStatus(`Pulling all… ${i+1} of ${todo.length}`, i/todo.length);
-      await pullOneGame(todo[i], {events:preEvents, probList:preProb});
+      await pullOneGame(todo[i], {events:preEvents, probList:preProb, skipLineupCheck:_skipLC});
     }
   } finally { _pullBatch=false; }
   if(pa) pa.disabled=false;
@@ -4162,6 +4217,8 @@ async function runHistRange(fromISO, toISO){
 
   _histRangeRaw=[];
   let done=0, matched=0, graded=0, pitchers=0, lastRemaining=null;
+  let _bfProtected=0, _bfShadowed=0;       // live rows refused / given a comparison shadow
+  const _bfBetSet=_loggedBetSet();         // date|pitcher for every logged bet
   const btn=$("histRangeBtn"); if(btn) btn.disabled=true;
   _longRunActive=setStatus;
   try{
@@ -4203,7 +4260,47 @@ async function runHistRange(fromISO, toISO){
                                             : (norm(r.pitcher)===norm(nr.pitcher));
             const idx=(rec.rows||[]).findIndex(sameRow);
             nr.histBackfill=true;
-            if(idx>=0){ if(!rec.rows[idx].loggedSide) rec.rows[idx]={...rec.rows[idx], ...nr}; }
+            // ---- LIVE-ROW PROTECTION -------------------------------------------
+            // RULE: a backfill may only overwrite a row that a backfill created.
+            // Anything else is user data and is left exactly as pulled.
+            //
+            // The previous guard tested `loggedSide`. That field is only ever COPIED
+            // in today's code (the sync merge) — nothing writes it any more; it is a
+            // leftover from a removed regrade feature and survives on just 34 legacy
+            // rows. So for every row the current app creates the guard never fired,
+            // and a backfill over an already-pulled date silently replaced live
+            // numbers with a post-hoc recompute. That rewrote Zack Wheeler's
+            // 2026-07-27 row (eK 5.25 -> 6.00), dropping a CONV flag off a bet that
+            // was already placed and won, and demoted a genuine live pick out of the
+            // forward test on 2026-07-10.
+            //
+            // Keying on histBackfill is strictly safer than sniffing live provenance:
+            // pulledAtISO/pulledAtLocal/freeSnapAt miss ~34 older rows that carry no
+            // stamp at all. Verified against the store: this protects all 892
+            // non-backfill rows while still refreshing the 6,247 backfill ones.
+            if(idx>=0){
+              const cur=rec.rows[idx];
+              const madeByBackfill = cur.histBackfill===true;
+              const betRow = _bfBetSet.has((rec.date||"")+"|"+norm(cur.pitcher||""));
+              if(madeByBackfill && !betRow) rec.rows[idx]={...cur, ...nr};
+              else {
+                _bfProtected++;                          // leave the row itself untouched
+                // SHADOW: keep the backfill's version BESIDE the live row, never merged
+                // into it. This is what makes "was I pulling too early?" answerable —
+                // your row is the team-average pull you actually made, the shadow is
+                // what a lineup-based 3h pull would have produced for the same game.
+                // Nothing reads bfShadow: not rowVerdict, not collectScorecardRows,
+                // not the gates, not the forward test. It is inert comparison data.
+                rec.rows[idx]={...cur, bfShadow:{
+                  eK:nr.eK, edge:nr.edge, line:nr.line, modelSide:nr.modelSide,
+                  sidePrice:nr.sidePrice, bestOver:nr.bestOver, bestUnder:nr.bestUnder,
+                  oppSource:nr.oppSource, actualK:nr.actualK, hit:nr.hit,
+                  units:(nr.tiers&&nr.tiers.t1?nr.tiers.t1.units:null),
+                  at:new Date().toISOString()
+                }};
+                _bfShadowed++;
+              }
+            }
             else rec.rows.push(nr);
           });
         }
@@ -4212,6 +4309,7 @@ async function runHistRange(fromISO, toISO){
       saveDay(rec);
     }
     setStatus(`Backfill complete — ${games.length} games, ${matched} matched, ${pitchers} pitchers, ${graded} graded.`+
+      (_bfProtected?` Kept ${_bfProtected} live-pulled row(s) untouched`+(_bfShadowed?`, ${_bfShadowed} with a comparison shadow.`:".") :"")+
       (lastRemaining!=null?` ${Number(lastRemaining).toLocaleString()} credits left.`:""),1);
     try{ renderPerf(); }catch(e){}
     // offer the portable export
@@ -6575,16 +6673,40 @@ function renderRecal(){
   el.innerHTML=`<div class="recal">`+TRACKS.map(t=>{
     const tr=rows.filter(r=>r[t.k]);
     const fwdRows=tr.filter(r=>r.isForward && (r.date||"")>=fwdStart);
-    const back=_recalRows(tr.filter(r=>!r.isForward));
+    // HOLDOUT vs in-sample. Every gate in this app was designed on 2025+2026 data,
+    // so anything from BEFORE 2025 was never fit on and is a genuine out-of-sample
+    // season. Folding it into "Backfill" would average a real holdout into the
+    // in-sample number and destroy the only unbiased read available.
+    const HOLDOUT_BEFORE="2025-01-01";
+    const nonFwd=tr.filter(r=>!r.isForward);
+    const hold=_recalRows(nonFwd.filter(r=>(r.date||"")<HOLDOUT_BEFORE));
+    const back=_recalRows(nonFwd.filter(r=>(r.date||"")>=HOLDOUT_BEFORE));
     const fwd =_recalRows(fwdRows);
     const real=_recalBets(bets.filter(b=>(b.style||null)===t.style));
-    const fwdTag = fwd.n>=t.need ? `${fwd.n}/${t.need} ✓` : `${fwd.n}/${t.need}`;
+    // SAMPLE TARGET — how many forward picks this track actually needs, not a flat number.
+    // A track separates from break-even faster the further its hit rate sits from 52.4%,
+    // so one fixed number is wrong for all of them: at their observed rates Overpower
+    // needs ~14 picks and Lean ~89. The old flat 40 made Overpower look 32 picks away
+    // when it was ~6, and told Conviction it wasn't done when its CI had already cleared.
+    // MIN_PROVE floors it so a hot 8-pick start can't be declared proof, and the cap
+    // keeps a below-break-even track (where no n ever clears) from showing "n/400".
+    const MIN_PROVE=20, MAX_NEED=150;
+    const needFor=(hit)=>{
+      if(hit==null) return null;
+      for(let n=MIN_PROVE;n<=MAX_NEED;n++){ if(_wil(Math.round(hit*n),n)[0]>0.524) return n; }
+      return null;                      // rate too close to (or below) break-even to converge
+    };
+    const dynNeed = (fwd.n>=8 ? (needFor(fwd.hit) ?? t.need) : t.need);
+    // proven = enough picks AND the interval actually clears break-even
+    const proven  = fwd.n>=MIN_PROVE && _wil(fwd.w,fwd.n)[0]>0.524;
+    const fwdTag  = proven ? `${fwd.n}/${dynNeed} ✓` : `${fwd.n}/${dynNeed}`;
     const p=pace(fwd,fwdRows,t.need), sg=noise(fwd);
     const fwdExtra = fwd.n?`${p?`<div class="recal-sub" style="margin-top:4px">${p}</div>`:""}<div class="recal-sub" style="margin-top:2px">${sg}</div>`:"";
     return `<div class="recal-track" style="border-left-color:${t.col}">`+
       `<div class="recal-th"><span class="recal-tn" style="color:${t.col}">${t.name}</span>`+
       `<span class="recal-td">${t.def}</span></div>`+
-      `<div class="recal-lenses">`+
+      `<div class="recal-lenses${hold.n?" recal-lenses-4":""}">`+
+        (hold.n?cell("Holdout · never fit on", hold, `${hold.n} picks — pre-${HOLDOUT_BEFORE.slice(0,4)}, true out-of-sample`, "", hold.n?`<div class="recal-sub" style="margin-top:2px">${noise(hold)}</div>`:""):"")+
         cell("Backfill · in-sample", back, `${back.n} picks — not proof`)+
         cell("Forward · live read", fwd, `since ${fwdStart||"—"}`, fwdTag, fwdExtra)+
         cell("Real ＄ wagers", real, real.n?"what you actually bet":"none logged yet")+
