@@ -477,6 +477,7 @@ button:active{transform:translateY(1px)}
   padding:5px 11px;font-family:var(--mono);font-size:11px;cursor:pointer;letter-spacing:.02em;transition:all .12s}
 .gtg:hover{border-color:var(--line2);color:var(--text)}
 .gtg.on{background:var(--text);color:var(--bg);border-color:var(--text);font-weight:700}
+.gtg-sep{display:inline-block;width:1px;align-self:stretch;background:var(--line2);margin:0 4px}
 .metrictoggle{display:inline-flex;gap:2px;background:var(--bg2);border:1px solid var(--line);border-radius:9px;padding:3px;margin:4px 0}
 .mtbtn{background:none;border:none;color:var(--muted);font-size:13px;padding:5px 14px;border-radius:7px;cursor:pointer}
 .mtbtn.on{background:var(--accent);color:#10160f;font-weight:700}
@@ -1052,8 +1053,8 @@ footer{margin-top:30px;color:var(--muted);font-size:11.5px;text-align:center}
     <button class="tnav on" data-tab="Today">▤ Today</button>
     <button class="tnav tnav-mobile" data-tab="Tracked">◱ Tracked</button>
     <button class="tnav" data-tab="Perf">▥ Scoreboard</button>
-    <button class="tnav" data-tab="Data">▦ Data</button>
     <button class="tnav" data-tab="Bets">＄ My Bets</button>
+    <button class="tnav" data-tab="Data">▦ Data</button>
     <button class="tnav" data-tab="Watch">◉ Watchdog</button>
     <button class="tnav" data-tab="Settings"><span class="s-cog">⚙</span><span class="s-lbl"> Settings</span></button>
   </nav>
@@ -1153,8 +1154,8 @@ footer{margin-top:30px;color:var(--muted);font-size:11.5px;text-align:center}
 
     <div id="betSummary" class="betsummary"></div>
 
-    <h3>Weekly hit rate</h3>
-    <p class="muted small" style="color:var(--muted)">Each point is one week's hit rate for the window. The flat reference line is break-even (52.4% at -110). Steadier line = more consistent edge; a saw-tooth that dips below break-even is a signal leaning on hot streaks.</p>
+    <h3 id="graphHeading">Weekly hit rate</h3>
+    <p class="muted small" style="color:var(--muted)">Each point is one bucket's hit rate for the window. The flat reference line is break-even (52.4% at -110). Steadier line = more consistent edge; a saw-tooth that dips below break-even is a signal leaning on hot streaks.</p>
     <div class="graphtoggle" id="graphToggle">
       <button class="gtg" data-cfg="combo">Value</button>
       <button class="gtg" data-cfg="conv">Conviction</button>
@@ -1163,6 +1164,9 @@ footer{margin-top:30px;color:var(--muted);font-size:11.5px;text-align:center}
       <button class="gtg" data-cfg="combo+ceil">Value+OP</button>
       <button class="gtg" data-cfg="conv+ceil">Conv+OP</button>
       <button class="gtg on" data-cfg="all">All 3</button>
+      <span class="gtg-sep"></span>
+      <button class="gtg gtg-bucket on" data-bucket="week">Weekly</button>
+      <button class="gtg gtg-bucket" data-bucket="month">Monthly</button>
     </div>
     <div id="betGraph"></div>
   </div>
@@ -2778,6 +2782,12 @@ document.querySelectorAll&&(function(){
   if(gt) gt.querySelectorAll("[data-cfg]").forEach(b=>b.onclick=()=>{
     _graphCfg=b.dataset.cfg;
     gt.querySelectorAll("[data-cfg]").forEach(x=>x.classList.toggle("on",x===b));
+    try{renderBetGraph();}catch(e){console.error(e);}
+  });
+  if(gt) gt.querySelectorAll("[data-bucket]").forEach(b=>b.onclick=()=>{
+    _graphBucket=b.dataset.bucket;
+    { const h=$("graphHeading"); if(h) h.textContent=(_graphBucket==="month"?"Monthly":"Weekly")+" hit rate"; }
+    gt.querySelectorAll("[data-bucket]").forEach(x=>x.classList.toggle("on",x===b));
     try{renderBetGraph();}catch(e){console.error(e);}
   });
 })();
@@ -6345,6 +6355,13 @@ function renderBetSummary(){
 // libraries (single-file constraint). Each point = one ISO-week's hit rate; the
 // dashed line is break-even (52.4%). Weeks with <3 picks are drawn faint and
 // excluded from the trend read, since tiny samples swing wildly.
+// CHART BUCKET — week or month. Weeks are too small to read at this volume: the
+// median live week is ~8 picks, and at a true 70% hit rate an 8-pick week swings
+// 38%-100% on luck alone, so the saw-tooth is mostly noise rather than form.
+// Months hold ~30-60 picks and show the trend the weekly view buries.
+let _graphBucket="week";                       // "week" | "month"
+function monthKey(dateStr){ return String(dateStr||"").slice(0,7); }   // YYYY-MM
+function bucketKey(dateStr){ return _graphBucket==="month" ? monthKey(dateStr) : isoWeekKey(dateStr); }
 function isoWeekKey(dateStr){
   const d=new Date(dateStr+"T00:00:00Z");
   const day=(d.getUTCDay()+6)%7;            // Mon=0
@@ -6370,7 +6387,7 @@ function renderBetGraph(){
     const byWeek={};
     rows.filter(f).forEach(r=>{
       if(!r.date) return;
-      const k=isoWeekKey(r.date);
+      const k=bucketKey(r.date);
       (byWeek[k]=byWeek[k]||{w:0,n:0,u:0});
       byWeek[k].n++; if(r.hit) byWeek[k].w++; byWeek[k].u+=(r.units||0);
     });
@@ -6388,7 +6405,7 @@ function renderBetGraph(){
       if(!r.date) return;
       let stake=0; for(const fl of flags) if(r[fl]) stake++;
       if(!stake) return;
-      const k=isoWeekKey(r.date);
+      const k=bucketKey(r.date);
       (byWeek[k]=byWeek[k]||{w:0,n:0,u:0});
       byWeek[k].n++;                                   // ONE bet per pitcher
       if(r.hit){ byWeek[k].w++; byWeek[k].u+=(r.units||0)*stake; } else byWeek[k].u-=stake;
@@ -6411,7 +6428,10 @@ function renderBetGraph(){
 
   // y-domain adapts to the DRAWN points (weeks with >=3 picks). Include the combined
   // line so its peaks/troughs stay on-canvas.
-  const drawnVals=[...combo,...conv,...ceil,...combined].filter(p=>p.n>=3).map(p=>val(p));
+  // thin-bucket floor scales with the bucket: 3 picks is a reasonable bar for a week,
+  // meaningless for a month (a 3-pick month is not a month, it is a rounding error).
+  const MINN=(_graphBucket==="month")?10:3;
+  const drawnVals=[...combo,...conv,...ceil,...combined].filter(p=>p.n>=MINN).map(p=>val(p));
   let yMin,yMax;
   if(units||roiMode){
     const us=drawnVals.length?drawnVals:[0];
@@ -6430,13 +6450,13 @@ function renderBetGraph(){
 
   const line=(pts,color,opts={})=>{
     const w=opts.width||2.5, baseOp=opts.dim?0.45:1;
-    const drawn=pts.filter(p=>p.n>=3);
+    const drawn=pts.filter(p=>p.n>=MINN);
     const path=drawn.map((p,i)=>{
       const xi=x(allWeeks.indexOf(p.week));
       return (i?"L":"M")+xi.toFixed(1)+","+y(val(p)).toFixed(1);
     }).join(" ");
     const dots=pts.map(p=>{
-      const xi=x(allWeeks.indexOf(p.week)), faint=p.n<3;
+      const xi=x(allWeeks.indexOf(p.week)), faint=p.n<MINN;
       const lbl=roiMode?`${p.u/p.n>=0?"+":""}${(p.u/p.n*100).toFixed(0)}% ROI`:(units?`${p.u>=0?"+":""}${p.u.toFixed(2)}u`:`${Math.round(p.wr*100)}%`);
       const r=opts.dim?(faint?2:3):(faint?2.5:4);
       return `<circle cx="${xi.toFixed(1)}" cy="${y(val(p)).toFixed(1)}" r="${r}" fill="${color}" opacity="${faint?baseOp*0.3:baseOp}"><title>${p.week}: ${lbl} (n=${p.n})</title></circle>`;
@@ -6494,7 +6514,7 @@ function renderBetGraph(){
     grid+refLine+ drawn + xlabels+`</svg>`;
   const legend=`<div class="graphlegend">`+
     legendItems+
-    `<span class="muted" style="color:var(--muted)">faint dots = &lt;3 picks that week · ${roiMode?"weekly ROI %":units?"weekly units ±":"weekly hit %"}</span></div>`;
+    `<span class="muted" style="color:var(--muted)">faint dots = &lt;${MINN} picks that ${_graphBucket} · ${_graphBucket==="month"?(roiMode?"monthly ROI %":units?"monthly units ±":"monthly hit %"):(roiMode?"weekly ROI %":units?"weekly units ±":"weekly hit %")}</span></div>`;
   el.innerHTML=svg+legend;
 }
 
@@ -6682,7 +6702,19 @@ function betClearsCurrentGate(b, key){
       if(r){ if(edge==null) edge=r.edge; if(eK==null) eK=r.eK; }
     }catch(e){}
   }
-  const line=(b.line!=null)?Number(b.line):null, side=b.side||null;
+  // Use the line the MODEL FLAGGED, not the line you wagered. They differ when the
+  // market moves between flag and bet (2026-07-10 Chris Sale: flagged at 7.5, bet at
+  // 6.5). The question here is "was this flagged under a rule we no longer use", so it
+  // must be judged on the flag's own inputs — scoring it on the wagered line called a
+  // legitimate Conviction bet stale because its distance-from-line shrank from 2.15
+  // to 1.15. Falls back to the bet's line when no row is found.
+  let line=null, side=b.side||null;
+  try{
+    const rec=loadDay(b.date);
+    const r=(rec&&rec.rows||[]).find(x=>norm(x.pitcher||"")===norm(b.pitcher||""));
+    if(r){ if(r.line!=null) line=Number(r.line); if(r.modelSide) side=r.modelSide; }
+  }catch(e){}
+  if(line==null) line=(b.line!=null)?Number(b.line):null;
   if(edge==null || line==null || side==null) return null;
   if(key==="isCombo")    return line<=EDGE_MAX_LINE && edge>=EDGE_STRONG_BAR;
   if(key==="isCeiling")  return side==="Over" && line>=5.5 && edge>=CEIL_EDGE_MIN;
