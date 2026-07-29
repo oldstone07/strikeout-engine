@@ -1825,7 +1825,7 @@ async function fetchProbables(date){
   (raw.dates||[]).forEach(d=>(d.games||[]).forEach(g=>{
     const h=g.teams?.home||{},a=g.teams?.away||{};
     list.push({
-      gamePk:g.gamePk,
+      gamePk:g.gamePk, timeISO:g.gameDate||null,
       homePid:h.probablePitcher?.id??null, awayPid:a.probablePitcher?.id??null,
       homeName:h.probablePitcher?.fullName??null, awayName:a.probablePitcher?.fullName??null,
       homeId:h.team?.id??null, awayId:a.team?.id??null,
@@ -1894,13 +1894,26 @@ function teamChip(name){
   return `<span class="teamchip" style="background:${c1}">${abbr}</span>`;
 }
 // match an odds game (home/away team strings) to an MLB schedule game by team name
-function matchGame(probList, oddsHome, oddsAway){
+// DOUBLEHEADERS: team names alone do NOT identify a game. Both halves of
+// ATL @ NYM on 2026-07-29 match identically, so a plain .find() always returned
+// game 1 — which is why pulling game 2 kept charging a credit and saving the
+// wrong starters. When `nearISO` is supplied we keep every team match and take
+// the one closest in start time.
+function matchGame(probList, oddsHome, oddsAway, nearISO){
   const oh=norm(oddsHome), oa=norm(oddsAway);
-  return probList.find(g=>{
-    const gh=norm(g.homeTeam), ga=norm(g.awayTeam);
-    const hit=(a,b)=>a&&b&&(a.includes(b)||b.includes(a)||a.split(" ").pop()===b.split(" ").pop());
-    return hit(gh,oh)&&hit(ga,oa);
-  })||null;}
+  const hit=(a,b)=>a&&b&&(a.includes(b)||b.includes(a)||a.split(" ").pop()===b.split(" ").pop());
+  const hits=(probList||[]).filter(g=> hit(norm(g.homeTeam),oh) && hit(norm(g.awayTeam),oa) );
+  if(!hits.length) return null;
+  if(hits.length===1 || !nearISO) return hits[0];
+  const t=Date.parse(nearISO);
+  if(isNaN(t)) return hits[0];
+  let best=hits[0], bd=Infinity;
+  for(const g of hits){
+    const gt=Date.parse(g.timeISO||"");
+    const dd=isNaN(gt)?Infinity:Math.abs(gt-t);
+    if(dd<bd){ bd=dd; best=g; }
+  }
+  return best;}
 async function pitcherKRate(pid,s){if(pid==null)return{k:null,bf:null,bfPerStart:null,isStarter:false,pHand:null};
   try{const r=await jget(`${MLB}/people/${pid}/stats?stats=season&group=pitching&season=${s}`);
     const st=r.stats?.[0]?.splits?.[0]?.stat||{};
@@ -2933,13 +2946,23 @@ function renderToday(rows){
   const _trkSet = ensureTrackSet(_trkDay, rows);
 
   // index pulled rows by game (team pair)
+  // DOUBLEHEADER-SAFE GROUPING. Team names alone are not a game id — both halves of
+  // ATL @ NYM key to "new york mets|atlanta braves", so all four starters landed in
+  // one bucket and each half saw the other's rows (a pulled game 1 made game 2 look
+  // pulled). Rows carry gamePk when they were scored; older rows fall back to teams.
+  const _gkey=(gamePk,home,away)=> (gamePk!=null? "pk:"+gamePk : norm(home||"")+"|"+norm(away||""));
   const rowsByGame={};
   rows.forEach(r=>{
-    const k=norm(r.homeName||"")+"|"+norm(r.awayName||"");
+    const k=_gkey(r.gamePk, r.homeName, r.awayName);
     (rowsByGame[k]=rowsByGame[k]||[]).push(r);
   });
-
-  const nPulled=_stageGames.filter(g=>rowsByGame[norm(g.homeTeam)+"|"+norm(g.awayTeam)]).length;
+  // a staged game finds its rows by gamePk, else by the legacy team key
+  const _stagedKey=(g)=>{
+    const byPk=(g.gamePk!=null)?("pk:"+g.gamePk):null;
+    if(byPk && rowsByGame[byPk]) return byPk;
+    return norm(g.homeTeam)+"|"+norm(g.awayTeam);
+  };
+  const nPulled=_stageGames.filter(g=>rowsByGame[_stagedKey(g)]).length;
   subEl.textContent=`${_stageGames.length} games · ${nPulled} pulled`;
 
   // ---- STAT STRIP: Value / Conviction / Pass ----
@@ -3028,7 +3051,7 @@ function renderToday(rows){
     `<div class="ts-colhead"><span>Call</span><span>Pitcher · matchup</span><span>Recent K</span><span class="r">Line</span><span class="r">Model</span><span class="r">Edge</span><span>Flags</span><span class="r">Action</span></div>`;
 
   _stageGames.forEach((g,i)=>{
-    const gk=norm(g.homeTeam)+"|"+norm(g.awayTeam);
+    const gk=_stagedKey(g);
     const gRows=rowsByGame[gk]||[];
     const time = g.timeISO ? etTimeOf(g.timeISO) : "TBD";
     const gradeable = gRows.filter(r=>!r.skipped);
@@ -3475,7 +3498,7 @@ async function previewSlate(){
     const rows=[];
     let done=0;
     for(const g of _stageGames){
-      const game=matchGame(probList, g.homeTeam, g.awayTeam);
+      const game=matchGame(probList, g.homeTeam, g.awayTeam, g.timeISO||null);
       setStatus(`Preview: modeling ${g.awayTeam} @ ${g.homeTeam}… (${++done}/${_stageGames.length}) — free, no credits`, done/_stageGames.length);
       if(!game){ continue; }
       // both starters: home + away
@@ -3632,7 +3655,7 @@ async function scoreOneEvent(ev, probList, key, season){
   const byP={};
   (odds.bookmakers||[]).forEach(bk=>(bk.markets||[]).forEach(m=>(m.outcomes||[]).forEach(o=>{
     (byP[o.description]=byP[o.description]||[]).push({book:bk.key,side:o.name,line:o.point,price:o.price});})));
-  const game=matchGame(probList, ev.home_team, ev.away_team);
+  const game=matchGame(probList, ev.home_team, ev.away_team, ev.commence_time||null);
   const outRows=[];
   for(const pitcher of Object.keys(byP)){
     const recs=byP[pitcher];
@@ -3679,7 +3702,7 @@ async function scoreOneEvent(ev, probList, key, season){
       const kRate = (pinfo.bf>0) ? pinfo.k/pinfo.bf : null;
       const kTier = kRate==null ? null : (kRate>=0.27?"high-K" : kRate>=0.21?"mid-K" : "low-K");
       const workload = expBf1>=24.5 ? "deep" : expBf1>=22 ? "medium" : "short";
-      row={...row, pid, opponent:oppName, oppSource:src, isStarter:pinfo.isStarter,
+      row={...row, pid, gamePk:(game&&game.gamePk!=null?game.gamePk:null), opponent:oppName, oppSource:src, isStarter:pinfo.isStarter,
            pitcherKRate:pinfo.k, opponentKRate:oK,
            traits:{ kTier, workload, kRate },
            tiers:{ t0, t1 },
@@ -3708,7 +3731,7 @@ async function scoreOneEvent(ev, probList, key, season){
 // cancel costs nothing.
 async function lineupsPosted(g, probList){
   try{
-    const gm=matchGame(probList||[], g.homeTeam, g.awayTeam);
+    const gm=matchGame(probList||[], g.homeTeam, g.awayTeam, g.timeISO||null);
     if(!gm || gm.gamePk==null) return {known:false, home:false, away:false};
     const [h,a]=await Promise.all([lineup(gm.gamePk,"home"), lineup(gm.gamePk,"away")]);
     return {known:true, home:!!(h&&h.length), away:!!(a&&a.length)};
@@ -3723,10 +3746,24 @@ async function pullOneGame(g, pre){
   try{
     setStatus(`Pulling lines for ${g.awayTeam} @ ${g.homeTeam}…`,0.3);
     const events=(pre&&pre.events)?pre.events:await jget(`${ODDS}/sports/baseball_mlb/events?apiKey=${key}`);
-    const ev=events.find(e=>{
+    // Same doubleheader trap as matchGame: two events share the teams, so take the
+    // one whose commence_time is nearest this staged game rather than the first.
+    const _evHits=events.filter(e=>{
       const eh=norm(e.home_team),ea=norm(e.away_team),gh=norm(g.homeTeam),ga=norm(g.awayTeam);
       return (eh===gh&&ea===ga)||(eh===ga&&ea===gh);
     });
+    let ev=_evHits[0];
+    if(_evHits.length>1 && g.timeISO){
+      const t=Date.parse(g.timeISO);
+      if(!isNaN(t)){
+        let bd=Infinity;
+        for(const e of _evHits){
+          const et=Date.parse(e.commence_time||"");
+          const dd=isNaN(et)?Infinity:Math.abs(et-t);
+          if(dd<bd){ bd=dd; ev=e; }
+        }
+      }
+    }
     if(!ev){ setStatus(`No posted lines yet for ${g.awayTeam} @ ${g.homeTeam}. Try again closer to game time.`); return; }
     const probList=(pre&&pre.probList)?pre.probList:await fetchProbables(day);
     // Warn BEFORE spending the credit if the lineups aren't up yet.
@@ -4050,7 +4087,7 @@ async function scoreHistGame(key, hg, probList, season){
   (pr.odds.bookmakers||[]).forEach(bk=>(bk.markets||[]).forEach(m=>(m.outcomes||[]).forEach(o=>{
     (byP[o.description]=byP[o.description]||[]).push({book:bk.key,side:o.name,line:o.point,price:o.price});})));
   if(!Object.keys(byP).length) return {rows:[], remaining, matched:false};
-  const game=matchGame(probList, ev.home_team, ev.away_team);
+  const game=matchGame(probList, ev.home_team, ev.away_team, ev.commence_time||null);
   const outRows=[];
   for(const pitcher of Object.keys(byP)){
     const recs=byP[pitcher];
@@ -4098,7 +4135,7 @@ async function scoreHistGame(key, hg, probList, season){
       const kRate = (pinfo.bf>0) ? pinfo.k/pinfo.bf : null;
       const kTier = kRate==null ? null : (kRate>=0.27?"high-K" : kRate>=0.21?"mid-K" : "low-K");
       const workload = expBf1>=24.5 ? "deep" : expBf1>=22 ? "medium" : "short";
-      row={...row, pid, opponent:oppName, oppSource:src, isStarter:pinfo.isStarter,
+      row={...row, pid, gamePk:(game&&game.gamePk!=null?game.gamePk:null), opponent:oppName, oppSource:src, isStarter:pinfo.isStarter,
            pitcherKRate:pinfo.k, opponentKRate:oK, traits:{kTier,workload,kRate},
            tiers:{t0,t1}, skipped:!pinfo.isStarter, skipReason:pinfo.isStarter?null:"reliever/opener"};
       if(t1){
@@ -5857,7 +5894,7 @@ async function watchGameInto(g, all, probList, day, season){
   });
   const findRecs=(pitcherName)=> matchPitcherRecs(byPitcher, pitcherName);
   // model this game's starters (free)
-  const game=matchGame(probList, g.homeTeam, g.awayTeam);
+  const game=matchGame(probList, g.homeTeam, g.awayTeam, g.timeISO||null);
   const modelByName={};
   if(game){
     for(const [pidKey,nmKey,oSide,oIdKey] of [["homePid","homeName","away","awayId"],["awayPid","awayName","home","homeId"]]){
@@ -6627,6 +6664,33 @@ function _recalBets(bets){ const settled=bets.filter(b=>b.result&&b.result!=="pu
   const net=bets.filter(b=>b.pl!=null).reduce((s,b)=>s+Number(b.pl||0),0);
   const staked=settled.reduce((s,b)=>s+Number(b.stake||0),0);
   return {n:w+l,w,l,hit:(w+l)?w/(w+l):null,u:net,roi:staked?net/staked*100:null}; }
+// Does a LOGGED bet still clear the gate its track uses TODAY? Gates get retuned
+// (Overpower gained a 2% edge floor on 2026-07-28), and the Forward lens re-scores
+// stored rows under the current rule while the Real $ lens never re-gates — it is a
+// record of decisions you actually made. So after a retune the two lenses stop being
+// comparable, and Real $ can read deeply negative while the current gate's own record
+// is fine. This lets the Real $ cell say so instead of silently misleading.
+// Returns true / false / null (null = not enough saved to judge).
+function betClearsCurrentGate(b, key){
+  if(!b) return null;
+  let edge=(b.snap&&b.snap.edge!=null)?b.snap.edge:null;
+  let eK  =(b.snap&&b.snap.eK  !=null)?b.snap.eK  :null;
+  if(edge==null || eK==null){                       // older bets have no snapshot — use the day row
+    try{
+      const rec=loadDay(b.date);
+      const r=(rec&&rec.rows||[]).find(x=>norm(x.pitcher||"")===norm(b.pitcher||""));
+      if(r){ if(edge==null) edge=r.edge; if(eK==null) eK=r.eK; }
+    }catch(e){}
+  }
+  const line=(b.line!=null)?Number(b.line):null, side=b.side||null;
+  if(edge==null || line==null || side==null) return null;
+  if(key==="isCombo")    return line<=EDGE_MAX_LINE && edge>=EDGE_STRONG_BAR;
+  if(key==="isCeiling")  return side==="Over" && line>=5.5 && edge>=CEIL_EDGE_MIN;
+  if(key==="isConvOver") return eK!=null && side==="Under" && edge>=CONV_EDGE_MIN
+                              && Math.abs(eK-line)>=CONV_DISAGREE_MIN && line>=CONV_MIN_LINE;
+  if(key==="isLean")     return line<=EDGE_MAX_LINE && edge>=LEAN_EDGE_MIN && edge<EDGE_STRONG_BAR;
+  return null;
+}
 function renderRecal(){
   const el=$("recalCard"); if(!el) return;
   // Own the forward-test start stamp (moved here from the retired Forward Test card).
@@ -6682,7 +6746,10 @@ function renderRecal(){
     const hold=_recalRows(nonFwd.filter(r=>(r.date||"")<HOLDOUT_BEFORE));
     const back=_recalRows(nonFwd.filter(r=>(r.date||"")>=HOLDOUT_BEFORE));
     const fwd =_recalRows(fwdRows);
-    const real=_recalBets(bets.filter(b=>(b.style||null)===t.style));
+    const myBets=bets.filter(b=>(b.style||null)===t.style);
+    const real=_recalBets(myBets);
+    // how many of those were placed under a gate this track no longer uses
+    const _stale=myBets.filter(b=>betClearsCurrentGate(b,t.k)===false).length;
     // SAMPLE TARGET — how many forward picks this track actually needs, not a flat number.
     // A track separates from break-even faster the further its hit rate sits from 52.4%,
     // so one fixed number is wrong for all of them: at their observed rates Overpower
@@ -6709,7 +6776,8 @@ function renderRecal(){
         (hold.n?cell("Holdout · never fit on", hold, `${hold.n} picks — pre-${HOLDOUT_BEFORE.slice(0,4)}, true out-of-sample`, "", hold.n?`<div class="recal-sub" style="margin-top:2px">${noise(hold)}</div>`:""):"")+
         cell("Backfill · in-sample", back, `${back.n} picks — not proof`)+
         cell("Forward · live read", fwd, `since ${fwdStart||"—"}`, fwdTag, fwdExtra)+
-        cell("Real ＄ wagers", real, real.n?"what you actually bet":"none logged yet")+
+        cell("Real ＄ wagers", real, real.n?"what you actually bet":"none logged yet", "",
+          _stale?`<div class="recal-sub" style="margin-top:4px;color:var(--accent)">${_stale} of ${myBets.length} predate the current gate — not comparable to Forward</div>`:"")+
       `</div></div>`;
   }).join("")+`</div>`;
 }
