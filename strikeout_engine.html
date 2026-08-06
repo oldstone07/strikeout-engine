@@ -74,7 +74,7 @@
 #todayCard .gt-rsslot{ display:inline-flex; line-height:0; }
 /* ---- mockup one-row-per-pitcher board ---- */
 /* All columns FIXED width — tight, and nothing shifts when a line is pulled. */
-#todayCard .ts-colhead, #todayCard .ts-row{ display:grid; grid-template-columns:92px 232px 132px 90px 62px 104px 100px 196px; align-items:center; gap:16px; padding:0 20px; }
+#todayCard .ts-colhead, #todayCard .ts-row{ display:grid; grid-template-columns:92px 232px 132px 90px 62px 104px 76px 196px; align-items:center; gap:16px; padding:0 20px; }
 #todayCard .ts-colhead{ padding-top:11px; padding-bottom:10px; border-bottom:1px solid var(--line); background:var(--bg2); color:var(--faint); font-size:9px; letter-spacing:.14em; text-transform:uppercase; }
 #todayCard .ts-colhead .r{ text-align:right; }
 #todayCard .ts-row{ padding-top:13px; padding-bottom:13px; border-bottom:1px solid var(--line); position:relative; transition:background .12s; }
@@ -1109,7 +1109,7 @@ footer{margin-top:30px;color:var(--muted);font-size:11.5px;text-align:center}
     <div id="perfStatus" class="perfstatus hidden"></div>
 
     <h3>★ Forward test — three lenses on each bet</h3>
-    <p class="muted small" style="color:var(--muted)"><b>The three bets you place</b> — Value (Strong + ≤5.5) over 30 picks, Conviction over 40, Overpower over 40 — each proves out only at <b>ROI ≥ +5%</b> over its sample (only live picks count). Read across three lenses: <b>Backfill</b> is in-sample (the gate was fit on it, so it always looks good) — <b>not</b> proof. <b>Forward</b> is the live, out-of-sample read since the gate went live — the honest one. <b>Real ＄ wagers</b> are ground truth. Watch whether the three agree as the second half fills in.</p>
+    <p class="muted small" style="color:var(--muted)"><b>The two bets you place</b> — Conviction over 40 picks, Overpower over 40 — each proves out only at <b>ROI ≥ +5%</b> over its sample (only live picks count). Read across three lenses: <b>Backfill</b> is in-sample (the gate was fit on it, so it always looks good) — <b>not</b> proof. <b>Forward</b> is the live, out-of-sample read since the gate went live — the honest one. <b>Real ＄ wagers</b> are ground truth. Watch whether the three agree as the second half fills in.</p>
     <div id="recalCard"></div>
     <div id="freeVsPaid" style="margin-top:14px"></div>
 
@@ -1157,13 +1157,9 @@ footer{margin-top:30px;color:var(--muted);font-size:11.5px;text-align:center}
     <h3 id="graphHeading">Weekly hit rate</h3>
     <p class="muted small" style="color:var(--muted)">Each point is one bucket's hit rate for the window. The flat reference line is break-even (52.4% at -110). Steadier line = more consistent edge; a saw-tooth that dips below break-even is a signal leaning on hot streaks.</p>
     <div class="graphtoggle" id="graphToggle">
-      <button class="gtg" data-cfg="combo">Value</button>
       <button class="gtg" data-cfg="conv">Conviction</button>
       <button class="gtg" data-cfg="ceil">Overpower</button>
-      <button class="gtg" data-cfg="combo+conv">Value+Conv</button>
-      <button class="gtg" data-cfg="combo+ceil">Value+OP</button>
-      <button class="gtg" data-cfg="conv+ceil">Conv+OP</button>
-      <button class="gtg on" data-cfg="all">All 3</button>
+      <button class="gtg on" data-cfg="all">Both</button>
       <span class="gtg-sep"></span>
       <button class="gtg gtg-bucket on" data-bucket="week">Weekly</button>
       <button class="gtg gtg-bucket" data-bucket="month">Monthly</button>
@@ -1184,7 +1180,7 @@ footer{margin-top:30px;color:var(--muted);font-size:11.5px;text-align:center}
         <input id="restoreFile" type="file" accept="application/json,.json" style="display:none">
       </div>
     </div>
-    <p class="muted small" style="color:var(--muted)">Each day's flagged picks and how they did, with that day's Value and Conviction record. <b>Export backup</b> downloads everything as a file you own. <b>Restore backup</b> merges a backup file in — days in the file overwrite matching days; days not in the file are kept.</p>
+    <p class="muted small" style="color:var(--muted)">Each day's flagged picks and how they did, with that day's Conviction and Overpower record. <b>Export backup</b> downloads everything as a file you own. <b>Restore backup</b> merges a backup file in — days in the file overwrite matching days; days not in the file are kept.</p>
     <div class="customrange" id="backfillRange" style="margin:4px 0 14px">
       <label>Backfill month <select id="histRangeMonth"></select></label>
       <button class="ghost small" id="histRangeBtn">Backfill month (paid)</button>
@@ -1411,8 +1407,8 @@ footer{margin-top:30px;color:var(--muted);font-size:11.5px;text-align:center}
             <div class="bs-sub"><span id="bsCeilRec">—</span> · <span id="bsCeilPct">—</span></div>
           </div>
         </div>
-        <div class="betstyle betstyle3">
-          <div class="bs-col">
+        <div class="betstyle betstyle3" id="betStyleCols">
+          <div class="bs-col" id="bsColValue" hidden>
             <div class="bs-collabel" style="color:var(--bet)">Value =</div>
             <div class="bs-cell bs-comp">
               <div class="bs-head">Line ≤ 5.5 only</div>
@@ -1478,6 +1474,20 @@ const CONV_MIN_LINE=5.5;      // Conviction now requires line ≥5.5 (high-line 
                               // was dead weight (+6.7% Over). At ≥1.0 the bucket is
                               // 106-37 / +33% ROI and holds out-of-sample (2025 +27%,
                               // 2026 +40%). One constant feeds every Conviction gate.
+// VALUE IS RETIRED (2026-08-04). Its edge was real — it cleared a 2024 holdout it
+// was never fit on (15-9, 62.5%, +32.5%) — but the low-line market it depended on
+// tightened in mid-2026 and priced it away:
+//   * flag rate on line<=5.5 halved YoY, 4.9% -> 2.4% of rows
+//   * live record 6-15 (28.6%), 95% CI [14,50] entirely BELOW break-even
+//   * the giveaway: "wrong-way miss" (how far the result moved AGAINST the pick)
+//     jumped +0.34K -> +1.77K, p=0.0009. Under picks now K 1.6 over projection,
+//     Over picks 2.0 under. Both sides at once = the market winning the
+//     disagreement, not variance.
+//   * Conviction (+0.09K, p=0.82) and Overpower are unaffected, so this is
+//     specific to the low-line market Value lives in, not the model breaking.
+// Flip to true to bring it back whole if that market ever softens again. Nothing
+// historical is deleted — day rows and logged bets are untouched.
+const VALUE_ENABLED=false;
 const CEIL_EDGE_MIN=0.02;     // Overpower now requires edge >=2% (added 2026-07-28).
                               // The old gate was Over + line>=5.5 and NOTHING else, so a
                               // -7% edge pick lit up identically to a +15% one. Edge is a
@@ -2513,6 +2523,7 @@ function updateMetaStrip(){
 
 // Header meta + right-rail panels. All real data; never throws out.
 function renderRail(){
+  { const c=$("bsColValue"); if(c) c.hidden=!VALUE_ENABLED; }
   // ---- header meta ----
   const rem=getCredits();
   if($("hmCredits")) $("hmCredits").textContent = rem!=null ? rem.toLocaleString() : "—";
@@ -2990,7 +3001,7 @@ function renderToday(rows){
     && !(r._verdict && (r._verdict.isCombo||r._verdict.isConvOver||r._verdict.isCeiling))
     && isLeanRow(r)).length;
   let summary=`<div class="statstrip" id="statStrip">`+
-    `<div class="ss-cell ss-click" data-pick="combo"><div class="ss-n" style="color:var(--bet)">${comboCount}</div><div class="ss-l">Value</div></div>`+
+    (VALUE_ENABLED?`<div class="ss-cell ss-click" data-pick="combo"><div class="ss-n" style="color:var(--bet)">${comboCount}</div><div class="ss-l">Value</div></div>`:"")+
     `<div class="ss-cell ss-click" data-pick="conv"><div class="ss-n" style="color:var(--accent)">${convCount}</div><div class="ss-l">Conviction</div></div>`+
     `<div class="ss-cell ss-click" data-pick="ceil"><div class="ss-n" style="color:var(--ceiling)">${ceilCount}</div><div class="ss-l">Overpower</div></div>`+
     `<div class="ss-cell"><div class="ss-n" style="color:var(--muted)">${passCount}</div><div class="ss-l">Pass</div></div>`+
@@ -3049,7 +3060,7 @@ function renderToday(rows){
     const uCol=o.u>0?"var(--pos)":o.u<0?"var(--neg)":"var(--muted)";
     return `<span class="gt-rec" style="border-color:${col}"><b style="color:${col}">${label}</b> ${o.w}-${o.l} <span style="color:${uCol}">${o.u>=0?"+":""}${o.u.toFixed(1)}u</span></span>`;
   };
-  const dayRecHTML = `<div class="gt-dayrec">${recChip("Value",dc,"var(--bet)")}${recChip("Conv",dv,"var(--accent)")}${recChip("Overpower",dcl,"var(--ceiling)")}${recChip("Day",dall,"var(--text)")}</div>`;
+  const dayRecHTML = `<div class="gt-dayrec">${VALUE_ENABLED?recChip("Value",dc,"var(--bet)"):""}${recChip("Conv",dv,"var(--accent)")}${recChip("Overpower",dcl,"var(--ceiling)")}${recChip("Day",dall,"var(--text)")}</div>`;
   // "N STARTERS · M SIGNALS LIVE" — starters = two slots per staged game;
   // signals live = unique pitchers currently flagged Value/Conviction/Overpower.
   const nStarters = _stageGames.length * 2;
@@ -3289,7 +3300,7 @@ function renderToday(rows){
       // made every Overpower flag read as the same bet.
       const _eTip = (r && r.edge!=null) ? ` · edge ${(r.edge*100).toFixed(0)}%` : "";
       const _flags=`<span class="ts-flags">`+
-        `<span class="ts-fl v ${fV?'on':''}" title="VALUE — line ≤${EDGE_MAX_LINE} and edge ≥${(EDGE_STRONG_BAR*100).toFixed(0)}%${fV?_eTip:""}">V</span>`+
+        (VALUE_ENABLED?`<span class="ts-fl v ${fV?'on':''}" title="VALUE — line ≤${EDGE_MAX_LINE} and edge ≥${(EDGE_STRONG_BAR*100).toFixed(0)}%${fV?_eTip:""}">V</span>`:"")+
         `<span class="ts-fl c ${fC?'on':''}" title="CONVICTION — Under, edge ≥${(CONV_EDGE_MIN*100).toFixed(0)}%, ≥${CONV_DISAGREE_MIN.toFixed(1)}K from the line, line ≥${CONV_MIN_LINE}${fC?_eTip:""}">C</span>`+
         `<span class="ts-fl o ${fO?'on':''}" title="OVERPOWER — Over, line ≥5.5, edge ≥${(CEIL_EDGE_MIN*100).toFixed(0)}%${fO?_eTip:""}">O</span>`+
         `</span>`;
@@ -4582,13 +4593,13 @@ function renderTimingAB(pairs, meta){
     `</div>`+
     `<table class="abtable" style="width:100%;margin-top:12px;border-collapse:collapse;font-size:12.5px">`+
       `<tr style="color:var(--muted)"><th>Track (by 3h flag)</th><th>3h standard</th><th>${meta.earlyHours}h early</th><th>n</th><th>flips</th></tr>`+
-      trackRow("Value","value","var(--bet)")+trackRow("Conviction","conv","var(--accent)")+trackRow("Overpower","ceil","var(--ceiling)")+
+      (VALUE_ENABLED?trackRow("Value","value","var(--bet)"):"")+trackRow("Conviction","conv","var(--accent)")+trackRow("Overpower","ceil","var(--ceiling)")+
     `</table>`+
     `<div class="attrtitle" style="margin-top:16px">False-flag check — does a 9h flag survive to 3h?</div>`+
     `<p class="fine" style="color:var(--muted);margin:2px 0 4px">Flags recomputed at each snapshot. <b>Evaporated</b> = fired at ${meta.earlyHours}h but gone by 3h (you'd have bet it early; it isn't real by close). <b>Missed</b> = only fires at 3h (you'd skip it betting early). Records are at the price you'd actually get.</p>`+
     `<table class="abtable" style="width:100%;margin-top:4px;border-collapse:collapse;font-size:12.5px">`+
       `<tr style="color:var(--muted)"><th>Flag</th><th>Flagged ${meta.earlyHours}h (you'd bet)</th><th>Confirmed at 3h</th><th>Evaporated (false)</th><th>Missed (3h-only)</th></tr>`+
-      ffRow("Value",r=>flagAt(r,"value"),"var(--bet)")+
+      (VALUE_ENABLED?ffRow("Value",r=>flagAt(r,"value"),"var(--bet)"):"")+
       ffRow("Conviction",r=>flagAt(r,"conv"),"var(--accent)")+
       ffRow("Overpower",r=>flagAt(r,"ceil"),"var(--ceiling)")+
       ffRow("Any bet",anyFlag,"var(--text)")+
@@ -5082,7 +5093,7 @@ function renderHistory(){
       if(r.skipped||!r.modelSide) return;
       const t=r.tiers&&r.tiers.t1; if(!t||t.hit==null||t.units==null||r.voided) return;
       const disag=(r.eK!=null&&r.line!=null)?Math.abs(r.eK-r.line):0;
-      if(r.line<=5.5 && r.edge>=0.20){ combo.n++; if(t.hit)combo.w++; combo.u+=t.units; }
+      if(VALUE_ENABLED && r.line<=5.5 && r.edge>=0.20){ combo.n++; if(t.hit)combo.w++; combo.u+=t.units; }
       if(r.modelSide==="Under" && r.edge!=null && r.edge>=CONV_EDGE_MIN && disag>=CONV_DISAGREE_MIN && r.line!=null && r.line>=CONV_MIN_LINE){ conv.n++; if(t.hit)conv.w++; conv.u+=t.units; }
       if(r.modelSide==="Over" && r.line!=null && r.line>=5.5 && r.edge!=null && r.edge>=CEIL_EDGE_MIN){ ceil.n++; if(t.hit)ceil.w++; ceil.u+=t.units; }
     });
@@ -5105,7 +5116,7 @@ function renderHistory(){
     let block=`<div class="tierrow" style="grid-template-columns:1fr 110px 40px 40px;cursor:pointer" data-date="${rec.date}">`+
       `<div class="tiername">`+
         `<div class="tiername-top">${rec.date}`+
-          `<span class="dayrecs-inline">`+recChip("Value",combo,"var(--bet)")+recChip("Conviction",conv,"var(--accent)")+recChip("Overpower",ceil,"var(--ceiling)")+`</span>`+
+          `<span class="dayrecs-inline">`+(VALUE_ENABLED?recChip("Value",combo,"var(--bet)"):"")+recChip("Conviction",conv,"var(--accent)")+recChip("Overpower",ceil,"var(--ceiling)")+`</span>`+
         `</div>`+
         `<em>${picks.length} pick${picks.length===1?"":"s"} · ${rows.length} pitcher${rows.length===1?"":"s"}</em>`+
       `</div>`+
@@ -5161,7 +5172,7 @@ function histDetailHTML(rec){
     let isCombo=false, isConv=false, isCeiling=false;
     if(!res.skipped && !r.voided && !res.nopick && r.modelSide){
       const disag=(r.eK!=null&&r.line!=null)?Math.abs(r.eK-r.line):0;
-      isCombo = (r.line!=null && r.line<=5.5 && r.edge!=null && r.edge>=0.20);
+      isCombo = VALUE_ENABLED && (r.line!=null && r.line<=5.5 && r.edge!=null && r.edge>=0.20);
       isConv  = (r.modelSide==="Under" && r.edge!=null && r.edge>=CONV_EDGE_MIN && disag>=CONV_DISAGREE_MIN && r.line!=null && r.line>=CONV_MIN_LINE);
       isCeiling = (r.modelSide==="Over" && r.line!=null && r.line>=5.5 && r.edge!=null && r.edge>=CEIL_EDGE_MIN);
     }
@@ -5238,7 +5249,6 @@ const DATA_DIMS={
 };
 const DATA_FILTERS={
   all:  {label:"All graded", fn:()=>true},
-  combo:{label:"Value",      fn:r=>r.isCombo},
   conv: {label:"Conviction", fn:r=>r.isConvOver},
   over: {label:"Over",       fn:r=>r.side==="Over"},
   under:{label:"Under",      fn:r=>r.side==="Under"},
@@ -5541,7 +5551,7 @@ function rowVerdict(r, provenBuckets){
   // Plain-Over and conviction-Over are CANDIDATES being measured in the forward
   // tracker — they are NOT bets and must never light up the slate. They ride along
   // as classification flags only, so renderForwardTest can count them silently.
-  const isCombo = (r.line <= EDGE_MAX_LINE) && (r.edge >= EDGE_STRONG_BAR);
+  const isCombo = VALUE_ENABLED && (r.line <= EDGE_MAX_LINE) && (r.edge >= EDGE_STRONG_BAR);
   const isOver  = (side === "Over");
   const isConvOver = (side==="Under") && (r.edge!=null && r.edge>=CONV_EDGE_MIN) && disagree>=CONV_DISAGREE_MIN && (r.line>=CONV_MIN_LINE);
   const isCeiling = isOver && (r.line >= 5.5) && (r.edge!=null && r.edge>=CEIL_EDGE_MIN);   // high-line Over w/ a real edge
@@ -5960,7 +5970,7 @@ async function watchGameInto(g, all, probList, day, season){
       }
       const disagree=Math.abs(m.eK-red.line);
       r._watchSide=side; r._watchEdge=edge;
-      r._watchCombo = (edge!=null) && (red.line<=EDGE_MAX_LINE) && (edge>=EDGE_STRONG_BAR);
+      r._watchCombo = VALUE_ENABLED && (edge!=null) && (red.line<=EDGE_MAX_LINE) && (edge>=EDGE_STRONG_BAR);
       r._watchConv  = (side==="Under") && (edge!=null && edge>=CONV_EDGE_MIN) && (disagree>=CONV_DISAGREE_MIN) && (red.line>=CONV_MIN_LINE);
       r._watchCeil  = (side==="Over") && (red.line>=5.5) && (edge!=null && edge>=CEIL_EDGE_MIN);
     } else { r._watchEK=null; r._watchCombo=false; r._watchConv=false; r._watchCeil=false; r._watchEdge=null; }
@@ -6134,11 +6144,33 @@ function saveTrackSet(date,set){
 // returns the active set. once the user has touched it, their choices win.
 function ensureTrackSet(date, rows){
   const existing=SS.getItem(trackKey(date));
-  if(existing!=null) return loadTrackSet(date); // user state exists, respect it
+  if(existing!=null){
+    // A set seeded before a track was retired can still carry picks that no longer
+    // clear ANY gate (e.g. Value-only rows after VALUE_ENABLED went false). Those are
+    // not user choices — they were auto-seeded — so drop them rather than showing a
+    // tracked bet for a signal that no longer exists. Anything still flagged, and any
+    // row the user checked that was never auto-seeded, is left alone.
+    const set=loadTrackSet(date);
+    let pruned=0;
+    (rows||[]).forEach(r=>{
+      const key=trackRowKey(r);
+      if(!set.has(key)) return;
+      const v=(typeof rowVerdict==="function")?rowVerdict(r):(r._verdict||{});
+      const anyFlag=!!(v&&(v.isCombo||v.isConvOver||v.isCeiling));
+      const wasAutoSeedable=(r.eK!=null&&r.line!=null&&r.edge!=null&&r.line<=EDGE_MAX_LINE&&r.edge>=EDGE_STRONG_BAR);
+      if(!anyFlag && wasAutoSeedable && !VALUE_ENABLED){ set.delete(key); pruned++; }
+    });
+    if(pruned) saveTrackSet(date,set);
+    return set;
+  }
   const set=new Set();
   (rows||[]).forEach(r=>{
     const v=(typeof rowVerdict==="function")?rowVerdict(r):(r._verdict||{});
-    if(v && (v.isCombo||v.isConvOver)) set.add(trackRowKey(r));
+    // Seed from every LIVE tracked bet. Overpower was historically left out, which
+    // meant hand-checking it every night; with Value retired that would have left
+    // Conviction as the only auto-seeded track. isCombo stays in the test so flipping
+    // VALUE_ENABLED back to true restores its auto-tracking without another edit.
+    if(v && (v.isCombo||v.isConvOver||v.isCeiling)) set.add(trackRowKey(r));
   });
   saveTrackSet(date,set);
   return set;
@@ -6380,7 +6412,7 @@ function renderBetGraph(){
   const CFG_FLAGS={
     combo:["isCombo"], conv:["isConvOver"], ceil:["isCeiling"],
     "combo+conv":["isCombo","isConvOver"], "combo+ceil":["isCombo","isCeiling"],
-    "conv+ceil":["isConvOver","isCeiling"], all:["isCombo","isConvOver","isCeiling"]
+    "conv+ceil":["isConvOver","isCeiling"], all:["isConvOver","isCeiling"]
   };
   const activeFlags=CFG_FLAGS[cfg]||CFG_FLAGS.all;
   const series=(f)=>{
@@ -6733,10 +6765,9 @@ function renderRecal(){
   const fwdStart=SS.getItem("se_fwd_start")||"";
   const bets=loadMyBets().filter(b=>b&&!b.deleted);
   const TRACKS=[
-    {k:"isCombo",   style:"combo",name:"VALUE",     col:"var(--bet)",     def:"Strong · line ≤5.5 — the one you bet", need:30},
     {k:"isConvOver",style:"conv", name:"CONVICTION",col:"var(--accent)",  def:"Under · edge ≥20% · ≥1.5 from line · line ≥5.5", need:40},
     {k:"isCeiling", style:"ceil", name:"OVERPOWER", col:"var(--ceiling)", def:"Over · line ≥5.5 · edge ≥2%", need:40},
-    {k:"isLean",    style:"lean", name:"LEAN",      col:"var(--lean)",    def:"line ≤5.5 · edge 15–20% — the Value near-miss band", need:40},
+    {k:"isLean",    style:"lean", name:"LEAN",      col:"var(--lean)",    def:"line ≤5.5 · edge 15–20% (watchlist)", need:40},
   ];
   const roiStr=g=>g.roi==null?"—":(g.roi>=0?"+":"")+g.roi.toFixed(0)+"%";
   const roiCol=g=>g.roi==null?"var(--muted)":g.roi>=0?"var(--pos)":"var(--neg)";
@@ -7299,7 +7330,12 @@ function gradeMyBets(){
   bets.forEach(b=>{
     if(b.result || b.deleted) return;
     const day=loadDay(b.date); if(!day) return;
-    const row=(day.rows||[]).find(r=>norm(r.pitcher||"")===norm(b.pitcher||""));
+    // A pitcher can legitimately appear twice in one day record (doubleheaders, or a
+    // duplicate left by a pull that predated the gamePk fix). .find() returned the FIRST
+    // match, and if that one had no result yet the bet stayed pending forever even though
+    // a graded row sat right beside it. Prefer a row that actually carries a result.
+    const cands=(day.rows||[]).filter(r=>norm(r.pitcher||"")===norm(b.pitcher||""));
+    const row=cands.find(r=>r.actualK!=null) || cands[0];
     if(!row || row.actualK==null) return;
     const k=Number(row.actualK), line=Number(b.line);
     let res = (k===line) ? "push" : (b.side==="Over" ? (k>line?"win":"loss") : (k<line?"win":"loss"));
@@ -7627,7 +7663,11 @@ document.addEventListener("keydown",(e)=>{ if(e.key==="Escape" && !$("betModal")
     Overpower:"Over · line ≥ 5.5",
     Portfolio:"Every pick you place · any signal fires · deduped per game"
   };
-  var ORDER = ["Value","Conviction","Overpower"];
+  // Value is retired (VALUE_ENABLED=false), so it produces no picks and its series is
+  // empty. Keep it out of the component list, and read the flag defensively since this
+  // module is deliberately self-contained.
+  var ORDER = ((typeof VALUE_ENABLED==="undefined"||VALUE_ENABLED)
+    ? ["Value","Conviction","Overpower"] : ["Conviction","Overpower"]);
 
   // ---- deterministic RNG (mulberry32) so tuned h is stable across reloads ---
   function rng(seed){ return function(){ seed|=0; seed=seed+0x6D2B79F5|0;
@@ -7699,7 +7739,7 @@ document.addEventListener("keydown",(e)=>{ if(e.key==="Escape" && !$("betModal")
   function signalsFor(r){
     var out=[], ms=r.modelSide, line=r.line, edge=r.edge, eK=r.eK;
     if(line==null)return out;
-    if(edge!=null && line<=5.5 && edge>=0.20) out.push("Value");
+    if((typeof VALUE_ENABLED==="undefined"||VALUE_ENABLED) && edge!=null && line<=5.5 && edge>=0.20) out.push("Value");
     // This block is deliberately self-contained ES5, so it reads the shared constant
     // defensively rather than hardcoding a copy that can silently drift out of sync.
     var _ceilMin=(typeof CEIL_EDGE_MIN!=="undefined")?CEIL_EDGE_MIN:0.02;
@@ -7825,7 +7865,15 @@ document.addEventListener("keydown",(e)=>{ if(e.key==="Escape" && !$("betModal")
   function sroi(x){ return x==null? "—" : (x>=0?"+":"")+(x*100).toFixed(1)+"%"; }
 
   function card(name,sig,floor,be,headline){
-    var c=COL[name], cur=sig.cur, st=cur.st, sc=STCOL[st];
+    var c=COL[name]||"var(--muted)";
+    // A track with zero graded picks has an empty series, so sig.cur is null. That used
+    // to throw on cur.st and kill the ENTIRE watchdog render, not just this card.
+    if(!sig || !sig.cur){
+      return '<div class="wd-card" style="border-left:3px solid '+c+'">'+
+             '<div class="wd-h"><span class="wd-name">'+name+'</span></div>'+
+             '<div class="wd-pnote">No graded picks yet — nothing to monitor.</div></div>';
+    }
+    var cur=sig.cur, st=cur.st, sc=STCOL[st];
     var cug=Math.min(1,cur.cu/sig.h);
     var cubar = cug>=1?STCOL.TRIPPED:(cug>0.5?STCOL.WATCH:c);
     var bstyle = name==="Portfolio"
