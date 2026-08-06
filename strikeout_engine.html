@@ -1391,7 +1391,7 @@ footer{margin-top:30px;color:var(--muted);font-size:11.5px;text-align:center}
       <div class="railpanel" id="railPanelUnits">
         <div class="rp-title">By bet style</div>
         <div class="betstyle-heads">
-          <div class="bs-cell" style="border-color:var(--bet)">
+          <div class="bs-cell" id="bsHeadValue" style="border-color:var(--bet)" hidden>
             <div class="bs-head" style="color:var(--bet)">VALUE</div>
             <div class="bs-big" id="bsComboUnits">—</div>
             <div class="bs-sub"><span id="bsComboRec">—</span> · <span id="bsComboPct">—</span></div>
@@ -2523,7 +2523,11 @@ function updateMetaStrip(){
 
 // Header meta + right-rail panels. All real data; never throws out.
 function renderRail(){
-  { const c=$("bsColValue"); if(c) c.hidden=!VALUE_ENABLED; }
+  { const c=$("bsColValue"); if(c) c.hidden=!VALUE_ENABLED;
+    const h=$("bsHeadValue"); if(h) h.hidden=!VALUE_ENABLED;
+    // the two rows are 3-up grids sized for three tracks; drop to 2 when one is retired
+    const hs=document.querySelector(".betstyle-heads"); if(hs) hs.style.gridTemplateColumns=VALUE_ENABLED?"":"repeat(2,1fr)";
+    const bc=$("betStyleCols"); if(bc) bc.style.gridTemplateColumns=VALUE_ENABLED?"":"repeat(2,1fr)"; }
   // ---- header meta ----
   const rem=getCredits();
   if($("hmCredits")) $("hmCredits").textContent = rem!=null ? rem.toLocaleString() : "—";
